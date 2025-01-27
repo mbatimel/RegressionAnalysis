@@ -55,6 +55,39 @@ func Test_MLR(t *testing.T) {
 		t.Errorf("R^2 was %.2f, but we expected > 80", r.R2)
 	}
 }
+func Test_MLR2(t *testing.T) {
+	r := new(Regression)
+	r.SetObserved("Murders per annum per 1,000,000 inhabitants")
+	r.SetVar(0, "Inhabitants")
+	r.SetVar(1, "Percent with incomes below $5000")
+
+	r.Train(
+		DataPoint(64, []float64{57, 8}),
+		DataPoint(71, []float64{59, 10}),
+		DataPoint(53, []float64{49, 6}),
+		DataPoint(67, []float64{62, 11}),
+		DataPoint(55, []float64{51, 8}),
+		DataPoint(58, []float64{50, 7}),
+		DataPoint(77, []float64{55, 10}),
+		DataPoint(57, []float64{48, 9}),
+	)
+	r.Run()
+
+	fmt.Printf("Regression formula:\n%v\n", r.Formula)
+	fmt.Printf("Regression:\n%s\n", r)
+
+	// All vars are known to positively correlate with the murder rate
+	for i, c := range r.coeff {
+		if i == 0 {
+			// This is the offset and not a coeff
+			continue
+		}
+		if c < 0 {
+			t.Errorf("Coefficient is negative, but shouldn't be: %.2f", c)
+		}
+	}
+
+}
 
 func Test_CrossApply(t *testing.T) {
 	r := new(Regression)

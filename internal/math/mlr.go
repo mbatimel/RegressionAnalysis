@@ -1,6 +1,5 @@
 package math
 
-
 import (
 	"errors"
 	"fmt"
