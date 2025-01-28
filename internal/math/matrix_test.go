@@ -50,7 +50,7 @@ func Test_SumMatrix(t *testing.T) {
 			{2, 4, 6},
 			{2, 4, 6},
 			{2, 4, 6}}
-		expextErr :=errors.New("The number of rows does not match")
+		expextErr := errors.New("The number of rows does not match")
 		matrix1, err := CreateMatrix(value1)
 		assert.NoError(t, err)
 		matrix2, err := CreateMatrix(value2)

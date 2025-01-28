@@ -3,8 +3,8 @@ package math
 import (
 	"errors"
 	"fmt"
-	"math"
 	"github.com/mbatimel/RegressionAnalysis/internal/models"
+	"math"
 )
 
 type Matrix interface {
@@ -17,7 +17,6 @@ type Matrix interface {
 	Inverse_matrix(m *models.Matrix) (*models.Matrix, error)
 	Exponential_matrix(m *models.Matrix) *models.Matrix
 }
-
 
 // CreateMatrix creates a new models.Matrix with the given values.
 func CreateMatrix(values [][]float64) (*models.Matrix, error) {
@@ -125,13 +124,13 @@ func Sum_matrix(matrix_1, matrix_2 *models.Matrix) (err error) {
 	if matrix_1 == nil || matrix_2 == nil {
 		return fmt.Errorf("someone models.Matrix is nil")
 	}
-	
-		if matrix_1.Cols != matrix_2.Cols {
-			return fmt.Errorf("The number of columns does not match")
-		}
-		if matrix_1.Rows != matrix_2.Rows {
-			return fmt.Errorf("The number of rows does not match")
-		}
+
+	if matrix_1.Cols != matrix_2.Cols {
+		return fmt.Errorf("The number of columns does not match")
+	}
+	if matrix_1.Rows != matrix_2.Rows {
+		return fmt.Errorf("The number of rows does not match")
+	}
 	for i := 0; i < int(matrix_1.Rows); i++ {
 		for j := 0; j < int(matrix_2.Rows); j++ {
 			matrix_1.Values[i][j] += matrix_2.Values[i][j]
