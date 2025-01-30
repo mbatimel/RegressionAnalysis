@@ -23,6 +23,7 @@ import (
 	"gonum.org/v1/gonum/blas/blas32"
 	"gonum.org/v1/gonum/diff/fd"
 	"gonum.org/v1/gonum/floats"
+	"gonum.org/v1/gonum/floats/scalar"
 	"gonum.org/v1/gonum/mat"
 	"gonum.org/v1/gonum/optimize"
 	"gonum.org/v1/plot"
@@ -79,7 +80,7 @@ func TestMLPClassifierMicrochip(t *testing.T) {
 
 		//fmt.Printf("%s grad=%v expected %v\n", context, actualGradient, expectedGradient)
 		for j := 0; j < len(expectedGradient); j++ {
-			if !floats.EqualWithinAbs(expectedGradient[j], actualGradient[j], 1e-4) {
+			if !scalar.EqualWithinAbs(expectedGradient[j], actualGradient[j], 1e-4) {
 				t.Errorf("%s grad=%v expected %v", context, actualGradient, expectedGradient)
 				return
 			}
@@ -503,7 +504,7 @@ func ExampleMLPClassifier_Fit_iris() {
 		Z := &mat.Dense{}
 		mlp.Predict(Xgrid, Z)
 
-		plt, _ := plot.New()
+		plt := plot.New()
 		xys := func(X, Y mat.Matrix, cls int) (xy plotter.XYs) {
 			imax, _ := Y.Dims()
 			for i := 0; i < imax; i++ {

@@ -99,7 +99,7 @@ func ExampleLogisticRegression() {
 		Xgrid := npc(xx, yy)
 		Z := regr.Predict(Xgrid, nil)
 
-		plt, _ := plot.New()
+		plt := plot.New()
 		xys := func(X, Y mat.Matrix, cls int) (xy plotter.XYs) {
 			imax, _ := Y.Dims()
 			for i := 0; i < imax; i++ {

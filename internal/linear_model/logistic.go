@@ -177,7 +177,8 @@ func (m *LogisticRegression) PredicterClone() base.Predicter {
 
 // forwardPass Perform a forward pass on the network by computing the values
 // of the neurons the output layer.
-//        activations : []blas64.General, length = nLayers - 1
+//
+//	activations : []blas64.General, length = nLayers - 1
 func (m *LogisticRegression) forwardPass(activations []blas64.General) {
 	hiddenActivation := logregActivation["logistic"]
 	var i int

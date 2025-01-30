@@ -100,20 +100,21 @@ func TestExplainedVarianceScore(t *testing.T) {
 }
 
 // >>> from sklearn.metrics import mean_squared_error
-//     >>> y_true = [3, -0.5, 2, 7]
-//     >>> y_pred = [2.5, 0.0, 2, 8]
-//     >>> mean_squared_error(y_true, y_pred)
-//     0.375
-//     >>> y_true = [[0.5, 1],[-1, 1],[7, -6]]
-//     >>> y_pred = [[0, 2],[-1, 2],[8, -5]]
-//     >>> mean_squared_error(y_true, y_pred)  # doctest: +ELLIPSIS
-//     0.708...
-//     >>> mean_squared_error(y_true, y_pred, multioutput='raw_values')
-//     ... # doctest: +ELLIPSIS
-//     array([ 0.416...,  1.        ])
-//     >>> mean_squared_error(y_true, y_pred, multioutput=[0.3, 0.7])
-//     ... # doctest: +ELLIPSIS
-//     0.824...
+//
+//	>>> y_true = [3, -0.5, 2, 7]
+//	>>> y_pred = [2.5, 0.0, 2, 8]
+//	>>> mean_squared_error(y_true, y_pred)
+//	0.375
+//	>>> y_true = [[0.5, 1],[-1, 1],[7, -6]]
+//	>>> y_pred = [[0, 2],[-1, 2],[8, -5]]
+//	>>> mean_squared_error(y_true, y_pred)  # doctest: +ELLIPSIS
+//	0.708...
+//	>>> mean_squared_error(y_true, y_pred, multioutput='raw_values')
+//	... # doctest: +ELLIPSIS
+//	array([ 0.416...,  1.        ])
+//	>>> mean_squared_error(y_true, y_pred, multioutput=[0.3, 0.7])
+//	... # doctest: +ELLIPSIS
+//	0.824...
 func TestMeanSquaredError(t *testing.T) {
 	yTrue := mat.NewDense(1, 4, []float64{3, -0.5, 2, 7})
 	yPred := mat.NewDense(1, 4, []float64{2.5, 0.0, 2, 8})

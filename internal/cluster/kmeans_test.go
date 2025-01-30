@@ -43,10 +43,7 @@ func ExampleKMeans() {
 			}
 			return
 		}
-		p, err := plot.New()
-		if err != nil {
-			panic(err)
-		}
+		p := plot.New()
 		p.Title.Text = "kmeans"
 		p.X.Label.Text = "X"
 		p.Y.Label.Text = "Y"
@@ -88,7 +85,7 @@ func ExampleKMeans() {
 			panic(err)
 		}
 		cmd := exec.Command("display", pngfile)
-		err = cmd.Start()
+		err := cmd.Start()
 		if err != nil {
 			fmt.Println(err.Error())
 		}

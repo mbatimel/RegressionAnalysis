@@ -256,7 +256,8 @@ func NewBaseMultilayerPerceptron64() *BaseMultilayerPerceptron64 {
 
 // forwardPass Perform a forward pass on the network by computing the values
 // of the neurons in the hidden layers and the output layer.
-//        activations : []blas64General, length = nLayers - 1
+//
+//	activations : []blas64General, length = nLayers - 1
 func (mlp *BaseMultilayerPerceptron64) forwardPass(activations []blas64General) {
 	hiddenActivation := Activations64[mlp.Activation]
 	var i int

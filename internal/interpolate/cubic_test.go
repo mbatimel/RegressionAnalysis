@@ -46,8 +46,7 @@ func ExampleCubicSpline() {
 		y2[i] = f(x2[i])
 	}
 
-	p, err := plot.New()
-	check(err)
+	p := plot.New()
 	scatter, err := plotter.NewScatter(&xy{xs, ys})
 	line, err := plotter.NewLine(&xy{x2, y2})
 	p.Add(scatter, line)

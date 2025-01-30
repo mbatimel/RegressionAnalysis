@@ -4,7 +4,7 @@ import (
 	"math"
 	"testing"
 
-	"gonum.org/v1/gonum/floats"
+	"gonum.org/v1/gonum/floats/scalar"
 	"gonum.org/v1/gonum/mat"
 )
 
@@ -26,7 +26,7 @@ func TestLoadOctaveBin(t *testing.T) {
 	}
 	{
 		e, a := 0., mat.Sum(X.Slice(0, 5000, 0, 1))
-		if !floats.EqualWithinAbs(e, a, 1e-8) {
+		if !scalar.EqualWithinAbs(e, a, 1e-8) {
 			t.Errorf("col 0 expected %g got %g", e, a)
 		}
 
@@ -34,21 +34,21 @@ func TestLoadOctaveBin(t *testing.T) {
 	{
 		e := -7.3744e-04
 		a := X.At(0, 69)
-		if !floats.EqualWithinAbs(e, a, 1e-8) {
+		if !scalar.EqualWithinAbs(e, a, 1e-8) {
 			t.Errorf("at 0,69 expected %g got %g", e, a)
 		}
 	}
 	{
 		e := 4.8918e-05
 		a := X.At(0, 353)
-		if !floats.EqualWithinAbs(e, a, 1e-9) {
+		if !scalar.EqualWithinAbs(e, a, 1e-9) {
 			t.Errorf("at 0,353 expected %g got %g", e, a)
 		}
 	}
 	{
 		e := 62.227
 		a := mat.Sum(X.Slice(0, 1, 0, 400))
-		if !floats.EqualWithinAbs(e, a, 1e-3) {
+		if !scalar.EqualWithinAbs(e, a, 1e-3) {
 			t.Errorf("line 0 expected %g got %g", e, a)
 		}
 	}

@@ -85,7 +85,7 @@ func ExampleSVR() {
 		pngfile := fmt.Sprintf("/tmp/ExampleSVR.png")
 		os.Remove(pngfile)
 
-		p, _ := plot.New()
+		p := plot.New()
 		p.Title.Text = "Support vector regression"
 		p.X.Label.Text = "data"
 		p.Y.Label.Text = "target"
