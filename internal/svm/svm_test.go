@@ -83,7 +83,7 @@ func ExampleSVC() {
 			Xgrid := npc(xx, yy)
 			Z := &mat.Dense{}
 			clf.Predict(Xgrid, Z)
-			plt, _ := plot.New()
+			plt := plot.New()
 			xys := func(X, Y mat.Matrix, cls int) (xy plotter.XYs) {
 				imax, _ := Y.Dims()
 				for i := 0; i < imax; i++ {

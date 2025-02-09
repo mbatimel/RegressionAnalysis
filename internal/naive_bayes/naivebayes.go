@@ -88,12 +88,12 @@ func (m *GaussianNB) IsClassifier() bool {
 	return true
 }
 
-//GaussianNB is Gaussian Naive Bayes (GaussianNB)
-//Can perform online updates to model parameters via `partial_fit` method.
-//For details on algorithm used to update feature means and variance online,
-//see Stanford CS tech report STAN-CS-79-773 by Chan, Golub, and LeVeque:
-//http://i.stanford.edu/pub/cstr/reports/cs/tr/79/773/CS-TR-79-773.pdf
-//Read more in the :ref:`User Guide <gaussian_naive_bayes>`.
+// GaussianNB is Gaussian Naive Bayes (GaussianNB)
+// Can perform online updates to model parameters via `partial_fit` method.
+// For details on algorithm used to update feature means and variance online,
+// see Stanford CS tech report STAN-CS-79-773 by Chan, Golub, and LeVeque:
+// http://i.stanford.edu/pub/cstr/reports/cs/tr/79/773/CS-TR-79-773.pdf
+// Read more in the :ref:`User Guide <gaussian_naive_bayes>`.
 type GaussianNB struct {
 	Priors       []float64
 	VarSmoothing float64
@@ -129,14 +129,14 @@ func (m *GaussianNB) PredicterClone() base.Predicter {
 	return &clone
 }
 
-//Fit fit Gaussian Naive Bayes according to X, y
+// Fit fit Gaussian Naive Bayes according to X, y
 func (m *GaussianNB) Fit(X, Y mat.Matrix) base.Fiter {
 	var Yv = colAsVector(Y, 0)
 	m.PartialFit(X, Y, npUnique(Yv), true, m.SampleWeight)
 	return m
 }
 
-//PartialFit fit Gaussian Naive Bayes according to X, y
+// PartialFit fit Gaussian Naive Bayes according to X, y
 func (m *GaussianNB) PartialFit(X, Y mat.Matrix, classes []float64, refit bool, sampleWeight []float64) base.Fiter {
 	yr, yc := Y.Dims()
 	if yc != 1 {

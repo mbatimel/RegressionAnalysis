@@ -125,19 +125,27 @@ func AUC(fpr, tpr []float64) float64 {
 // class, confidence values, or non-thresholded measure of decisions
 // (as returned by "decision_function" on some classifiers).
 // average : string, [None, 'micro', 'macro' (default), 'samples', 'weighted']
-// If ``None``, the scores for each class are returned. Otherwise,
+// If “None“, the scores for each class are returned. Otherwise,
 // this determines the type of averaging performed on the data:
-// ``'micro'``:
-// 	Calculate metrics globally by considering each element of the label
-// 	indicator matrix as a label.
-// ``'macro'``:
-// 	Calculate metrics for each label, and find their unweighted
-// 	mean.  This does not take label imbalance into account.
-// ``'weighted'``:
-// 	Calculate metrics for each label, and find their average, weighted
-// 	by support (the number of true instances for each label).
-// ``'samples'``:
-// 	Calculate metrics for each instance, and find their average.
+// “'micro'“:
+//
+//	Calculate metrics globally by considering each element of the label
+//	indicator matrix as a label.
+//
+// “'macro'“:
+//
+//	Calculate metrics for each label, and find their unweighted
+//	mean.  This does not take label imbalance into account.
+//
+// “'weighted'“:
+//
+//	Calculate metrics for each label, and find their average, weighted
+//	by support (the number of true instances for each label).
+//
+// “'samples'“:
+//
+//	Calculate metrics for each instance, and find their average.
+//
 // sample_weight : array-like of shape = [n_samples], optional
 // Sample weights.
 // Returns auc : float
@@ -150,36 +158,37 @@ func ROCAUCScore(Ytrue, Yscore *mat.Dense, average string, sampleWeight []float6
 }
 
 // PrecisionRecallCurve compute precision-recall pairs for different probability thresholds
-//     Note: this implementation is restricted to the binary classification task.
-//     The precision is the ratio ``tp / (tp + fp)`` where ``tp`` is the number of
-//     true positives and ``fp`` the number of false positives. The precision is
-//     intuitively the ability of the classifier not to label as positive a sample
-//     that is negative.
-//     The recall is the ratio ``tp / (tp + fn)`` where ``tp`` is the number of
-//     true positives and ``fn`` the number of false negatives. The recall is
-//     intuitively the ability of the classifier to find all the positive samples.
-//     The last precision and recall values are 1. and 0. respectively and do not
-//     have a corresponding threshold.  This ensures that the graph starts on the
-//     x axis.
-//     Parameters
-//     y_true : array, shape = [n_samples]
-//         True targets of binary classification in range {-1, 1} or {0, 1}.
-//     probas_pred : array, shape = [n_samples]
-//         Estimated probabilities or decision function.
-//     pos_label : int or str, default=None
-//         The label of the positive class
-//     sample_weight : array-like of shape = [n_samples], optional
-//         Sample weights.
-//     Returns
-//     precision : array, shape = [n_thresholds + 1]
-//         Precision values such that element i is the precision of
-//         predictions with score >= thresholds[i] and the last element is 1.
-//     recall : array, shape = [n_thresholds + 1]
-//         Decreasing recall values such that element i is the recall of
-//         predictions with score >= thresholds[i] and the last element is 0.
-//     thresholds : array, shape = [n_thresholds <= len(np.unique(probas_pred))]
-//         Increasing thresholds on the decision function used to compute
-//         precision and recall.
+//
+//	Note: this implementation is restricted to the binary classification task.
+//	The precision is the ratio ``tp / (tp + fp)`` where ``tp`` is the number of
+//	true positives and ``fp`` the number of false positives. The precision is
+//	intuitively the ability of the classifier not to label as positive a sample
+//	that is negative.
+//	The recall is the ratio ``tp / (tp + fn)`` where ``tp`` is the number of
+//	true positives and ``fn`` the number of false negatives. The recall is
+//	intuitively the ability of the classifier to find all the positive samples.
+//	The last precision and recall values are 1. and 0. respectively and do not
+//	have a corresponding threshold.  This ensures that the graph starts on the
+//	x axis.
+//	Parameters
+//	y_true : array, shape = [n_samples]
+//	    True targets of binary classification in range {-1, 1} or {0, 1}.
+//	probas_pred : array, shape = [n_samples]
+//	    Estimated probabilities or decision function.
+//	pos_label : int or str, default=None
+//	    The label of the positive class
+//	sample_weight : array-like of shape = [n_samples], optional
+//	    Sample weights.
+//	Returns
+//	precision : array, shape = [n_thresholds + 1]
+//	    Precision values such that element i is the precision of
+//	    predictions with score >= thresholds[i] and the last element is 1.
+//	recall : array, shape = [n_thresholds + 1]
+//	    Decreasing recall values such that element i is the recall of
+//	    predictions with score >= thresholds[i] and the last element is 0.
+//	thresholds : array, shape = [n_thresholds <= len(np.unique(probas_pred))]
+//	    Increasing thresholds on the decision function used to compute
+//	    precision and recall.
 func PrecisionRecallCurve(Ytrue, ProbasPred *mat.Dense, posLabel float64, sampleWeight []float64) (precision, recall, thresholds []float64) {
 	var tps, fps []float64
 	fps, tps, thresholds = binaryClfCurve(Ytrue, ProbasPred, posLabel, sampleWeight)

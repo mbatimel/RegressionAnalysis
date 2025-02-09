@@ -1,0 +1,34 @@
+run:
+  concurrency: 4
+  deadline: 2m
+  issues-exit-code: 1
+  skip-files:
+    - ".+_test.go"
+    - "vendor/*"
+  skip-dirs:
+    - "pkg"
+
+output:
+  format: tab
+  print-issued-lines: true
+  print-linter-name: true
+
+linters:
+  disable-all: true
+  enable:
+    - gosimple
+    - govet
+    - ineffassign
+    - typecheck
+    - unused
+    - errname
+    - errorlint
+    - goimports
+    - unparam
+  fast: false
+
+issues:
+  exclude-use-default: false
+  max-issues-per-linter: 100
+  max-same-issues: 4
+  new: false

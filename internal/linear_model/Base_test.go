@@ -86,7 +86,7 @@ func ExampleLinearRegression() {
 	if canPlot {
 
 		// plot result
-		p, _ := plot.New()
+		p := plot.New()
 
 		xys := func(X, Y mat.Matrix) plotter.XYs {
 			var data plotter.XYs

@@ -96,7 +96,7 @@ func NewMultiTaskElasticNet() *MultiTaskElasticNet {
 	return regr
 }
 
-//NewLasso creates a *ElasticNetRegression with Alpha=1 and L1Ratio = 1
+// NewLasso creates a *ElasticNetRegression with Alpha=1 and L1Ratio = 1
 func NewLasso() *Lasso {
 	m := NewMultiTaskElasticNet()
 	m.L1Ratio = 1.

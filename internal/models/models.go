@@ -7,6 +7,21 @@ type Matrix struct {
 }
 
 type DataPoint struct {
-	Y float64   `json:"y"`
-	X []float64 `json:"x"`
+	Observed  float64
+	Variables []float64
+	Predicted float64
+	Error     float64
+}
+
+// ElasticNetParams - структура для входных данных API
+type ElasticNetParams struct {
+	NSamplesTrain int     `json:"n_samples_train" binding:"required"`
+	NSamplesTest  int     `json:"n_samples_test" binding:"required"`
+	NFeatures     int     `json:"n_features" binding:"required"`
+	L1Ratio       float64 `json:"l1_ratio" binding:"required"`
+	NAlphas       int     `json:"n_alphas" binding:"required"`
+}
+
+type LogisticRegressionParams struct {
+	Alpha float64 `json:"alpha" binding:"required"`
 }
