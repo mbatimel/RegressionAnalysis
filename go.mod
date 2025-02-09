@@ -19,6 +19,7 @@ require (
 
 require (
 	git.sr.ht/~sbinet/gg v0.5.0 // indirect
+	github.com/Quartz-Vision/gocrypt v1.0.0 // indirect
 	github.com/ajstarks/svgo v0.0.0-20211024235047-1546f124cd8b // indirect
 	github.com/andybalholm/brotli v1.1.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect

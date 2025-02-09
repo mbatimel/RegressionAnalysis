@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/mbatimel/RegressionAnalysis/internal/models"
 	"gonum.org/v1/gonum/mat"
 )
 
@@ -22,7 +23,7 @@ var (
 // Regression is the exposed data structure for interacting with the API.
 type Regression struct {
 	names             describe
-	data              []*dataPoint
+	data              []*models.DataPoint
 	coeff             map[int]float64
 	R2                float64
 	Varianceobserved  float64
@@ -33,25 +34,20 @@ type Regression struct {
 	hasRun            bool
 }
 
-type dataPoint struct {
-	Observed  float64
-	Variables []float64
-	Predicted float64
-	Error     float64
-}
+
 
 type describe struct {
 	obs  string
 	vars map[int]string
 }
 
-// DataPoints is a slice of *dataPoint
+// DataPoints is a slice of *models.DataPoint
 // This type allows for easier construction of training data points.
-type DataPoints []*dataPoint
+type DataPoints []*models.DataPoint
 
 // DataPoint creates a well formed *datapoint used for training.
-func DataPoint(obs float64, vars []float64) *dataPoint {
-	return &dataPoint{Observed: obs, Variables: vars}
+func DataPoint(obs float64, vars []float64) *models.DataPoint {
+	return &models.DataPoint{Observed: obs, Variables: vars}
 }
 
 // Predict updates the "Predicted" value for the inputed features.
@@ -106,7 +102,7 @@ func (r *Regression) AddCross(cross featureCross) {
 }
 
 // Train the regression with some data points.
-func (r *Regression) Train(d ...*dataPoint) {
+func (r *Regression) Train(d ...*models.DataPoint) {
 	r.data = append(r.data, d...)
 	if len(r.data) > 2 {
 		r.initialised = true
@@ -275,14 +271,14 @@ func (r *Regression) calcResiduals() string {
 	return str
 }
 
-// String satisfies the stringer interface to display a dataPoint as a string.
-func (d *dataPoint) String() string {
-	str := fmt.Sprintf("%.2f", d.Observed)
-	for _, v := range d.Variables {
-		str += fmt.Sprintf("|\t%.2f", v)
-	}
-	return str
-}
+// String satisfies the stringer interface to display a models.DataPoint as a string.
+// func (d *models.DataPoint) String() string {
+// 	str := fmt.Sprintf("%.2f", d.Observed)
+// 	for _, v := range d.Variables {
+// 		str += fmt.Sprintf("|\t%.2f", v)
+// 	}
+// 	return str
+// }
 
 // String satisfies the stringer interface to display a regression as a string.
 func (r *Regression) String() string {
@@ -303,16 +299,16 @@ func (r *Regression) String() string {
 	return str
 }
 
-// MakeDataPoints makes a `[]*dataPoint` from a `[][]float64`. The expected fomat for the input is a row-major [][]float64.
+// MakeDataPoints makes a `[]*models.DataPoint` from a `[][]float64`. The expected fomat for the input is a row-major [][]float64.
 // That is to say the first slice represents a row, and the second represents the cols.
 // Furthermore it is expected that all the col slices are of the same length.
 // The obsIndex parameter indicates which column should be used
-func MakeDataPoints(a [][]float64, obsIndex int) []*dataPoint {
+func MakeDataPoints(a [][]float64, obsIndex int) []*models.DataPoint {
 	if obsIndex != 0 && obsIndex != len(a[0])-1 {
 		return perverseMakeDataPoints(a, obsIndex)
 	}
 
-	retVal := make([]*dataPoint, 0, len(a))
+	retVal := make([]*models.DataPoint, 0, len(a))
 	if obsIndex == 0 {
 		for _, r := range a {
 			retVal = append(retVal, DataPoint(r[0], r[1:]))
@@ -328,8 +324,8 @@ func MakeDataPoints(a [][]float64, obsIndex int) []*dataPoint {
 	return retVal
 }
 
-func perverseMakeDataPoints(a [][]float64, obsIndex int) []*dataPoint {
-	retVal := make([]*dataPoint, 0, len(a))
+func perverseMakeDataPoints(a [][]float64, obsIndex int) []*models.DataPoint {
+	retVal := make([]*models.DataPoint, 0, len(a))
 	for _, r := range a {
 		obs := r[obsIndex]
 		others := make([]float64, 0, len(r)-1)
