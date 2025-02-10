@@ -1,0 +1,326 @@
+openapi: 3.0.0
+servers:
+    - {}
+paths:
+    /api/v1/elasticNet:
+        get:
+            tags:
+                - Regression
+            summary: Ручка по рассчету Elastic Net регрессии
+            description: Ручка возвращает формулу и параметры
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/requestRegressionElasticNetRegression'
+            responses:
+                "200":
+                    description: Successful operation
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    additionalErrors: {}
+                                    data:
+                                        type: object
+                                        description: массив объектов оплат
+                                        additionalProperties:
+                                            type: array
+                                            items:
+                                                type: number
+                                                format: float
+                                            nullable: true
+                                    error:
+                                        type: boolean
+                                        description: Флаг показывающий, что ответ пришел с ошибкой
+                                    errorText:
+                                        type: string
+                "400":
+                    description: Bad Request
+                "403":
+                    description: Forbidden
+                "405":
+                    description: Method Not Allowed
+                "500":
+                    description: Internal Server Error
+    /api/v1/lasso:
+        get:
+            tags:
+                - Regression
+            summary: Ручка по рассчету lasso регрессии
+            description: Ручка возвращает формулу и параметры
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/requestRegressionLassoRegression'
+            responses:
+                "200":
+                    description: Successful operation
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    additionalErrors: {}
+                                    data:
+                                        description: массив объектов оплат
+                                        oneOf:
+                                            - description: массив объектов оплат
+                                            - nullable: true
+                                    error:
+                                        type: boolean
+                                        description: Флаг показывающий, что ответ пришел с ошибкой
+                                    errorText:
+                                        type: string
+                "400":
+                    description: Bad Request
+                "403":
+                    description: Forbidden
+                "405":
+                    description: Method Not Allowed
+                "500":
+                    description: Internal Server Error
+    /api/v1/mlr:
+        get:
+            tags:
+                - Regression
+            summary: Ручка по рассчету MLR регрессии
+            description: Ручка возвращает формулу и параметры
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/requestRegressionMlrRegression'
+            responses:
+                "200":
+                    description: Successful operation
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    additionalErrors: {}
+                                    data:
+                                        type: string
+                                        description: массив объектов оплат
+                                    error:
+                                        type: boolean
+                                        description: Флаг показывающий, что ответ пришел с ошибкой
+                                    errorText:
+                                        type: string
+                "400":
+                    description: Bad Request
+                "403":
+                    description: Forbidden
+                "405":
+                    description: Method Not Allowed
+                "500":
+                    description: Internal Server Error
+    /api/v1/ridge:
+        get:
+            tags:
+                - Regression
+            summary: Ручка по рассчету ridge регрессии
+            description: Ручка возвращает формулу и параметры
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/requestRegressionRidgeRegression'
+            responses:
+                "200":
+                    description: Successful operation
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    additionalErrors: {}
+                                    data:
+                                        description: массив объектов оплат
+                                        oneOf:
+                                            - description: массив объектов оплат
+                                            - nullable: true
+                                    error:
+                                        type: boolean
+                                        description: Флаг показывающий, что ответ пришел с ошибкой
+                                    errorText:
+                                        type: string
+                "400":
+                    description: Bad Request
+                "403":
+                    description: Forbidden
+                "405":
+                    description: Method Not Allowed
+                "500":
+                    description: Internal Server Error
+components:
+    schemas:
+        models.DataPoint:
+            type: object
+            properties:
+                Error:
+                    type: number
+                    format: float
+                Observed:
+                    type: number
+                    format: float
+                Predicted:
+                    type: number
+                    format: float
+                Variables:
+                    type: array
+                    items:
+                        type: number
+                        format: float
+                    nullable: true
+        models.ElasticNetParams:
+            type: object
+            properties:
+                l1_ratio:
+                    type: number
+                    format: float
+                n_alphas:
+                    type: number
+                    format: int
+                n_features:
+                    type: number
+                    format: int
+                n_samples_test:
+                    type: number
+                    format: int
+                n_samples_train:
+                    type: number
+                    format: int
+        requestRegressionElasticNetRegression:
+            type: object
+            required:
+                - params
+            properties:
+                params:
+                    $ref: '#/components/schemas/models.ElasticNetParams'
+            description: Ручка возвращает формулу и параметры
+        requestRegressionLassoRegression:
+            type: object
+            required:
+                - XData
+                - YData
+                - alpha
+                - tol
+                - normalize
+            properties:
+                XData:
+                    type: array
+                    items:
+                        type: array
+                        items:
+                            type: number
+                            format: float
+                        nullable: true
+                    nullable: true
+                YData:
+                    type: array
+                    items:
+                        type: array
+                        items:
+                            type: number
+                            format: float
+                        nullable: true
+                    nullable: true
+                alpha:
+                    type: number
+                    format: float
+                normalize:
+                    type: boolean
+                tol:
+                    type: number
+                    format: float
+            description: Ручка возвращает формулу и параметры
+        requestRegressionMlrRegression:
+            type: object
+            required:
+                - observer
+                - vars
+                - dataPoints
+            properties:
+                dataPoints:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/models.DataPoint'
+                    nullable: true
+                observer:
+                    type: string
+                vars:
+                    type: array
+                    items:
+                        type: string
+                    nullable: true
+            description: Ручка возвращает формулу и параметры
+        requestRegressionRidgeRegression:
+            type: object
+            required:
+                - XData
+                - YData
+                - alpha
+                - tol
+                - normalize
+            properties:
+                XData:
+                    type: array
+                    items:
+                        type: array
+                        items:
+                            type: number
+                            format: float
+                        nullable: true
+                    nullable: true
+                YData:
+                    type: array
+                    items:
+                        type: array
+                        items:
+                            type: number
+                            format: float
+                        nullable: true
+                    nullable: true
+                alpha:
+                    type: number
+                    format: float
+                normalize:
+                    type: boolean
+                tol:
+                    type: number
+                    format: float
+            description: Ручка возвращает формулу и параметры
+        responseRegressionElasticNetRegression:
+            type: object
+            required:
+                - '-'
+            description: Ручка возвращает формулу и параметры
+        responseRegressionLassoRegression:
+            type: object
+            required:
+                - ""
+            properties:
+                "":
+                    oneOf:
+                        - {}
+                        - nullable: true
+            description: Ручка возвращает формулу и параметры
+        responseRegressionMlrRegression:
+            type: object
+            required:
+                - '-'
+            description: Ручка возвращает формулу и параметры
+        responseRegressionRidgeRegression:
+            type: object
+            required:
+                - ""
+            properties:
+                "":
+                    oneOf:
+                        - {}
+                        - nullable: true
+            description: Ручка возвращает формулу и параметры

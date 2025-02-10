@@ -5,7 +5,7 @@ package interfaces
 // @tg backend=regression
 // @tg title=`Regression API`
 //
-//go:generate tg transport --services . --out ../../../internal/transport/jsonRPC/externalapi --outSwagger ../../../swaggers/regression/swagger.yaml
+//go:generate tg transport --services . --out ../../internal/transport/jsonRPC/externalapi --outSwagger ../../swaggers/regression/swagger.yaml
 
 import (
 	"context"
@@ -26,7 +26,7 @@ type Regression interface {
 	// @tg http-method=GET
 	// @tg http-path=/mlr
 	// @tg summary=`Ручка по рассчету MLR регрессии`
-	// @tg http-response=github.com/mbatimel/RegressionAnalysis/internal/transport/custom-handlers:MlrRegression
+	// @tg http-response=github.com/mbatimel/RegressionAnalysis/internal/transport/jsonRPC/custom-handlers:MlrRegression
 	// @tg desc=`Ручка возвращает формулу и параметры`
 	// @tg 400=github.com/mbatimel/RegressionAnalysis/swaggers/externalApi/models:Err400
 	// @tg 200=github.com/mbatimel/RegressionAnalysis/pkg/models:MlrRegressionResp200
@@ -35,7 +35,7 @@ type Regression interface {
 	// @tg http-method=GET
 	// @tg http-path=/ridge
 	// @tg summary=`Ручка по рассчету ridge регрессии`
-	// @tg http-response=github.com/mbatimel/RegressionAnalysis/internal/transport/custom-handlers:RidgeRegression
+	// @tg http-response=github.com/mbatimel/RegressionAnalysis/internal/transport/jsonRPC/custom-handlers:RidgeRegression
 	// @tg desc=`Ручка возвращает формулу и параметры`
 	// @tg 400=github.com/mbatimel/RegressionAnalysis/swaggers/externalApi/models:Err400
 	// @tg 200=github.com/mbatimel/RegressionAnalysis/pkg/models:RidgeRegressionResp200
@@ -44,7 +44,7 @@ type Regression interface {
 	// @tg http-method=GET
 	// @tg http-path=/lasso
 	// @tg summary=`Ручка по рассчету lasso регрессии`
-	// @tg http-response=github.com/mbatimel/RegressionAnalysis/internal/transport/custom-handlers:LassoRegression
+	// @tg http-response=github.com/mbatimel/RegressionAnalysis/internal/transport/jsonRPC/custom-handlers:LassoRegression
 	// @tg desc=`Ручка возвращает формулу и параметры`
 	// @tg 400=github.com/mbatimel/RegressionAnalysis/swaggers/externalApi/models:Err400
 	// @tg 200=github.com/mbatimel/RegressionAnalysis/pkg/models:LassoRegressionResp200
@@ -53,7 +53,7 @@ type Regression interface {
 	// @tg http-method=GET
 	// @tg http-path=/elasticNet
 	// @tg summary=`Ручка по рассчету Elastic Net регрессии`
-	// @tg http-response=github.com/mbatimel/RegressionAnalysis/internal/transport/custom-handlers:ElasticNetRegression
+	// @tg http-response=github.com/mbatimel/RegressionAnalysis/internal/transport/jsonRPC/custom-handlers:ElasticNetRegression
 	// @tg desc=`Ручка возвращает формулу и параметры`
 	// @tg 400=github.com/mbatimel/RegressionAnalysis/swaggers/externalApi/models:Err400
 	// @tg 200=github.com/mbatimel/RegressionAnalysis/pkg/models:ElasticNetRegressionResp200

@@ -1,7 +1,10 @@
 package models
 
 import (
+	"go/types"
+
 	"github.com/mbatimel/RegressionAnalysis/internal/models"
+	"gonum.org/v1/gonum/mat"
 )
 
 type MLRRequest struct {
@@ -49,4 +52,42 @@ type RequestBody struct {
 // ResponseBody структура для выходных данных
 type ResponseBody struct {
 	Accuracy float64 `json:"accuracy"` // Точность
+}
+
+type MlrRegressionResp200 struct {
+	// @tg desc=`массив объектов оплат`
+	Data string `json:"data"`
+	// @tg desc=`Флаг показывающий, что ответ пришел с ошибкой`
+	Error bool `json:"error"`
+	// @tg example=``
+	ErrorText        string    `json:"errorText"`
+	AdditionalErrors types.Nil `json:"additionalErrors"`
+}
+type RidgeRegressionResp200 struct {
+	// @tg desc=`массив объектов оплат`
+	Data *mat.Dense `json:"data"`
+	// @tg desc=`Флаг показывающий, что ответ пришел с ошибкой`
+	Error bool `json:"error"`
+	// @tg example=``
+	ErrorText        string    `json:"errorText"`
+	AdditionalErrors types.Nil `json:"additionalErrors"`
+}
+type LassoRegressionResp200 struct {
+	// @tg desc=`массив объектов оплат`
+	Data *mat.Dense `json:"data"`
+	// @tg desc=`Флаг показывающий, что ответ пришел с ошибкой`
+	Error bool `json:"error"`
+	// @tg example=``
+	ErrorText        string    `json:"errorText"`
+	AdditionalErrors types.Nil `json:"additionalErrors"`
+}
+
+type ElasticNetRegressionResp200 struct {
+	// @tg desc=`массив объектов оплат`
+	Data map[string][]float64 `json:"data"`
+	// @tg desc=`Флаг показывающий, что ответ пришел с ошибкой`
+	Error bool `json:"error"`
+	// @tg example=``
+	ErrorText        string    `json:"errorText"`
+	AdditionalErrors types.Nil `json:"additionalErrors"`
 }

@@ -4,17 +4,25 @@ go 1.23.5
 
 require (
 	github.com/chewxy/math32 v1.11.1
+	github.com/go-redsync/redsync/v4 v4.13.0
 	github.com/gofiber/fiber/v2 v2.52.6
 	github.com/pa-m/optimize v0.0.0-20200711091247-a21c355ec24e
 	github.com/pa-m/randomkit v0.0.0-20191001073902-db4fd80633df
 	github.com/pa-m/sklearn v0.0.0-20200711083454-beb861ee48b1
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.20.5
+	github.com/redis/go-redis/v9 v9.7.0
 	github.com/rs/zerolog v1.33.0
 	github.com/valyala/fasthttp v1.58.0
 	golang.org/x/exp v0.0.0-20250207012021-f9890c6ad9f3
 	gonum.org/v1/gonum v0.15.1
 	gonum.org/v1/plot v0.15.0
+)
+
+require (
+	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
+	github.com/hashicorp/errwrap v1.1.0 // indirect
+	github.com/hashicorp/go-multierror v1.1.1 // indirect
 )
 
 require (
@@ -28,7 +36,7 @@ require (
 	github.com/go-latex/latex v0.0.0-20240709081214-31cef3c7570e // indirect
 	github.com/go-pdf/fpdf v0.9.0 // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
-	github.com/google/uuid v1.6.0 // indirect
+	github.com/google/uuid v1.6.0
 	github.com/klauspost/compress v1.17.11 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
@@ -39,6 +47,7 @@ require (
 	github.com/prometheus/common v0.55.0 // indirect
 	github.com/prometheus/procfs v0.15.1 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
+	github.com/seniorGolang/gokit v1.0.18
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect
 	golang.org/x/image v0.21.0 // indirect
