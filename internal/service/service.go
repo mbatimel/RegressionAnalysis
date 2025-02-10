@@ -10,29 +10,27 @@ import (
 	"gonum.org/v1/gonum/mat"
 )
 
-
-
 func MlrRegression(observer string, vars []string, dataPoints []models.DataPoint) (string, error) {
-    r := new(linearmodel.Regression)
-    r.SetObserved(observer)
-    for i, v := range vars {
-        r.SetVar(i, v)
-    }
-    for _, dp := range dataPoints {
-        linearDP := convertToLinearDataPoint(dp)
-        r.Train(linearDP)
-    }
-    r.Run()
+	r := new(linearmodel.Regression)
+	r.SetObserved(observer)
+	for i, v := range vars {
+		r.SetVar(i, v)
+	}
+	for _, dp := range dataPoints {
+		linearDP := convertToLinearDataPoint(dp)
+		r.Train(linearDP)
+	}
+	r.Run()
 
-    // Вывод результатов (можно заменить на логирование или возврат результата)
- return fmt.Sprintf("Regression formula:\n%v\n", r.Formula), nil
- 
+	// Вывод результатов (можно заменить на логирование или возврат результата)
+	return fmt.Sprintf("Regression formula:\n%v\n", r.Formula), nil
+
 }
 func convertToLinearDataPoint(dp models.DataPoint) *models.DataPoint {
-    return &models.DataPoint{
-        Observed: dp.Observed,
-        Variables:     dp.Variables,
-    }
+	return &models.DataPoint{
+		Observed:  dp.Observed,
+		Variables: dp.Variables,
+	}
 }
 func RidgeRegression(
 	XData [][]float64,
@@ -70,13 +68,14 @@ func RidgeRegression(
 
 	return Ypred, nil
 }
+
 // LassoRegression выполняет регрессию Lasso
 func LassoRegression(
-	XData [][]float64,     // Входные данные (матрица признаков)
-	YData [][]float64,     // Целевые данные (матрица меток)
-	alpha float64,         // Гиперпараметр регуляризации
-	tol float64,           // Допустимая ошибка
-	normalize bool,        // Флаг нормализации данных
+	XData [][]float64, // Входные данные (матрица признаков)
+	YData [][]float64, // Целевые данные (матрица меток)
+	alpha float64, // Гиперпараметр регуляризации
+	tol float64, // Допустимая ошибка
+	normalize bool, // Флаг нормализации данных
 ) (*mat.Dense, error) {
 	// Преобразование данных в матрицы Gonum
 	X := mat.NewDense(len(XData), len(XData[0]), nil)
@@ -111,6 +110,7 @@ func LassoRegression(
 
 	return Ypred, nil
 }
+
 // ElasticNetRegression - функция расчёта
 func ElasticNetRegression(params models.ElasticNetParams) (map[string][]float64, error) {
 	// Генерация данных
@@ -158,19 +158,17 @@ func ElasticNetRegression(params models.ElasticNetParams) (map[string][]float64,
 
 	// Формируем результат
 	result := map[string][]float64{
-		"logalphas": logalphas,
+		"logalphas":   logalphas,
 		"trainErrors": trainErrors,
-		"testErrors": testErrors,
+		"testErrors":  testErrors,
 	}
 
 	return result, nil
 }
 
+func LogisticRegression() {}
 
-func LogisticRegression(){}
-
-
-func BayesRegression(){}
+func BayesRegression() {}
 
 func Newservice() {
 

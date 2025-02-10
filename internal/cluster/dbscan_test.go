@@ -68,7 +68,7 @@ func ExampleDBSCAN() {
 	if *visualDebug {
 
 		// plot result
-		p:= plot.New()
+		p := plot.New()
 		p.Title.Text = fmt.Sprintf("Estimated number of clusters: %d", nclusters)
 		for cl := range labelsmap {
 			var data plotter.XYs

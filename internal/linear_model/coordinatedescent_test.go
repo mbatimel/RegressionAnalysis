@@ -124,7 +124,7 @@ func ExampleElasticNet() {
 	if *visualDebug {
 
 		// plot result
-		p:= plot.New()
+		p := plot.New()
 
 		xys := func(X, Y []float64) plotter.XYs {
 			var data plotter.XYs

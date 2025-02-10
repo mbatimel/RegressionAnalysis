@@ -1,11 +1,13 @@
 package models
+
 import (
 	"github.com/mbatimel/RegressionAnalysis/internal/models"
 )
+
 type MLRRequest struct {
-    Observer   string             `json:"observer"`
-    Variables  []string           `json:"variables"`
-    DataPoints []models.DataPoint 		`json:"data_points"`
+	Observer   string             `json:"observer"`
+	Variables  []string           `json:"variables"`
+	DataPoints []models.DataPoint `json:"data_points"`
 }
 
 // Входная структура для JSON-запроса
@@ -37,15 +39,14 @@ type LassoResponse struct {
 }
 
 type RequestBody struct {
-	Data       [][]float64 `json:"data"`       // Матрица X
-	Classes    []float64   `json:"classes"`    // Классы Y
-	Alpha      float64     `json:"alpha"`      // Скорость обучения
-	MeshStep   float64     `json:"mesh_step"`  // Шаг сетки
-	Visualize  bool        `json:"visualize"`  // Флаг для визуализации
+	Data      [][]float64 `json:"data"`      // Матрица X
+	Classes   []float64   `json:"classes"`   // Классы Y
+	Alpha     float64     `json:"alpha"`     // Скорость обучения
+	MeshStep  float64     `json:"mesh_step"` // Шаг сетки
+	Visualize bool        `json:"visualize"` // Флаг для визуализации
 }
 
 // ResponseBody структура для выходных данных
 type ResponseBody struct {
 	Accuracy float64 `json:"accuracy"` // Точность
 }
-

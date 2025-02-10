@@ -34,8 +34,6 @@ type Regression struct {
 	hasRun            bool
 }
 
-
-
 type describe struct {
 	obs  string
 	vars map[int]string
