@@ -5,6 +5,7 @@ go 1.23.5
 require (
 	github.com/chewxy/math32 v1.11.1
 	github.com/go-redsync/redsync/v4 v4.13.0
+	github.com/gofiber/adaptor/v2 v2.2.1
 	github.com/gofiber/fiber/v2 v2.52.6
 	github.com/pa-m/optimize v0.0.0-20200711091247-a21c355ec24e
 	github.com/pa-m/randomkit v0.0.0-20191001073902-db4fd80633df

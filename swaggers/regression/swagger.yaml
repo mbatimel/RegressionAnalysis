@@ -1,4 +1,7 @@
 openapi: 3.0.0
+info:
+    title: Regression API
+    version: 0.0.1
 servers:
     - {}
 paths:
@@ -16,26 +19,6 @@ paths:
             responses:
                 "200":
                     description: Successful operation
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    additionalErrors: {}
-                                    data:
-                                        type: object
-                                        description: массив объектов оплат
-                                        additionalProperties:
-                                            type: array
-                                            items:
-                                                type: number
-                                                format: float
-                                            nullable: true
-                                    error:
-                                        type: boolean
-                                        description: Флаг показывающий, что ответ пришел с ошибкой
-                                    errorText:
-                                        type: string
                 "400":
                     description: Bad Request
                 "403":
@@ -58,22 +41,6 @@ paths:
             responses:
                 "200":
                     description: Successful operation
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    additionalErrors: {}
-                                    data:
-                                        description: массив объектов оплат
-                                        oneOf:
-                                            - description: массив объектов оплат
-                                            - nullable: true
-                                    error:
-                                        type: boolean
-                                        description: Флаг показывающий, что ответ пришел с ошибкой
-                                    errorText:
-                                        type: string
                 "400":
                     description: Bad Request
                 "403":
@@ -96,20 +63,6 @@ paths:
             responses:
                 "200":
                     description: Successful operation
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    additionalErrors: {}
-                                    data:
-                                        type: string
-                                        description: массив объектов оплат
-                                    error:
-                                        type: boolean
-                                        description: Флаг показывающий, что ответ пришел с ошибкой
-                                    errorText:
-                                        type: string
                 "400":
                     description: Bad Request
                 "403":
@@ -132,22 +85,6 @@ paths:
             responses:
                 "200":
                     description: Successful operation
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    additionalErrors: {}
-                                    data:
-                                        description: массив объектов оплат
-                                        oneOf:
-                                            - description: массив объектов оплат
-                                            - nullable: true
-                                    error:
-                                        type: boolean
-                                        description: Флаг показывающий, что ответ пришел с ошибкой
-                                    errorText:
-                                        type: string
                 "400":
                     description: Bad Request
                 "403":
@@ -297,14 +234,23 @@ components:
         responseRegressionElasticNetRegression:
             type: object
             required:
-                - '-'
+                - formula
+            properties:
+                formula:
+                    type: object
+                    additionalProperties:
+                        type: array
+                        items:
+                            type: number
+                            format: float
+                        nullable: true
             description: Ручка возвращает формулу и параметры
         responseRegressionLassoRegression:
             type: object
             required:
-                - ""
+                - formula
             properties:
-                "":
+                formula:
                     oneOf:
                         - {}
                         - nullable: true
@@ -312,14 +258,17 @@ components:
         responseRegressionMlrRegression:
             type: object
             required:
-                - '-'
+                - formula
+            properties:
+                formula:
+                    type: string
             description: Ручка возвращает формулу и параметры
         responseRegressionRidgeRegression:
             type: object
             required:
-                - ""
+                - formula
             properties:
-                "":
+                formula:
                     oneOf:
                         - {}
                         - nullable: true

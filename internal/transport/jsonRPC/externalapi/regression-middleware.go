@@ -8,10 +8,10 @@ import (
 	"gonum.org/v1/gonum/mat"
 )
 
-type RegressionMlrRegression func(ctx context.Context, observer string, vars []string, dataPoints []models.DataPoint) (string, error)
-type RegressionRidgeRegression func(ctx context.Context, xData [][]float64, yData [][]float64, alpha float64, tol float64, normalize bool) (*mat.Dense, error)
-type RegressionLassoRegression func(ctx context.Context, xData [][]float64, yData [][]float64, alpha float64, tol float64, normalize bool) (*mat.Dense, error)
-type RegressionElasticNetRegression func(ctx context.Context, params models.ElasticNetParams) (map[string][]float64, error)
+type RegressionMlrRegression func(ctx context.Context, observer string, vars []string, dataPoints []models.DataPoint) (formula string, err error)
+type RegressionRidgeRegression func(ctx context.Context, xData [][]float64, yData [][]float64, alpha float64, tol float64, normalize bool) (formula *mat.Dense, err error)
+type RegressionLassoRegression func(ctx context.Context, xData [][]float64, yData [][]float64, alpha float64, tol float64, normalize bool) (formula *mat.Dense, err error)
+type RegressionElasticNetRegression func(ctx context.Context, params models.ElasticNetParams) (formula map[string][]float64, err error)
 
 type MiddlewareRegression func(next interfaces.Regression) interfaces.Regression
 

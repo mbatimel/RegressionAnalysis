@@ -15,8 +15,8 @@ type MLRRequest struct {
 
 // Входная структура для JSON-запроса
 type RidgeRequest struct {
-	XData     [][]float64 `json:"XData"`
-	YData     [][]float64 `json:"YData"`
+	Xdata     [][]float64 `json:"xdata"`
+	Ydata     [][]float64 `json:"ydata"`
 	Alpha     float64     `json:"alpha"`
 	Tol       float64     `json:"tol"`
 	Normalize bool        `json:"normalize"`
@@ -29,8 +29,8 @@ type RidgeResponse struct {
 
 // Входная структура для JSON-запроса
 type LassoRequest struct {
-	XData     [][]float64 `json:"XData"`
-	YData     [][]float64 `json:"YData"`
+	Xdata     [][]float64 `json:"xdata"`
+	Ydata     [][]float64 `json:"ydata"`
 	Alpha     float64     `json:"alpha"`
 	Tol       float64     `json:"tol"`
 	Normalize bool        `json:"normalize"`
@@ -90,4 +90,13 @@ type ElasticNetRegressionResp200 struct {
 	// @tg example=``
 	ErrorText        string    `json:"errorText"`
 	AdditionalErrors types.Nil `json:"additionalErrors"`
+}
+
+type RequestRegressionMlrRegression struct {
+    Observer   string           `json:"observer,omitempty"`
+    Vars       []string         `json:"vars,omitempty"`
+    DataPoints []models.DataPoint `json:"dataPoints,omitempty"`
+}
+type ResponseRegressionMlrRegression struct {
+    Result string `json:"result,omitempty"`
 }

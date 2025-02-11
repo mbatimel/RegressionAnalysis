@@ -45,19 +45,19 @@ func (srv *serverRegression) Wrap(m MiddlewareRegression) {
 	srv.elasticNetRegression = srv.svc.ElasticNetRegression
 }
 
-func (srv *serverRegression) MlrRegression(ctx context.Context, observer string, vars []string, dataPoints []models.DataPoint) (string, error) {
+func (srv *serverRegression) MlrRegression(ctx context.Context, observer string, vars []string, dataPoints []models.DataPoint) (formula string, err error) {
 	return srv.mlrRegression(ctx, observer, vars, dataPoints)
 }
 
-func (srv *serverRegression) RidgeRegression(ctx context.Context, xData [][]float64, yData [][]float64, alpha float64, tol float64, normalize bool) (*mat.Dense, error) {
-	return srv.ridgeRegression(ctx, XData, YData, alpha, tol, normalize)
+func (srv *serverRegression) RidgeRegression(ctx context.Context, xData [][]float64, yData [][]float64, alpha float64, tol float64, normalize bool) (formula *mat.Dense, err error) {
+	return srv.ridgeRegression(ctx, xData, yData, alpha, tol, normalize)
 }
 
-func (srv *serverRegression) LassoRegression(ctx context.Context, xData [][]float64, yData [][]float64, alpha float64, tol float64, normalize bool) (*mat.Dense, error) {
-	return srv.lassoRegression(ctx, XData, YData, alpha, tol, normalize)
+func (srv *serverRegression) LassoRegression(ctx context.Context, xData [][]float64, yData [][]float64, alpha float64, tol float64, normalize bool) (formula *mat.Dense, err error) {
+	return srv.lassoRegression(ctx, xData, yData, alpha, tol, normalize)
 }
 
-func (srv *serverRegression) ElasticNetRegression(ctx context.Context, params models.ElasticNetParams) (map[string][]float64, error) {
+func (srv *serverRegression) ElasticNetRegression(ctx context.Context, params models.ElasticNetParams) (formula map[string][]float64, err error) {
 	return srv.elasticNetRegression(ctx, params)
 }
 

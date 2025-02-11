@@ -19,7 +19,7 @@ func metricsMiddlewareRegression(next interfaces.Regression) interfaces.Regressi
 	return &metricsRegression{next: next}
 }
 
-func (m metricsRegression) MlrRegression(ctx context.Context, observer string, vars []string, dataPoints []models.DataPoint) (string, error) {
+func (m metricsRegression) MlrRegression(ctx context.Context, observer string, vars []string, dataPoints []models.DataPoint) (formula string, err error) {
 
 	defer func(_begin time.Time) {
 		var (
@@ -42,7 +42,7 @@ func (m metricsRegression) MlrRegression(ctx context.Context, observer string, v
 	return m.next.MlrRegression(ctx, observer, vars, dataPoints)
 }
 
-func (m metricsRegression) RidgeRegression(ctx context.Context, xData [][]float64, yData [][]float64, alpha float64, tol float64, normalize bool) (*mat.Dense, error) {
+func (m metricsRegression) RidgeRegression(ctx context.Context, xData [][]float64, yData [][]float64, alpha float64, tol float64, normalize bool) (formula *mat.Dense, err error) {
 
 	defer func(_begin time.Time) {
 		var (
@@ -65,7 +65,7 @@ func (m metricsRegression) RidgeRegression(ctx context.Context, xData [][]float6
 	return m.next.RidgeRegression(ctx, xData, yData, alpha, tol, normalize)
 }
 
-func (m metricsRegression) LassoRegression(ctx context.Context, xData [][]float64, yData [][]float64, alpha float64, tol float64, normalize bool) (*mat.Dense, error) {
+func (m metricsRegression) LassoRegression(ctx context.Context, xData [][]float64, yData [][]float64, alpha float64, tol float64, normalize bool) (formula *mat.Dense, err error) {
 
 	defer func(_begin time.Time) {
 		var (
@@ -88,7 +88,7 @@ func (m metricsRegression) LassoRegression(ctx context.Context, xData [][]float6
 	return m.next.LassoRegression(ctx, xData, yData, alpha, tol, normalize)
 }
 
-func (m metricsRegression) ElasticNetRegression(ctx context.Context, params models.ElasticNetParams) (map[string][]float64, error) {
+func (m metricsRegression) ElasticNetRegression(ctx context.Context, params models.ElasticNetParams) (formula map[string][]float64, err error) {
 
 	defer func(_begin time.Time) {
 		var (

@@ -12,7 +12,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-const ServiceName = "Regression"
+const serviceName = "Regression"
 
 func MlrRegression(ctx *fiber.Ctx, svc regression.Regression, observer string, vars []string, dataPoints []models.DataPoint) error {
 	var (
@@ -28,7 +28,7 @@ func MlrRegression(ctx *fiber.Ctx, svc regression.Regression, observer string, v
 			"observer":   observer,
 			"vars":       vars,
 			"dataPoints": dataPoints,
-			"service":    ServiceName,
+			"service":    serviceName,
 			"took":       time.Since(begin).String(),
 		}
 		l := log.Info()
@@ -42,7 +42,7 @@ func MlrRegression(ctx *fiber.Ctx, svc regression.Regression, observer string, v
 		l.Fields(fields).Msg("call")
 
 		metrics.RequestLatency.WithLabelValues(
-			ServiceName,
+			serviceName,
 			methodName,
 			fmt.Sprint(err == nil),
 		).Observe(time.Since(begin).Seconds())
@@ -50,7 +50,7 @@ func MlrRegression(ctx *fiber.Ctx, svc regression.Regression, observer string, v
 
 	defer func() {
 		metrics.HttpCollector.WithLabelValues(
-			ServiceName,
+			serviceName,
 			methodName,
 			fmt.Sprint(err == nil),
 		).Add(1)
@@ -83,7 +83,7 @@ func RidgeRegression(ctx *fiber.Ctx, svc regression.Regression, XData [][]float6
 			"alpha":       alpha,
 			"tol":         tol,
 			"norma;ize":   normalize,
-			"service":     ServiceName,
+			"service":     serviceName,
 			"took":        time.Since(begin).String(),
 		}
 		l := log.Info()
@@ -97,7 +97,7 @@ func RidgeRegression(ctx *fiber.Ctx, svc regression.Regression, XData [][]float6
 		l.Fields(fields).Msg("call")
 
 		metrics.RequestLatency.WithLabelValues(
-			ServiceName,
+			serviceName,
 			methodName,
 			fmt.Sprint(err == nil),
 		).Observe(time.Since(begin).Seconds())
@@ -105,7 +105,7 @@ func RidgeRegression(ctx *fiber.Ctx, svc regression.Regression, XData [][]float6
 
 	defer func() {
 		metrics.HttpCollector.WithLabelValues(
-			ServiceName,
+			serviceName,
 			methodName,
 			fmt.Sprint(err == nil),
 		).Add(1)
@@ -138,7 +138,7 @@ func LassoRegression(ctx *fiber.Ctx, svc regression.Regression, XData [][]float6
 			"alpha":       alpha,
 			"tol":         tol,
 			"norma;ize":   normalize,
-			"service":     ServiceName,
+			"service":     serviceName,
 			"took":        time.Since(begin).String(),
 		}
 		l := log.Info()
@@ -152,7 +152,7 @@ func LassoRegression(ctx *fiber.Ctx, svc regression.Regression, XData [][]float6
 		l.Fields(fields).Msg("call")
 
 		metrics.RequestLatency.WithLabelValues(
-			ServiceName,
+			serviceName,
 			methodName,
 			fmt.Sprint(err == nil),
 		).Observe(time.Since(begin).Seconds())
@@ -160,7 +160,7 @@ func LassoRegression(ctx *fiber.Ctx, svc regression.Regression, XData [][]float6
 
 	defer func() {
 		metrics.HttpCollector.WithLabelValues(
-			ServiceName,
+			serviceName,
 			methodName,
 			fmt.Sprint(err == nil),
 		).Add(1)
@@ -189,7 +189,7 @@ func ElasticNetRegression(ctx *fiber.Ctx, svc regression.Regression, params mode
 			"path":        "/lasso",
 			"handlerName": methodName,
 			"params":      params,
-			"service":     ServiceName,
+			"service":     serviceName,
 			"took":        time.Since(begin).String(),
 		}
 		l := log.Info()
@@ -203,7 +203,7 @@ func ElasticNetRegression(ctx *fiber.Ctx, svc regression.Regression, params mode
 		l.Fields(fields).Msg("call")
 
 		metrics.RequestLatency.WithLabelValues(
-			ServiceName,
+			serviceName,
 			methodName,
 			fmt.Sprint(err == nil),
 		).Observe(time.Since(begin).Seconds())
@@ -211,7 +211,7 @@ func ElasticNetRegression(ctx *fiber.Ctx, svc regression.Regression, params mode
 
 	defer func() {
 		metrics.HttpCollector.WithLabelValues(
-			ServiceName,
+			serviceName,
 			methodName,
 			fmt.Sprint(err == nil),
 		).Add(1)
