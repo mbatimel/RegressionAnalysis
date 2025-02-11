@@ -93,10 +93,10 @@ type ElasticNetRegressionResp200 struct {
 }
 
 type RequestRegressionMlrRegression struct {
-    Observer   string           `json:"observer,omitempty"`
-    Vars       []string         `json:"vars,omitempty"`
-    DataPoints []models.DataPoint `json:"dataPoints,omitempty"`
+	Observer   string             `json:"observer,omitempty"`
+	Vars       []string           `json:"vars,omitempty"`
+	DataPoints []models.DataPoint `json:"dataPoints,omitempty"`
 }
 type ResponseRegressionMlrRegression struct {
-    Result string `json:"result,omitempty"`
+	Result string `json:"result,omitempty"`
 }

@@ -1,16 +1,24 @@
 package service
 
 import (
+	"context"
 	"fmt"
 	"math"
 
 	linearmodel "github.com/mbatimel/RegressionAnalysis/internal/linear_model"
+
+	externalApi "github.com/mbatimel/RegressionAnalysis/internal/interfaces"
 	"github.com/mbatimel/RegressionAnalysis/internal/models"
+	"github.com/rs/zerolog"
 	"golang.org/x/exp/rand"
 	"gonum.org/v1/gonum/mat"
 )
 
-func MlrRegression(observer string, vars []string, dataPoints []models.DataPoint) (string, error) {
+type regressionService struct {
+	logger zerolog.Logger
+}
+
+func (rs *regressionService) MlrRegression(ctx context.Context, observer string, vars []string, dataPoints []models.DataPoint) (string, error) {
 	r := new(linearmodel.Regression)
 	r.SetObserved(observer)
 	for i, v := range vars {
@@ -32,7 +40,8 @@ func convertToLinearDataPoint(dp models.DataPoint) *models.DataPoint {
 		Variables: dp.Variables,
 	}
 }
-func RidgeRegression(
+func (rs *regressionService) RidgeRegression(
+	ctx context.Context,
 	XData [][]float64,
 	YData [][]float64,
 	alpha float64,
@@ -70,7 +79,8 @@ func RidgeRegression(
 }
 
 // LassoRegression выполняет регрессию Lasso
-func LassoRegression(
+func (rs *regressionService) LassoRegression(
+	ctx context.Context,
 	XData [][]float64, // Входные данные (матрица признаков)
 	YData [][]float64, // Целевые данные (матрица меток)
 	alpha float64, // Гиперпараметр регуляризации
@@ -112,7 +122,7 @@ func LassoRegression(
 }
 
 // ElasticNetRegression - функция расчёта
-func ElasticNetRegression(params models.ElasticNetParams) (map[string][]float64, error) {
+func (rs *regressionService) ElasticNetRegression(ctx context.Context, params models.ElasticNetParams) (map[string][]float64, error) {
 	// Генерация данных
 	rand.Seed(0)
 	coef := mat.NewDense(params.NFeatures, 1, nil)
@@ -166,10 +176,8 @@ func ElasticNetRegression(params models.ElasticNetParams) (map[string][]float64,
 	return result, nil
 }
 
-func LogisticRegression() {}
-
-func BayesRegression() {}
-
-func Newservice() {
-
+func Newservice(logger zerolog.Logger) externalApi.Regression {
+	return &regressionService{
+		logger: logger,
+	}
 }
