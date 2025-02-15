@@ -3,7 +3,7 @@ package externalapi
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"github.com/mbatimel/RegressionAnalysis/internal/interfaces"
+	"github.com/mbatimel/RegressionAnalysis/pkg/interfaces"
 )
 
 type httpRegression struct {

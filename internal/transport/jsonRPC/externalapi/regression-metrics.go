@@ -4,8 +4,8 @@ package externalapi
 import (
 	"context"
 	v2 "github.com/gofiber/fiber/v2"
-	"github.com/mbatimel/RegressionAnalysis/internal/interfaces"
 	"github.com/mbatimel/RegressionAnalysis/internal/models"
+	"github.com/mbatimel/RegressionAnalysis/pkg/interfaces"
 	"gonum.org/v1/gonum/mat"
 	"strconv"
 	"time"

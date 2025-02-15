@@ -7,7 +7,7 @@ import (
 
 	linearmodel "github.com/mbatimel/RegressionAnalysis/internal/linear_model"
 
-	externalApi "github.com/mbatimel/RegressionAnalysis/internal/interfaces"
+	externalApi "github.com/mbatimel/RegressionAnalysis/pkg/interfaces"
 	"github.com/mbatimel/RegressionAnalysis/internal/models"
 	"github.com/rs/zerolog"
 	"golang.org/x/exp/rand"

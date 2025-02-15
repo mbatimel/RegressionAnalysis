@@ -3,7 +3,7 @@
 
 
 ДЛЯ MLR
-curl -X POST http://localhost:8080/mlr \
+curl -X GET http://localhost:9000/api/v1/mlr \
 -H "Content-Type: application/json" \
 -d '{
     "observer": "Murders per annum per 1,000,000 inhabitants",
@@ -17,7 +17,7 @@ curl -X POST http://localhost:8080/mlr \
 
 
 Ridge
-curl -X POST http://localhost:8080/ridge \
+curl -X GET http://localhost:9000/api/v1/ridge \
 -H "Content-Type: application/json" \
 -d '{
   "XData": [[0, 0], [1, 1], [2, 2]],
@@ -38,7 +38,7 @@ curl -X POST http://localhost:8080/ridge \
 
 
 
-curl -X POST http://localhost:8080/lasso \
+curl -X GET http://localhost:9000/api/v1/lasso \
 -H "Content-Type: application/json" \
 -d '{
   "XData": [[0, 0], [1, 1], [2, 2]],
@@ -60,7 +60,7 @@ curl -X POST http://localhost:8080/lasso \
 
 
 elasticnet
-curl -X POST http://localhost:8080/elasticnet \
+curl -X GET http://localhost:9000/api/v1/elasticnet \
   -H "Content-Type: application/json" \
   -d '{
     "n_samples_train": 75,

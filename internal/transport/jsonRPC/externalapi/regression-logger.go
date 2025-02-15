@@ -3,9 +3,9 @@ package externalapi
 
 import (
 	"context"
-	"github.com/mbatimel/RegressionAnalysis/internal/interfaces"
 	"github.com/mbatimel/RegressionAnalysis/internal/models"
 	"github.com/mbatimel/RegressionAnalysis/internal/transport/jsonRPC/externalapi/viewer"
+	"github.com/mbatimel/RegressionAnalysis/pkg/interfaces"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"gonum.org/v1/gonum/mat"

@@ -3,8 +3,8 @@ package externalapi
 
 import (
 	"context"
-	"github.com/mbatimel/RegressionAnalysis/internal/interfaces"
 	"github.com/mbatimel/RegressionAnalysis/internal/models"
+	"github.com/mbatimel/RegressionAnalysis/pkg/interfaces"
 	"gonum.org/v1/gonum/mat"
 )
 
