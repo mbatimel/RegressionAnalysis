@@ -5,7 +5,7 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/pa-m/sklearn/base"
+	"github.com/mbatimel/RegressionAnalysis/internal/base"
 	"gonum.org/v1/gonum/mat"
 )
 

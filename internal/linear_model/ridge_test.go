@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/pa-m/sklearn/metrics"
+	"github.com/mbatimel/RegressionAnalysis/internal/metrics"
 	"gonum.org/v1/gonum/mat"
 )
 

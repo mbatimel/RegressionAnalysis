@@ -9,11 +9,11 @@ import (
 
 	"gonum.org/v1/gonum/floats"
 
-	"github.com/pa-m/sklearn/metrics"
+	"github.com/mbatimel/RegressionAnalysis/internal/metrics"
 
-	"github.com/pa-m/sklearn/preprocessing"
+	"github.com/mbatimel/RegressionAnalysis/internal/preprocessing"
 
-	"github.com/pa-m/sklearn/base"
+	"github.com/mbatimel/RegressionAnalysis/internal/base"
 	"gonum.org/v1/gonum/mat"
 
 	"gonum.org/v1/gonum/blas/blas64"

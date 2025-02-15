@@ -3,8 +3,8 @@ package neighbors
 import (
 	"runtime"
 
-	"github.com/pa-m/sklearn/base"
-	"github.com/pa-m/sklearn/metrics"
+	"github.com/mbatimel/RegressionAnalysis/internal/base"
+	"github.com/mbatimel/RegressionAnalysis/internal/metrics"
 
 	"gonum.org/v1/gonum/mat"
 	"gonum.org/v1/gonum/stat"

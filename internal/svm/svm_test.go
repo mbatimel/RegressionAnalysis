@@ -8,8 +8,8 @@ import (
 	"os/exec"
 	"time"
 
-	"github.com/pa-m/sklearn/metrics"
-	"github.com/pa-m/sklearn/preprocessing"
+	"github.com/mbatimel/RegressionAnalysis/internal/metrics"
+	"github.com/mbatimel/RegressionAnalysis/internal/preprocessing"
 	"gonum.org/v1/gonum/mat"
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/plotter"

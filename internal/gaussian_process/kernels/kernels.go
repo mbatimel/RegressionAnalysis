@@ -2,14 +2,14 @@ package kernels
 
 import (
 	"fmt"
-	"github.com/pa-m/sklearn/base"
+	"github.com/mbatimel/RegressionAnalysis/internal/base"
 	"math"
 
 	"gonum.org/v1/gonum/floats"
 
 	"gonum.org/v1/gonum/mat"
 	//t "gorgonia.org/tensor"
-	t "github.com/pa-m/sklearn/gaussian_process/tensor"
+	t "github.com/mbatimel/RegressionAnalysis/internal/gaussian_process/tensor"
 )
 
 // hyperparameter specification

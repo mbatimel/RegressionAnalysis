@@ -7,8 +7,8 @@ import (
 
 	linearmodel "github.com/mbatimel/RegressionAnalysis/internal/linear_model"
 
-	externalApi "github.com/mbatimel/RegressionAnalysis/pkg/interfaces"
 	"github.com/mbatimel/RegressionAnalysis/internal/models"
+	externalApi "github.com/mbatimel/RegressionAnalysis/pkg/interfaces"
 	"github.com/rs/zerolog"
 	"golang.org/x/exp/rand"
 	"gonum.org/v1/gonum/mat"

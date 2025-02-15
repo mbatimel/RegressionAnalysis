@@ -12,7 +12,7 @@ import (
 
 	"github.com/pa-m/randomkit"
 	//"gorgonia.org/tensor"
-	"github.com/pa-m/sklearn/gaussian_process/tensor"
+	"github.com/mbatimel/RegressionAnalysis/internal/gaussian_process/tensor"
 )
 
 var _ = []Kernel{&ConstantKernel{}, &WhiteKernel{}, &RBF{}, &DotProduct{}, &Sum{}, &Product{}, &Exponentiation{}}

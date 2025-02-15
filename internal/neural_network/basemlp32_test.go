@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/pa-m/sklearn/base"
-	"github.com/pa-m/sklearn/datasets"
+	"github.com/mbatimel/RegressionAnalysis/internal/base"
+	"github.com/mbatimel/RegressionAnalysis/internal/datasets"
 )
 
 func ExampleBaseMultilayerPerceptron32_Fit_mnist() {

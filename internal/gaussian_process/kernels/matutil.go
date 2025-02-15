@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"gonum.org/v1/gonum/mat"
 	//"gorgonia.org/tensor"
-	"github.com/pa-m/sklearn/gaussian_process/tensor"
+	"github.com/mbatimel/RegressionAnalysis/internal/gaussian_process/tensor"
 	"math"
 )
 

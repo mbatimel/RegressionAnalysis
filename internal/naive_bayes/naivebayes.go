@@ -2,13 +2,14 @@ package naivebayes
 
 import (
 	"fmt"
-	"github.com/pa-m/sklearn/base"
-	"github.com/pa-m/sklearn/metrics"
-	"gonum.org/v1/gonum/floats"
-	"gonum.org/v1/gonum/mat"
 	"math"
 	"runtime"
 	"sort"
+
+	"github.com/mbatimel/RegressionAnalysis/internal/base"
+	"github.com/mbatimel/RegressionAnalysis/internal/metrics"
+	"gonum.org/v1/gonum/floats"
+	"gonum.org/v1/gonum/mat"
 )
 
 var _ base.Fiter = &GaussianNB{}

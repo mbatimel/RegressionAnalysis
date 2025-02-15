@@ -7,8 +7,8 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/mbatimel/RegressionAnalysis/internal/config"
 	"github.com/mbatimel/RegressionAnalysis/internal/errors"
-	regression "github.com/mbatimel/RegressionAnalysis/pkg/interfaces"
 	"github.com/mbatimel/RegressionAnalysis/internal/models"
+	regression "github.com/mbatimel/RegressionAnalysis/pkg/interfaces"
 	"github.com/rs/zerolog/log"
 )
 
