@@ -7,8 +7,8 @@ type Matrix struct {
 }
 
 type DataPoint struct {
-	Observed  float64
-	Variables []float64
+	Observed  float64 `json:"obs,omitempty"`
+	Variables []float64 `json:"vares,omitempty"`
 	Predicted float64
 	Error     float64
 }

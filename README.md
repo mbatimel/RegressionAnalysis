@@ -7,11 +7,11 @@ curl -X GET http://localhost:9000/api/v1/mlr \
 -H "Content-Type: application/json" \
 -d '{
     "observer": "Murders per annum per 1,000,000 inhabitants",
-    "variables": ["Inhabitants", "Percent with incomes below $5000", "Percent unemployed"],
-    "data_points": [
-        {"observed": 11.2, "vars": [587000, 16.5, 6.2]},
-        {"observed": 13.4, "vars": [643000, 20.5, 6.4]},
-        {"observed": 40.7, "vars": [635000, 26.3, 9.3]}
+    "vars": ["Inhabitants", "Percent with incomes below $5000", "Percent unemployed"],
+    "dataPoints": [
+        {"obs": 11.2, "vares": [587000, 16.5, 6.2]},
+        {"obs": 13.4, "vares": [643000, 20.5, 6.4]},
+        {"obs": 40.7, "vares": [635000, 26.3, 9.3]}
     ]
 }'
 
@@ -49,23 +49,17 @@ curl -X GET http://localhost:9000/api/v1/lasso \
 }'
 
 
-{
-  "YPred": [
-    [0.1, 0.1],
-    [1.0, 1.0],
-    [1.9, 1.9]
-  ]
-}
-
 
 
 elasticnet
 curl -X GET http://localhost:9000/api/v1/elasticnet \
   -H "Content-Type: application/json" \
   -d '{
+    "params":{
     "n_samples_train": 75,
     "n_samples_test": 150,
     "n_features": 500,
     "l1_ratio": 0.7,
     "n_alphas": 20
+    }
   }'

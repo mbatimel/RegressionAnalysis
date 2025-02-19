@@ -101,13 +101,13 @@ components:
                 Error:
                     type: number
                     format: float
-                Observed:
-                    type: number
-                    format: float
                 Predicted:
                     type: number
                     format: float
-                Variables:
+                obs:
+                    type: number
+                    format: float
+                vares:
                     type: array
                     items:
                         type: number

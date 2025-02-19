@@ -26,6 +26,7 @@ func (rs *regressionService) MlrRegression(ctx context.Context, observer string,
 	}
 	for _, dp := range dataPoints {
 		linearDP := convertToLinearDataPoint(dp)
+
 		r.Train(linearDP)
 	}
 	r.Run()
