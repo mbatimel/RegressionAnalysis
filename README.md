@@ -24,7 +24,7 @@ curl -X GET http://localhost:9000/api/v1/ridge \
 -d '{
   "XData": [[0, 0], [1, 1], [2, 2]],
   "YData": [[0, 0], [1, 1], [2, 2]],
-  "alpha": 1.0,
+  "alpha": 1,
   "tol": 0.001,
   "normalize": false
 }'

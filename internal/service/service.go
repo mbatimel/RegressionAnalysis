@@ -62,10 +62,7 @@ func (rs *regressionService) RidgeRegression(
 	regr.Tol = tol
 	regr.Normalize = normalize
 
-	err := regr.Fit(X, Y)
-	if err != nil {
-		return nil, fmt.Errorf("ошибка обучения модели: %v", err)
-	}
+	regr.Fit(X, Y)
 
 	Ypred := mat.NewDense(len(YData), len(YData[0]), nil)
 	regr.Predict(X, Ypred)
@@ -102,12 +99,8 @@ func (rs *regressionService) LassoRegression(
 	regr.Alpha = alpha
 	regr.Tol = tol
 	regr.Normalize = normalize
+	regr.Fit(X, Y)
 
-	// Обучаем модель
-	err := regr.Fit(X, Y)
-	if err != nil {
-		return nil, fmt.Errorf("ошибка обучения модели: %v", err)
-	}
 
 	// Делаем предсказания
 	Ypred := mat.NewDense(len(YData), len(YData[0]), nil)
