@@ -13,6 +13,7 @@ import (
 
 func TestRidge(t *testing.T) {
 	nSamples, nFeatures, nOutputs := 200, 2, 2
+	
 	randmat := func(m, n int) *mat.Dense {
 		M := mat.NewDense(m, n, nil)
 		M.Apply(func(_, _ int, _ float64) float64 { return rand.Float64() }, M)
