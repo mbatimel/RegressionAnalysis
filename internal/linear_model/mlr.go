@@ -3,6 +3,7 @@ package linearmodel
 import (
 	"errors"
 	"fmt"
+	"github.com/rs/zerolog/log"
 	"math"
 	"strconv"
 	"strings"
@@ -121,9 +122,11 @@ func (r *Regression) applyCrosses() {
 	if len(r.names.vars) == 0 {
 		r.names.vars = make(map[int]string, 5)
 	}
+
 	for _, cross := range r.crosses {
 		unusedVariableIndexCursor += cross.ExtendNames(r.names.vars, unusedVariableIndexCursor)
 	}
+
 }
 
 // Run determines if there is enough data present to run the regression
@@ -137,10 +140,12 @@ func (r *Regression) Run() error {
 	if r.hasRun {
 		return ErrRegressionRun
 	}
+	log.Info().Msg("Starting MLR regression")
 
 	//apply any features crosses
 	r.applyCrosses()
 	r.hasRun = true
+	log.Info().Msg("apply any features crosses")
 
 	observations := len(r.data)
 	numOfvars := len(r.data[0].Variables)
@@ -148,7 +153,7 @@ func (r *Regression) Run() error {
 	if observations < (numOfvars + 1) {
 		return ErrTooManyVars
 	}
-
+	log.Info().Msg("checking vars")
 	// Create some blank variable space
 	observed := mat.NewDense(observations, 1, nil)
 	variables := mat.NewDense(observations, numOfvars+1, nil)
@@ -163,6 +168,7 @@ func (r *Regression) Run() error {
 			}
 		}
 	}
+	log.Info().Msg("set variables")
 
 	// Now run the regression
 	_, n := variables.Dims() // cols
@@ -172,6 +178,7 @@ func (r *Regression) Run() error {
 	reg := new(mat.Dense)
 	qr.QTo(q)
 	qr.RTo(reg)
+	log.Info().Msg("factirize")
 
 	qtr := q.T()
 	qty := new(mat.Dense)
@@ -185,6 +192,7 @@ func (r *Regression) Run() error {
 		}
 		c[i] /= reg.At(i, i)
 	}
+	log.Info().Msg("At")
 
 	// Output the regression results
 	r.coeff = make(map[int]float64, numOfvars)
@@ -196,10 +204,14 @@ func (r *Regression) Run() error {
 			r.Formula += fmt.Sprintf(" + %v*%.4f", r.GetVar(i-1), val)
 		}
 	}
+	log.Info().Msg("Ountput result")
 
 	r.calcPredicted()
+	log.Info().Msg("calcPredicted")
 	r.calcVariance()
+	log.Info().Msg("calcVariance")
 	r.calcR2()
+	log.Info().Msg("calcR2")
 	return nil
 }
 

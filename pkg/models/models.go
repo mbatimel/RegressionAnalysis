@@ -10,7 +10,7 @@ import (
 type MLRRequest struct {
 	Observer   string             `json:"observer"`
 	Variables  []string           `json:"variables"`
-	DataPoints []models.DataPoint `json:"data_points"`
+	DataPoints []models.DataPoint `json:"dataPoints"`
 }
 
 // Входная структура для JSON-запроса

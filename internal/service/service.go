@@ -25,22 +25,16 @@ func (rs *regressionService) MlrRegression(ctx context.Context, observer string,
 		r.SetVar(i, v)
 	}
 	for _, dp := range dataPoints {
-		linearDP := convertToLinearDataPoint(dp)
-
-		r.Train(linearDP)
+		r.Train(linearmodel.DataPoint(dp.Observed, dp.Variables))
 	}
-	r.Run()
-
+	if err := r.Run(); err != nil {
+		return "", fmt.Errorf("failed to train model: %w", err)
+	}
 	// Вывод результатов (можно заменить на логирование или возврат результата)
-	return fmt.Sprintf("Regression formula:\n%v\n", r.Formula), nil
+	return fmt.Sprintf("Regression formula:%v", r.Formula), nil
 
 }
-func convertToLinearDataPoint(dp models.DataPoint) *models.DataPoint {
-	return &models.DataPoint{
-		Observed:  dp.Observed,
-		Variables: dp.Variables,
-	}
-}
+
 func (rs *regressionService) RidgeRegression(
 	ctx context.Context,
 	XData [][]float64,

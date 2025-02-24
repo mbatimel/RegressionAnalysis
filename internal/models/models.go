@@ -7,10 +7,10 @@ type Matrix struct {
 }
 
 type DataPoint struct {
-	Observed  float64 `json:"obs,omitempty"`
+	Observed  float64   `json:"obs,omitempty"`
 	Variables []float64 `json:"vares,omitempty"`
-	Predicted float64
-	Error     float64
+	Predicted float64   `json:"pred,omitempty"`
+	Error     float64   `json:"err"`
 }
 
 // ElasticNetParams - структура для входных данных API
