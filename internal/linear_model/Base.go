@@ -13,8 +13,8 @@ import (
 	"math"
 	"runtime"
 
+	"github.com/rs/zerolog/log"
 	"golang.org/x/exp/rand"
-
 	"gonum.org/v1/gonum/mat"
 	"gonum.org/v1/gonum/optimize"
 )
@@ -134,6 +134,7 @@ func (regr *LinearRegression) Predict(X mat.Matrix, Ymutable mat.Mutable) *mat.D
 	Y := base.ToDense(Ymutable)
 	nSamples, _ := X.Dims()
 	if Y.IsEmpty() {
+		log.Info().Msg("y is empty")
 		*Y = *mat.NewDense(nSamples, regr.GetNOutputs(), nil)
 	}
 	regr.DecisionFunction(X, Y)

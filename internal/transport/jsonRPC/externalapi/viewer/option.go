@@ -23,15 +23,14 @@ func hide(formula string) option {
 	return func(bytes []byte) (view []byte) {
 
 		var f, t int64
-		switch {
-		case formula == "fh":
+		if formula == "fh" {
 			t = int64(len(bytes) / 2)
-		case formula == "lh":
+		} else if formula == "lh" {
 			f = int64(len(bytes) / 2)
-		case formula == "md":
+		} else if formula == "md" {
 			f = int64(len(bytes) / 3)
 			t = int64(len(bytes) - len(bytes)/3)
-		case strings.Contains(formula, ":"):
+		} else if strings.Contains(formula, ":") {
 			params := strings.Split(formula, ":")
 			if len(params) == 2 {
 				f, _ = strconv.ParseInt(params[0], 10, 32)

@@ -8,7 +8,6 @@ import (
 	"github.com/mbatimel/RegressionAnalysis/pkg/interfaces"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	"gonum.org/v1/gonum/mat"
 	"time"
 )
 
@@ -46,7 +45,7 @@ func (m loggerRegression) MlrRegression(ctx context.Context, observer string, va
 	return m.next.MlrRegression(ctx, observer, vars, dataPoints)
 }
 
-func (m loggerRegression) RidgeRegression(ctx context.Context, xData [][]float64, yData [][]float64, alpha float64, tol float64, normalize bool) (formula *mat.Dense, err error) {
+func (m loggerRegression) RidgeRegression(ctx context.Context, xData [][]float64, yData [][]float64, alpha float64, tol float64, normalize bool) (formula string, err error) {
 	logger := log.Ctx(ctx).With().Str("service", "Regression").Str("method", "ridgeRegression").Logger()
 	defer func(_begin time.Time) {
 		logHandle := func(ev *zerolog.Event) {
@@ -72,7 +71,7 @@ func (m loggerRegression) RidgeRegression(ctx context.Context, xData [][]float64
 	return m.next.RidgeRegression(ctx, xData, yData, alpha, tol, normalize)
 }
 
-func (m loggerRegression) LassoRegression(ctx context.Context, xData [][]float64, yData [][]float64, alpha float64, tol float64, normalize bool) (formula *mat.Dense, err error) {
+func (m loggerRegression) LassoRegression(ctx context.Context, xData [][]float64, yData [][]float64, alpha float64, tol float64, normalize bool) (formula string, err error) {
 	logger := log.Ctx(ctx).With().Str("service", "Regression").Str("method", "lassoRegression").Logger()
 	defer func(_begin time.Time) {
 		logHandle := func(ev *zerolog.Event) {

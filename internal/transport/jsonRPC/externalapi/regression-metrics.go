@@ -6,7 +6,6 @@ import (
 	v2 "github.com/gofiber/fiber/v2"
 	"github.com/mbatimel/RegressionAnalysis/internal/models"
 	"github.com/mbatimel/RegressionAnalysis/pkg/interfaces"
-	"gonum.org/v1/gonum/mat"
 	"strconv"
 	"time"
 )
@@ -42,7 +41,7 @@ func (m metricsRegression) MlrRegression(ctx context.Context, observer string, v
 	return m.next.MlrRegression(ctx, observer, vars, dataPoints)
 }
 
-func (m metricsRegression) RidgeRegression(ctx context.Context, xData [][]float64, yData [][]float64, alpha float64, tol float64, normalize bool) (formula *mat.Dense, err error) {
+func (m metricsRegression) RidgeRegression(ctx context.Context, xData [][]float64, yData [][]float64, alpha float64, tol float64, normalize bool) (formula string, err error) {
 
 	defer func(_begin time.Time) {
 		var (
@@ -65,7 +64,7 @@ func (m metricsRegression) RidgeRegression(ctx context.Context, xData [][]float6
 	return m.next.RidgeRegression(ctx, xData, yData, alpha, tol, normalize)
 }
 
-func (m metricsRegression) LassoRegression(ctx context.Context, xData [][]float64, yData [][]float64, alpha float64, tol float64, normalize bool) (formula *mat.Dense, err error) {
+func (m metricsRegression) LassoRegression(ctx context.Context, xData [][]float64, yData [][]float64, alpha float64, tol float64, normalize bool) (formula string, err error) {
 
 	defer func(_begin time.Time) {
 		var (

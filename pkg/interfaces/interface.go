@@ -10,7 +10,6 @@ import (
 	"context"
 
 	"github.com/mbatimel/RegressionAnalysis/internal/models"
-	"gonum.org/v1/gonum/mat"
 )
 
 // regression
@@ -39,7 +38,7 @@ type Regression interface {
 	// @tg desc=`Ручка возвращает формулу и параметры`
 	// @tg 400=github.com/mbatimel/RegressionAnalysis/swaggers/externalApi/models:Err400
 	// @tg 200=github.com/mbatimel/RegressionAnalysis/pkg/models:RidgeRegressionResp200
-	RidgeRegression(ctx context.Context, XData [][]float64, YData [][]float64, alpha float64, tol float64, normalize bool) (formula *mat.Dense, err error)
+	RidgeRegression(ctx context.Context, XData [][]float64, YData [][]float64, alpha float64, tol float64, normalize bool) (formula string, err error)
 	//
 	// LassoRegression ...
 	// @tg http-method=GET
@@ -49,7 +48,7 @@ type Regression interface {
 	// @tg desc=`Ручка возвращает формулу и параметры`
 	// @tg 400=github.com/mbatimel/RegressionAnalysis/swaggers/externalApi/models:Err400
 	// @tg 200=github.com/mbatimel/RegressionAnalysis/pkg/models:LassoRegressionResp200
-	LassoRegression(ctx context.Context, XData [][]float64, YData [][]float64, alpha float64, tol float64, normalize bool) (formula *mat.Dense, err error)
+	LassoRegression(ctx context.Context, XData [][]float64, YData [][]float64, alpha float64, tol float64, normalize bool) (formula string, err error)
 	//
 	// ElasticNetRegression ...
 	// @tg http-method=GET

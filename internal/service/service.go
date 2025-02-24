@@ -42,7 +42,7 @@ func (rs *regressionService) RidgeRegression(
 	alpha float64,
 	tol float64,
 	normalize bool,
-) (*mat.Dense, error) {
+) (string, error) {
 	X := mat.NewDense(len(XData), len(XData[0]), nil)
 	Y := mat.NewDense(len(YData), len(YData[0]), nil)
 
@@ -61,13 +61,14 @@ func (rs *regressionService) RidgeRegression(
 	regr.Alpha = alpha
 	regr.Tol = tol
 	regr.Normalize = normalize
+	regr.L1Ratio = 0
 
 	regr.Fit(X, Y)
 
 	Ypred := mat.NewDense(len(YData), len(YData[0]), nil)
 	regr.Predict(X, Ypred)
-
-	return Ypred, nil
+	res := fmt.Sprintf("Ypred:\n%.2f\n", mat.Formatted(Ypred))
+	return res, nil
 }
 
 // LassoRegression выполняет регрессию Lasso
@@ -78,7 +79,7 @@ func (rs *regressionService) LassoRegression(
 	alpha float64, // Гиперпараметр регуляризации
 	tol float64, // Допустимая ошибка
 	normalize bool, // Флаг нормализации данных
-) (*mat.Dense, error) {
+) (string, error) {
 	// Преобразование данных в матрицы Gonum
 	X := mat.NewDense(len(XData), len(XData[0]), nil)
 	Y := mat.NewDense(len(YData), len(YData[0]), nil)
@@ -105,8 +106,8 @@ func (rs *regressionService) LassoRegression(
 	// Делаем предсказания
 	Ypred := mat.NewDense(len(YData), len(YData[0]), nil)
 	regr.Predict(X, Ypred)
-
-	return Ypred, nil
+	res := fmt.Sprintf("Ypred:\n%.2f\n", mat.Formatted(Ypred))
+	return res, nil
 }
 
 // ElasticNetRegression - функция расчёта
