@@ -27,6 +27,7 @@ curl -X GET http://localhost:9000/api/v1/ridge \
   "alpha": 1,
   "tol": 0.001,
   "normalize": false
+  
 }'
 
 ожидаемый ответ:
