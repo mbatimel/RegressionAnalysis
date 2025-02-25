@@ -3,6 +3,7 @@ package neuralnetwork
 import (
 	"sort"
 
+	"github.com/rs/zerolog/log"
 	"gonum.org/v1/gonum/blas/blas32"
 	"gonum.org/v1/gonum/blas/blas64"
 )
@@ -159,18 +160,18 @@ func (mat General64) Len() int {
 	return mat.Rows
 }
 
-// Less compare rows. panics if Cols!=1
+// Less compare rows. log.Error().Msgs if Cols!=1
 func (mat General32) Less(i, j int) bool {
 	if mat.Cols != 1 {
-		panic("cols != 1")
+		log.Error().Msg("cols != 1")
 	}
 	return mat.Data[i*mat.Stride] < mat.Data[j*mat.Stride]
 }
 
-// Less compare rows. panics if Cols!=1
+// Less compare rows. log.Error().Msgs if Cols!=1
 func (mat General64) Less(i, j int) bool {
 	if mat.Cols != 1 {
-		panic("cols != 1")
+		log.Error().Msg("cols != 1")
 	}
 	return mat.Data[i*mat.Stride] < mat.Data[j*mat.Stride]
 }

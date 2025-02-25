@@ -1,10 +1,11 @@
 package config
 
 import (
-	"github.com/google/uuid"
 	"io"
 	"os"
 	"time"
+
+	"github.com/google/uuid"
 
 	metricsRegression "github.com/mbatimel/RegressionAnalysis/internal/metrics"
 	"github.com/rs/zerolog"

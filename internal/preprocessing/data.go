@@ -8,6 +8,7 @@ import (
 	"golang.org/x/exp/rand"
 
 	"github.com/mbatimel/RegressionAnalysis/internal/base"
+	"github.com/rs/zerolog/log"
 
 	"github.com/pa-m/optimize"
 	"gonum.org/v1/gonum/floats"
@@ -1264,7 +1265,7 @@ func (m *PowerTransformer) fit(X, Y mat.Matrix, forceTransform bool) (Xout *mat.
 		optimFunc = boxCoxOptimize
 		transformFunc = boxCoxTransform
 	default:
-		panic(fmt.Errorf("'method' must be one of ('box-cox', 'yeo-johnson'), got %s instead", m.Method))
+		log.Error().Msg(fmt.Sprintf("'method' must be one of ('box-cox', 'yeo-johnson'), got %s instead", m.Method))
 	}
 	if m.Standardize || forceTransform {
 		Xout = mat.NewDense(nSamples, nFeatures, nil)
@@ -1304,7 +1305,7 @@ func (m *PowerTransformer) Transform(X, Y mat.Matrix) (Xout, Yout *mat.Dense) {
 	case "box-cox":
 		transformFunc = boxCoxTransform
 	default:
-		panic(fmt.Errorf("'method' must be one of ('box-cox', 'yeo-johnson'), got %s instead", m.Method))
+		log.Error().Msg(fmt.Sprintf("'method' must be one of ('box-cox', 'yeo-johnson'), got %s instead", m.Method))
 	}
 	base.Parallelize(-1, nFeatures, func(th, start, end int) {
 		col := make([]float64, nSamples)
@@ -1358,7 +1359,7 @@ func (m *PowerTransformer) InverseTransform(X, Y mat.Matrix) (Xout, Yout *mat.De
 	case "box-cox":
 		inverseTransformFunc = boxCoxInverseTransform
 	default:
-		panic(fmt.Errorf("'method' must be one of ('box-cox', 'yeo-johnson'), got %s instead", m.Method))
+		log.Error().Msg(fmt.Sprintf("'method' must be one of ('box-cox', 'yeo-johnson'), got %s instead", m.Method))
 	}
 	X1 := base.ToDense(X)
 	if m.Standardize {

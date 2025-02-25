@@ -5,6 +5,7 @@ import (
 	"sort"
 
 	"github.com/mbatimel/RegressionAnalysis/internal/base"
+	"github.com/rs/zerolog/log"
 	"gonum.org/v1/gonum/floats"
 	"gonum.org/v1/gonum/mat"
 )
@@ -160,7 +161,7 @@ func (m *MultiLabelBinarizer) Fit2(X mat.Matrix, Y interface{}) *MultiLabelBinar
 		less := func(i, j int) bool { return m.Classes[i].(string) < m.Classes[j].(string) }
 		sort.Slice(m.Classes, less)
 	default:
-		panic("MultiLabelBinarizer: Y must be *mat.Dense ot [][]string")
+		log.Error().Msg("MultiLabelBinarizer: Y must be *mat.Dense ot [][]string")
 	}
 	return m
 }
@@ -264,7 +265,7 @@ func (m *MultiLabelBinarizer) InverseTransform(X, Y *mat.Dense) (Xout *mat.Dense
 		Yout = Yo
 
 	default:
-		panic("MultiLabelBinarizer: unknown target type in InverseTransform")
+		log.Error().Msg("MultiLabelBinarizer: unknown target type in InverseTransform")
 	}
 	return
 }

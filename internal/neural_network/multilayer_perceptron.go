@@ -2,6 +2,7 @@ package neuralnetwork
 
 import (
 	"github.com/mbatimel/RegressionAnalysis/internal/base"
+	"github.com/rs/zerolog/log"
 
 	"gonum.org/v1/gonum/mat"
 )
@@ -118,7 +119,7 @@ func (mlp *MLPClassifier) Predict(X mat.Matrix, Ymutable mat.Mutable) *mat.Dense
 	}
 	yr, _ := Y.Dims()
 	if yr == 0 {
-		panic("Y must be preallocated")
+		log.Error().Msg("Y must be preallocated")
 	}
 	mlp.BaseMultilayerPerceptron64.Predict(X, Y)
 	return base.FromDense(Ymutable, Y)

@@ -102,7 +102,6 @@ func (rs *regressionService) LassoRegression(
 	regr.Normalize = normalize
 	regr.Fit(X, Y)
 
-
 	// Делаем предсказания
 	Ypred := mat.NewDense(len(YData), len(YData[0]), nil)
 	regr.Predict(X, Ypred)

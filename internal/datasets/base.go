@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/csv"
 	"encoding/json"
+	"fmt"
 	"go/build"
 	"io/ioutil"
 	"os"
@@ -11,6 +12,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/rs/zerolog/log"
 	"gonum.org/v1/gonum/mat"
 )
 
@@ -22,7 +24,7 @@ var (
 func init() {
 	pkg, err := build.Import("github.com/pa-m/sklearn", ".", build.FindOnly)
 	if err != nil {
-		panic(err)
+		log.Error().Msg(fmt.Sprintf("%w", err))
 	}
 	dir = pkg.Dir
 }
@@ -151,7 +153,7 @@ func loadCsv(filepath string, setupReader func(*csv.Reader), nOutputs int) (X, Y
 
 func check(err error) {
 	if err != nil {
-		panic(err)
+		log.Error().Msg(fmt.Sprintf("%w", err))
 	}
 }
 

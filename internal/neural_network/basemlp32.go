@@ -3,7 +3,7 @@ package neuralnetwork
 import (
 	"encoding/json"
 	"fmt"
-	"log"
+	"github.com/rs/zerolog/log"
 	"reflect"
 	"runtime"
 	"sort"
@@ -488,7 +488,7 @@ func (mlp *BaseMultilayerPerceptron32) fit(X, y blas32General, incremental bool)
 	mlp.validateHyperparameters()
 	for _, s := range mlp.HiddenLayerSizes {
 		if s < 0 {
-			log.Panicf("hiddenLayerSizes must be > 0, got %v.", mlp.HiddenLayerSizes)
+			log.Error().Msgf("hiddenLayerSizes must be > 0, got %v.", mlp.HiddenLayerSizes)
 		}
 	}
 	X, y = mlp.validateInput(X, y, incremental)
@@ -626,31 +626,31 @@ func (mlp *BaseMultilayerPerceptron32) Predict(X mat.Matrix, Y Mutable) {
 
 func (mlp *BaseMultilayerPerceptron32) validateHyperparameters() {
 	if mlp.MaxIter <= 0 {
-		log.Panicf("maxIter must be > 0, got %d.", mlp.MaxIter)
+		log.Error().Msgf("maxIter must be > 0, got %d.", mlp.MaxIter)
 	}
 	if mlp.Alpha < 0.0 {
-		log.Panicf("alpha must be >= 0, got %g.", mlp.Alpha)
+		log.Error().Msgf("alpha must be >= 0, got %g.", mlp.Alpha)
 	}
 	if mlp.LearningRateInit <= 0.0 {
-		log.Panicf("learningRateInit must be > 0, got %g.", mlp.LearningRateInit)
+		log.Error().Msgf("learningRateInit must be > 0, got %g.", mlp.LearningRateInit)
 	}
 	if mlp.Momentum > 1 || mlp.Momentum < 0 {
-		log.Panicf("momentum must be >= 0 and <= 1, got %g", mlp.Momentum)
+		log.Error().Msgf("momentum must be >= 0 and <= 1, got %g", mlp.Momentum)
 	}
 	if mlp.ValidationFraction < 0 || mlp.ValidationFraction >= 1 {
-		log.Panicf("validationFraction must be >= 0 and < 1, got %g", mlp.ValidationFraction)
+		log.Error().Msgf("validationFraction must be >= 0 and < 1, got %g", mlp.ValidationFraction)
 	}
 	if mlp.Beta1 < 0 || mlp.Beta1 >= 1 {
-		log.Panicf("beta_1 must be >= 0 and < 1, got %g", mlp.Beta1)
+		log.Error().Msgf("beta_1 must be >= 0 and < 1, got %g", mlp.Beta1)
 	}
 	if mlp.Beta2 < 0 || mlp.Beta2 >= 1 {
-		log.Panicf("beta_2 must be >= 0 and < 1, got %g", mlp.Beta2)
+		log.Error().Msgf("beta_2 must be >= 0 and < 1, got %g", mlp.Beta2)
 	}
 	if mlp.Epsilon <= 0.0 {
-		log.Panicf("epsilon must be > 0, got %g.", mlp.Epsilon)
+		log.Error().Msgf("epsilon must be > 0, got %g.", mlp.Epsilon)
 	}
 	if mlp.NIterNoChange <= 0 {
-		log.Panicf("nIterNoChange must be > 0, got %d.", mlp.NIterNoChange)
+		log.Error().Msgf("nIterNoChange must be > 0, got %d.", mlp.NIterNoChange)
 	}
 	//# raise ValueError if not registered
 
@@ -660,17 +660,17 @@ func (mlp *BaseMultilayerPerceptron32) validateHyperparameters() {
 	}
 
 	if _, ok := Activations32[mlp.Activation]; !ok {
-		log.Panicf("The activation \"%s\" is not supported. Supported activations are %s.", mlp.Activation, supportedActivations)
+		log.Error().Msgf("The activation \"%s\" is not supported. Supported activations are %s.", mlp.Activation, supportedActivations)
 	}
 	switch mlp.LearningRate {
 	case "constant", "invscaling", "adaptive":
 	default:
-		log.Panicf("learning rate %s is not supported.", mlp.LearningRate)
+		log.Error().Msgf("learning rate %s is not supported.", mlp.LearningRate)
 	}
 	switch mlp.Solver {
 	case "sgd", "adam", "lbfgs":
 	default:
-		log.Panicf("The solver %s is not supported.", mlp.Solver)
+		log.Error().Msgf("The solver %s is not supported.", mlp.Solver)
 	}
 }
 
@@ -721,7 +721,7 @@ func (mlp *BaseMultilayerPerceptron32) fitLbfgs(X, y blas32General, activations,
 	}
 	res, err := optimize.Minimize(problem, w, settings, method)
 	if err != nil {
-		log.Panic(err)
+		log.Error().Msg(fmt.Sprintf("%w", err))
 	}
 	if res.Status != optimize.GradientThreshold && res.Status != optimize.FunctionConvergence {
 		log.Printf("lbfgs optimizer: Maximum iterations (%d) reached and the optimization hasn't converged yet.\n", mlp.MaxIter)
@@ -782,7 +782,7 @@ func (mlp *BaseMultilayerPerceptron32) fitStochastic(X, y blas32General, activat
 	func() {
 		if r := recover(); r != nil {
 			// ...
-			log.Panic(r)
+			log.Error().Msg(fmt.Sprintf("%v", r))
 		}
 		for it := 0; it < mlp.MaxIter; it++ {
 			if mlp.Shuffle {
@@ -1114,7 +1114,7 @@ func r2Score32(yTrue, yPred blas32General) float32 {
 			yDen += t * t
 		}
 		if yDen == 0 {
-			panic("yDen=0")
+			log.Error().Msg("yDen=0")
 		}
 		r2 := 1 - yNum/yDen
 		r2acc += r2
@@ -1156,7 +1156,7 @@ func (mlp *BaseMultilayerPerceptron32) Unmarshal(buf []byte) error {
 	mp := Map{}
 	err := json.Unmarshal(buf, &mp)
 	if err != nil {
-		panic(err)
+		log.Error().Msg(fmt.Sprintf("%w", err))
 	}
 	if params, ok := mp["params"]; ok {
 		if pmap, ok := params.(Map); ok {

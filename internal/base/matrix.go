@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/rs/zerolog/log"
 	"gonum.org/v1/gonum/blas/blas64"
 	"gonum.org/v1/gonum/mat"
 )
@@ -40,7 +41,7 @@ func (m MatTranspose) Set(i, j int, v float64) {
 	if Mutable, ok := m.Matrix.(mat.Mutable); ok {
 		Mutable.Set(j, i, v)
 	} else {
-		panic("underling Matrix is not Mutable")
+		log.Error().Msg("underling Matrix is not Mutable")
 	}
 }
 
@@ -62,7 +63,7 @@ func (m MatRowSlice) Dims() (int, int) { _, c := m.Matrix.Dims(); return m.End -
 // At for MatRowSlice
 func (m MatRowSlice) At(i, j int) float64 {
 	if i < 0 || i > m.End-m.Start {
-		panic("indexing error")
+		log.Error().Msg("indexing error")
 	}
 	return m.Matrix.At(i+m.Start, j)
 }
@@ -72,7 +73,7 @@ func (m MatRowSlice) Set(i, j int, v float64) {
 	if Mutable, ok := m.Matrix.(mat.Mutable); ok {
 		Mutable.Set(i-m.Start, j, v)
 	} else {
-		panic("underling Matrix is not Mutable")
+		log.Error().Msg("underling Matrix is not Mutable")
 	}
 }
 
@@ -99,11 +100,11 @@ func MatDimsCheck(op string, R, X, Y mat.Matrix) {
 	switch op {
 	case "+", "-", "*", "/":
 		if rx != ry || cx != cy || rr != rx || cr != cx {
-			panic(fmt.Errorf("%s %s", op, MatDimsString(R, X, Y)))
+			log.Error().Msg(fmt.Sprintf("%s %s", op, MatDimsString(R, X, Y)))
 		}
 	case ".":
 		if cx != ry || rr != rx || cr != cy {
-			panic(fmt.Errorf("%s %s", op, MatDimsString(R, X, Y)))
+			log.Error().Msg(fmt.Sprintf("%s %s", op, MatDimsString(R, X, Y)))
 		}
 	}
 }
@@ -142,7 +143,7 @@ func MatDenseSlice(src mat.RawMatrixer, i, k, j, l int) *mat.Dense {
 // MatGeneralSlice returns a blas64.General view of partial underlaying data of M
 func MatGeneralSlice(M blas64.General, i, k, j, l int) blas64.General {
 	if k <= i {
-		panic(fmt.Errorf("k<=i %d %d", k, i))
+		log.Error().Msg(fmt.Sprintf("k<=i %d %d", k, i))
 	}
 	return blas64.General{
 		Rows:   k - i,
@@ -171,7 +172,7 @@ func MatDenseColSlice(src mat.RawMatrixer, j, l int) *mat.Dense {
 // MatGeneralRowSlice returns a blas64.General view of partial underlaying data of M
 func MatGeneralRowSlice(M blas64.General, i, k int) blas64.General {
 	if k <= i {
-		panic(fmt.Errorf("k<=i %d %d", k, i))
+		log.Error().Msg(fmt.Sprintf("k<=i %d %d", k, i))
 	}
 	return blas64.General{
 		Rows:   k - i,
@@ -184,7 +185,7 @@ func MatGeneralRowSlice(M blas64.General, i, k int) blas64.General {
 // MatGeneralColSlice returns a blas64.General view of partial underlaying data of M
 func MatGeneralColSlice(M blas64.General, j, l int) blas64.General {
 	if l <= j {
-		panic(fmt.Errorf("l<j %d %d", j, l))
+		log.Error().Msg(fmt.Sprintf("l<j %d %d", j, l))
 	}
 	return blas64.General{
 		Rows:   M.Rows,

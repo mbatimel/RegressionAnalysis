@@ -7,6 +7,7 @@ import (
 
 	"github.com/mbatimel/RegressionAnalysis/internal/base"
 	"github.com/mbatimel/RegressionAnalysis/internal/metrics"
+	"github.com/rs/zerolog/log"
 
 	"gonum.org/v1/gonum/mat"
 )
@@ -42,7 +43,7 @@ func (m *KNeighborsClassifier) Fit(Xmatrix, Ymatrix mat.Matrix) base.Fiter {
 		m.Distance = EuclideanDistance
 	}
 	if m.K <= 0 {
-		panic(fmt.Errorf("K<=0"))
+		log.Error().Msg(fmt.Sprintf("K<=0"))
 	}
 	m.NearestNeighbors.Fit(X, Y)
 	m.Classes, _ = getClasses(Y)
@@ -75,14 +76,14 @@ func (m *KNeighborsClassifier) _predict(X, Y *mat.Dense, wantProba bool) *KNeigh
 	_, outputs := m.Y.Dims()
 	if wantProba {
 		if outputs > 1 {
-			panic("PredictProba is undefined for multioutput classification")
+			log.Error().Msg("PredictProba is undefined for multioutput classification")
 		}
 		if Y == nil {
-			panic("Y is unallocated")
+			log.Error().Msg("Y is unallocated")
 		}
 		_, Ycols := Y.Dims()
 		if Ycols != len(m.Classes[0]) {
-			panic(fmt.Errorf("PredictProba theres %d classes but Y has %d columns", len(m.Classes[0]), Ycols))
+			log.Error().Msg(fmt.Sprintf("PredictProba theres %d classes but Y has %d columns", len(m.Classes[0]), Ycols))
 		}
 	}
 	NX, _ := X.Dims()

@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/mbatimel/RegressionAnalysis/internal/preprocessing"
+	"github.com/rs/zerolog/log"
 	"gonum.org/v1/gonum/mat"
 	"gonum.org/v1/gonum/stat"
 )
@@ -110,7 +111,7 @@ func PrecisionRecallFScoreSupport(YTrue, YPred *mat.Dense, beta float64, labels 
 	}
 	if posLabel >= 0 {
 		if posLabel >= NClasses {
-			panic(fmt.Errorf("posLabel>=NClasses %d,%d", posLabel, NClasses))
+			log.Error().Msg(fmt.Sprintf("posLabel>=NClasses %d,%d", posLabel, NClasses))
 		}
 		r := &prfsperclass[posLabel]
 		return r.p, r.r, r.f, r.s

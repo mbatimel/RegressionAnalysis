@@ -2,10 +2,14 @@ package kernels
 
 import (
 	"fmt"
+
 	"gonum.org/v1/gonum/mat"
+
 	//"gorgonia.org/tensor"
-	"github.com/mbatimel/RegressionAnalysis/internal/gaussian_process/tensor"
 	"math"
+
+	"github.com/mbatimel/RegressionAnalysis/internal/gaussian_process/tensor"
+	"github.com/rs/zerolog/log"
 )
 
 // NewMatFromFunc ...
@@ -87,11 +91,11 @@ func Diff3D(a, b tensor.Tensor, tol float64) error {
 			for i2 := 0; i2 < s[2]; i2++ {
 				va, err := a.At(i0, i1, i2)
 				if err != nil {
-					panic(err)
+					log.Error().Msg(fmt.Sprintf("%w", err))
 				}
 				vb, err := b.At(i0, i1, i2)
 				if err != nil {
-					panic(err)
+					log.Error().Msg(fmt.Sprintf("%w", err))
 				}
 				d := math.Abs(va.(float64) - vb.(float64))
 				if d > tol && d > delta.max {

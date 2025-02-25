@@ -8,6 +8,7 @@ import (
 
 	"github.com/mbatimel/RegressionAnalysis/internal/base"
 	"github.com/mbatimel/RegressionAnalysis/internal/preprocessing"
+	"github.com/rs/zerolog/log"
 
 	"gonum.org/v1/gonum/mat"
 )
@@ -42,7 +43,7 @@ func (p *Pipeline) PredicterClone() base.Predicter {
 		} else if cloner, ok := step.Fiter.(base.Predicter); ok {
 			clone.NamedSteps[i] = NamedStep{Name: step.Name, Fiter: cloner.PredicterClone()}
 		} else {
-			panic(fmt.Errorf("step %s is not clonable", step.Name))
+			log.Error().Msg(fmt.Sprintf("step %s is not clonable", step.Name))
 		}
 	}
 	return &clone
@@ -66,16 +67,16 @@ func (p *Pipeline) transformStep(istep int, Xtmp, Ytmp **mat.Dense) {
 	} else if predicter, ok := step.Fiter.(base.Predicter); ok {
 		nOutputs := predicter.GetNOutputs()
 		if nOutputs == 0 {
-			panic(fmt.Errorf("pipeline step %d (%s) predicter with no output", istep, step.Name))
+			log.Error().Msg(fmt.Sprintf("pipeline step %d (%s) predicter with no output", istep, step.Name))
 		}
 		nSamples, _ := (*Xtmp).Dims()
 		*Ytmp = mat.NewDense(nSamples, nOutputs, nil)
 		predicter.Predict(*Xtmp, *Ytmp)
 	} else {
 		if istep < len(p.NamedSteps)-1 {
-			panic(fmt.Errorf("pipeline step %d (%s) is not a Transformer", istep, step.Name))
+			log.Error().Msg(fmt.Sprintf("pipeline step %d (%s) is not a Transformer", istep, step.Name))
 		} else {
-			panic(fmt.Errorf("pipeline step %d (%s) is not a Predicter", istep, step.Name))
+			log.Error().Msg(fmt.Sprintf("pipeline step %d (%s) is not a Predicter", istep, step.Name))
 		}
 	}
 
@@ -106,7 +107,7 @@ func (p *Pipeline) Score(X, Y mat.Matrix) float64 {
 	last := p.NamedSteps[len(p.NamedSteps)-1]
 	predicter, ok := last.Fiter.(base.Predicter)
 	if !ok {
-		panic(fmt.Errorf("pipeline.Score: last step is not a Predicter"))
+		log.Error().Msg(fmt.Sprintf("pipeline.Score: last step is not a Predicter"))
 	}
 	return predicter.Score(Xtmp, Y)
 }

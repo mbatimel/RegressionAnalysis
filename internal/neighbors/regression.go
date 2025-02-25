@@ -6,6 +6,7 @@ import (
 
 	"github.com/mbatimel/RegressionAnalysis/internal/base"
 	"github.com/mbatimel/RegressionAnalysis/internal/metrics"
+	"github.com/rs/zerolog/log"
 
 	"gonum.org/v1/gonum/mat"
 	"gonum.org/v1/gonum/stat"
@@ -49,7 +50,7 @@ func (m *KNeighborsRegressor) Fit(Xmatrix, Ymatrix mat.Matrix) base.Fiter {
 		m.Distance = EuclideanDistance
 	}
 	if m.K <= 0 {
-		panic(fmt.Errorf("K<=0"))
+		log.Error().Msg(fmt.Sprintf("K<=0"))
 	}
 	m.NearestNeighbors.Fit(X, Y)
 	return m

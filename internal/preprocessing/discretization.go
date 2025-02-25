@@ -5,6 +5,7 @@ import (
 	"math"
 
 	"github.com/mbatimel/RegressionAnalysis/internal/base"
+	"github.com/rs/zerolog/log"
 	"gonum.org/v1/gonum/floats"
 	"gonum.org/v1/gonum/mat"
 	"gonum.org/v1/gonum/stat"
@@ -48,7 +49,7 @@ func (m *KBinsDiscretizer) Fit(X, Y mat.Matrix) base.Fiter {
 				case "uniform":
 					m.BinEdges[f][b] = min + float64(b)/float64(m.NBins)*(max-min)
 				default:
-					panic(fmt.Errorf("not implemented strategy %s", m.Strategy))
+					log.Error().Msg(fmt.Sprintf("not implemented strategy %s", m.Strategy))
 				}
 			}
 		}

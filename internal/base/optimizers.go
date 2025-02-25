@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 
+	"github.com/rs/zerolog/log"
 	"gonum.org/v1/gonum/mat"
 	"gonum.org/v1/gonum/optimize"
 )
@@ -35,7 +36,7 @@ var Solvers = map[string]OptimCreator{
 func NewSolver(name string) OptimCreator {
 	s, ok := Solvers[name]
 	if !ok {
-		panic(fmt.Errorf("NewSolver called with unknown name %s", name))
+		log.Error().Msg(fmt.Sprintf("NewSolver called with unknown name %s", name))
 	}
 	return s
 }
@@ -152,7 +153,8 @@ func NewOptimizer(name string) Optimizer {
 	case "adam":
 		return NewAdamOptimizer()
 	default:
-		panic("NewOptimizer only accepts SGD|adagrad|adadelta|rmsprop|adam")
+		log.Error().Msg("NewOptimizer only accepts SGD|adagrad|adadelta|rmsprop|adam")
+		return nil
 	}
 }
 

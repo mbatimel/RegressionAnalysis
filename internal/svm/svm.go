@@ -8,6 +8,7 @@ import (
 
 	"github.com/mbatimel/RegressionAnalysis/internal/base"
 	"github.com/mbatimel/RegressionAnalysis/internal/metrics"
+	"github.com/rs/zerolog/log"
 	"gonum.org/v1/gonum/mat"
 )
 
@@ -285,7 +286,7 @@ func (m *BaseLibSVM) fit(X, Y *mat.Dense, svmTrain func(X *mat.Dense, Y []float6
 	case Kernel:
 		K = v.Func
 	default:
-		panic(fmt.Errorf("unknown kernel %#v", v))
+		log.Error().Msg(fmt.Sprintf("unknown kernel %#v", v))
 	}
 	if m.MaxIter <= 0 {
 		m.MaxIter = math.MaxInt32

@@ -15,7 +15,7 @@ func assertPanics(t *testing.T, f func(), msg string) {
 	defer func() {
 		if r := recover(); r == nil {
 			if msg == "" {
-				msg = "should have panicked"
+				msg = "should have log.Error().Msgked"
 			}
 			t.Error(msg)
 		}

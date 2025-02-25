@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/mbatimel/RegressionAnalysis/internal/base"
+	"github.com/rs/zerolog/log"
 	"golang.org/x/exp/rand"
 	"gonum.org/v1/gonum/floats"
 	"gonum.org/v1/gonum/mat"
@@ -184,7 +185,7 @@ func getParam(estimator interface{}, k string) (v interface{}, ok bool) {
 	est := reflect.ValueOf(estimator)
 	est = reflect.Indirect(est)
 	if est.Kind().String() != "struct" {
-		panic(est.Kind().String())
+		log.Error().Msg(est.Kind().String())
 	}
 	field := est.FieldByNameFunc(func(name string) bool { return strings.EqualFold(name, k) })
 	if ok = field.Kind() != 0; ok {
@@ -198,12 +199,12 @@ func setParam(estimator base.Predicter, k string, v interface{}) {
 	est := reflect.ValueOf(estimator)
 	est = reflect.Indirect(est)
 	if est.Kind().String() != "struct" {
-		panic(est.Kind().String())
+		log.Error().Msg(est.Kind().String())
 	}
 	field := est.FieldByNameFunc(func(name string) bool { return strings.EqualFold(name, k) })
 	switch field.Kind() {
 	case 0:
-		panic(fmt.Errorf("no field %s in %T", k, estimator))
+		log.Error().Msg(fmt.Sprintf("no field %s in %T", k, estimator))
 	case reflect.String:
 		field.SetString(v.(string))
 	case reflect.Float64:
@@ -215,7 +216,7 @@ func setParam(estimator base.Predicter, k string, v interface{}) {
 		case float64:
 			field.SetFloat(float64(vv))
 		default:
-			panic(fmt.Errorf("failed to set %s %s to %v", k, field.Type().String(), v))
+			log.Error().Msg(fmt.Sprintf("failed to set %s %s to %v", k, field.Type().String(), v))
 		}
 	case reflect.Int:
 		field.Set(reflect.ValueOf(v))
@@ -224,7 +225,7 @@ func setParam(estimator base.Predicter, k string, v interface{}) {
 		field.Set(reflect.ValueOf(v))
 	default:
 		field.Set(reflect.ValueOf(v))
-		//panic(fmt.Errorf("failed to set %s %s to %v", k, field.Type().String(), v))
+		//log.Error().Msg(fmt.Errorf("failed to set %s %s to %v", k, field.Type().String(), v))
 
 	}
 

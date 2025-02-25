@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/mbatimel/RegressionAnalysis/internal/base"
+	"github.com/rs/zerolog/log"
 
 	"gonum.org/v1/gonum/mat"
 )
@@ -50,7 +51,7 @@ func (m *KMeans) Fit(Xmatrix, Ymatrix mat.Matrix) base.Fiter {
 	X := (Xmatrix)
 	NSamples, NFeatures := X.Dims()
 	if NSamples < m.NClusters {
-		panic(fmt.Errorf("NSamples<m.NClusters %d<%d", NSamples, m.NClusters))
+		log.Error().Msg(fmt.Sprintf("NSamples<m.NClusters %d<%d", NSamples, m.NClusters))
 	}
 	if m.Distance == nil {
 		m.Distance = EuclideanDistance

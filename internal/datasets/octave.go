@@ -9,6 +9,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/rs/zerolog/log"
 	"gonum.org/v1/gonum/mat"
 )
 
@@ -31,10 +32,10 @@ func LoadOctaveBin(filename string) map[string]*mat.Dense {
 		}
 		f.Pos += nread
 		if nread != n {
-			panic(fmt.Errorf("%d/%d bytes read", nread, n))
+			log.Error().Msg(fmt.Sprintf("%d/%d bytes read", nread, n))
 		}
 		if err != nil {
-			panic(err)
+			log.Error().Msg(fmt.Sprintf("%w", err))
 		}
 		return b, nil
 	}
@@ -77,7 +78,7 @@ func LoadOctaveBin(filename string) map[string]*mat.Dense {
 	b, err = read(f, 10)
 	check(err)
 	if string(b) != magic {
-		panic("not a octave binary file")
+		log.Error().Msg("not a octave binary file")
 	}
 
 	_, err = read(f, 1)
@@ -99,13 +100,13 @@ func LoadOctaveBin(filename string) map[string]*mat.Dense {
 		b, err = read(f, 1)
 		check(err)
 		if b[0] != 0xff {
-			panic("0xff expected")
+			log.Error().Msg("0xff expected")
 		}
 		var datatype string
 		datatype, err = readString(f)
 		check(err)
 		if datatype != "matrix" {
-			panic("matrix expected")
+			log.Error().Msg("matrix expected")
 		}
 		// read FE FF FF FF
 		read(f, 4)

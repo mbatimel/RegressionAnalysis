@@ -2,8 +2,10 @@ package interpolate
 
 import (
 	"errors"
+	"fmt"
 	"sort"
 
+	"github.com/rs/zerolog/log"
 	"gonum.org/v1/gonum/mat"
 )
 
@@ -78,6 +80,6 @@ func CubicSpline(xs, ys []float64) func(x float64) float64 {
 
 func check(err error) {
 	if err != nil {
-		panic(err)
+		log.Error().Msg(fmt.Sprintf("%w", err))
 	}
 }

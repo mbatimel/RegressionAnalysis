@@ -2,8 +2,10 @@ package kernels
 
 import (
 	"fmt"
-	"github.com/mbatimel/RegressionAnalysis/internal/base"
 	"math"
+
+	"github.com/mbatimel/RegressionAnalysis/internal/base"
+	"github.com/rs/zerolog/log"
 
 	"gonum.org/v1/gonum/floats"
 
@@ -137,17 +139,20 @@ func (k KernelOperator) CloneWithTheta(theta mat.Matrix) Kernel {
 
 // Eval ...
 func (k KernelOperator) Eval(X, Y mat.Matrix, evalGradient bool) (*mat.Dense, *t.Dense) {
-	panic("Eval must be implemented by wrapper")
+	log.Error().Msg("Eval must be implemented by wrapper")
+	return nil, nil
 }
 
 // Diag ...
 func (k KernelOperator) Diag(X mat.Matrix) *mat.DiagDense {
-	panic("Diag must be implemented by wrapper")
+	log.Error().Msg("Diag must be implemented by wrapper")
+	return nil
 }
 
 // String ...
 func (k KernelOperator) String() string {
-	panic("Diag must be implemented by wrapper")
+	log.Error().Msg("Diag must be implemented by wrapper")
+	return ""
 }
 
 // IsStationary returns whether the kernel is stationary
@@ -360,7 +365,7 @@ func (k ConstantKernel) CloneWithTheta(theta mat.Matrix) Kernel {
 // Kernel k(X, Y)
 func (k *ConstantKernel) Eval(X, Y mat.Matrix, evalGradient bool) (*mat.Dense, *t.Dense) {
 	if X == mat.Matrix(nil) {
-		panic("ConstantKernel.Eval: X is nil")
+		log.Error().Msg("ConstantKernel.Eval: X is nil")
 	}
 	nx, _ := X.Dims()
 	if Y == mat.Matrix(nil) {
@@ -556,7 +561,7 @@ func (k *RBF) Eval(X, Y mat.Matrix, evalGradient bool) (K *mat.Dense, Kg *t.Dens
 		scale = func(X []float64, feat int) float64 { return X[feat] / k.LengthScale[0] }
 	default:
 		if len(k.LengthScale) != nfeat {
-			panic("LengthScale has wrong dimension")
+			log.Error().Msg("LengthScale has wrong dimension")
 		}
 		scale = func(X []float64, feat int) float64 { return X[feat] / k.LengthScale[feat] }
 	}
@@ -601,7 +606,7 @@ func (k *RBF) Eval(X, Y mat.Matrix, evalGradient bool) (K *mat.Dense, Kg *t.Dens
 				case nfeat:
 					xd.DivElemVec(xd, mat.NewVecDense(nfeat, k.LengthScale))
 				default:
-					panic("dim error")
+					log.Error().Msg("dim error")
 				}
 				Kgdata[i] = Kdata[i] * mat.Dot(xd, xd)
 			}

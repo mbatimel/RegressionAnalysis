@@ -5,6 +5,7 @@ import (
 
 	"github.com/mbatimel/RegressionAnalysis/internal/base"
 	"github.com/mbatimel/RegressionAnalysis/internal/neighbors"
+	"github.com/rs/zerolog/log"
 	"gonum.org/v1/gonum/mat"
 )
 
@@ -136,7 +137,7 @@ func (m *DBSCAN) Predict(X mat.Matrix, Ymutable mat.Mutable) *mat.Dense {
 	// return m.Labels in Y
 	ySamples, yCols := Y.Dims()
 	if nSamples != len(m.Labels) || ySamples != len(m.Labels) || yCols != 1 {
-		panic("X must me the same passed to Fit and Y must have size samples*1")
+		log.Error().Msg("X must me the same passed to Fit and Y must have size samples*1")
 	}
 	for i, label := range m.Labels {
 

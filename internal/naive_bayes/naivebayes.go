@@ -8,6 +8,7 @@ import (
 
 	"github.com/mbatimel/RegressionAnalysis/internal/base"
 	"github.com/mbatimel/RegressionAnalysis/internal/metrics"
+	"github.com/rs/zerolog/log"
 	"gonum.org/v1/gonum/floats"
 	"gonum.org/v1/gonum/mat"
 )
@@ -141,7 +142,7 @@ func (m *GaussianNB) Fit(X, Y mat.Matrix) base.Fiter {
 func (m *GaussianNB) PartialFit(X, Y mat.Matrix, classes []float64, refit bool, sampleWeight []float64) base.Fiter {
 	yr, yc := Y.Dims()
 	if yc != 1 {
-		panic("GaussianNB fit: expected Y to have 1 column")
+		log.Error().Msg("GaussianNB fit: expected Y to have 1 column")
 	}
 	//# If the ratio of data variance between dimensions is too small, it
 	//# will cause numerical errors. To address this, we artificially
@@ -170,17 +171,17 @@ func (m *GaussianNB) PartialFit(X, Y mat.Matrix, classes []float64, refit bool, 
 			priors := m.Priors
 			//# Check that the provide prior match the number of classes
 			if len(priors) != nClasses {
-				panic("Number of priors must match number of classes.")
+				log.Error().Msg("Number of priors must match number of classes.")
 			}
 			//# Check that the sum is 1
 			priorsSum := floats.Sum(priors)
 			if math.Abs(priorsSum-1.) > 1e-6 {
-				panic("The sum of the priors should be 1.")
+				log.Error().Msg("The sum of the priors should be 1.")
 			}
 			//# Check that the prior are non-negative
 			priorsMin := floats.Min(priors)
 			if priorsMin < 0 {
-				panic("Priors must be non-negative.")
+				log.Error().Msg("Priors must be non-negative.")
 			}
 			m.ClassPrior = make([]float64, len(priors))
 			copy(m.ClassPrior, priors)
@@ -192,7 +193,7 @@ func (m *GaussianNB) PartialFit(X, Y mat.Matrix, classes []float64, refit bool, 
 		width := func(X mat.Matrix) int { _, c := X.Dims(); return c }
 		wx, wt := width(X), width(m.Theta)
 		if wx != wt {
-			panic(fmt.Errorf("Number of features %d does not match previous data %d", wx, wt))
+			log.Error().Msg(fmt.Sprintf("Number of features %d does not match previous data %d", wx, wt))
 		}
 		//# Put epsilon back in each time
 		//self.sigma_[:, :] -= self.epsilon_
@@ -211,7 +212,7 @@ func (m *GaussianNB) PartialFit(X, Y mat.Matrix, classes []float64, refit bool, 
 		}
 	}
 	if len(uniqueYnotinClasses) > 0 {
-		panic(fmt.Errorf("The target labels %g in y do not exist in the initial classes %g", uniqueYnotinClasses, classes))
+		log.Error().Msg(fmt.Sprintf("The target labels %g in y do not exist in the initial classes %g", uniqueYnotinClasses, classes))
 	}
 	base.Parallelize(runtime.GOMAXPROCS(0), len(uniqueY), func(th, start, end int) {
 		for i := start; i < end; i++ {

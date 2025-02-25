@@ -5,6 +5,7 @@ import (
 
 	"github.com/mbatimel/RegressionAnalysis/internal/base"
 	"github.com/mbatimel/RegressionAnalysis/internal/metrics"
+	"github.com/rs/zerolog/log"
 
 	"gonum.org/v1/gonum/mat"
 	"gonum.org/v1/gonum/stat"
@@ -36,7 +37,7 @@ func (m *NearestCentroid) Fit(Xmatrix, Ymatrix mat.Matrix) base.Fiter {
 	NSamples, NFeatures := X.Dims()
 	_, NOutputs := Y.Dims()
 	if NOutputs != 1 {
-		panic("NearestCentroid can't handle output Dim != 1")
+		log.Error().Msg("NearestCentroid can't handle output Dim != 1")
 	}
 	m.Classes, m.ClassCount = getClasses(Y)
 	NClasses := len(m.Classes[0])
@@ -88,7 +89,7 @@ func (m *NearestCentroid) PredictProba(X mat.Matrix, Y *mat.Dense) *NearestCentr
 
 func (m *NearestCentroid) _predict(X mat.Matrix, Y *mat.Dense, wantProba bool) *NearestCentroid {
 	if wantProba {
-		panic("PredictProba is undefined for NearestCentroid")
+		log.Error().Msg("PredictProba is undefined for NearestCentroid")
 	}
 	NSamples, _ := X.Dims()
 	_, indices := m.KNeighbors(X, 1)

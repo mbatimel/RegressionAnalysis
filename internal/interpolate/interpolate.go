@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"math"
 	"sort"
+
+	"github.com/rs/zerolog/log"
 )
 
 type xy struct{ x, y []float64 }
@@ -29,7 +31,7 @@ func interpolate2points(x0, y0, x1, y1 float64) func(float64) float64 {
 // mimics partly scipy.interpolate.interp1d
 func Interp1d(x, y []float64) func(x float64) float64 {
 	if len(x) < 2 || len(x) != len(y) {
-		panic(fmt.Errorf("interp1d lenx:%d leny:%d", len(x), len(y)))
+		log.Error().Msg(fmt.Sprintf("interp1d lenx:%d leny:%d", len(x), len(y)))
 	}
 
 	var both *xy

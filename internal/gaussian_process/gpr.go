@@ -2,15 +2,19 @@ package gaussianprocess
 
 import (
 	"fmt"
+
 	"github.com/mbatimel/RegressionAnalysis/internal/base"
 	"github.com/mbatimel/RegressionAnalysis/internal/gaussian_process/kernels"
 	"github.com/mbatimel/RegressionAnalysis/internal/metrics"
+	"github.com/rs/zerolog/log"
 	"gonum.org/v1/gonum/blas"
 	"gonum.org/v1/gonum/blas/blas64"
 	"gonum.org/v1/gonum/mat"
+
 	//	"gorgonia.org/tensor"
-	"github.com/mbatimel/RegressionAnalysis/internal/gaussian_process/tensor"
 	"math"
+
+	"github.com/mbatimel/RegressionAnalysis/internal/gaussian_process/tensor"
 )
 
 // Regressor ...
@@ -78,7 +82,7 @@ func (m *Regressor) Fit(X, Y mat.Matrix) base.Fiter {
 	m.Xtrain = mat.DenseCopyOf(X)
 	m.Ytrain = mat.DenseCopyOf(Y)
 	if len(m.Alpha) != 1 && len(m.Alpha) != ry {
-		panic(fmt.Errorf("alpha must be a scalar or an array with same number of entries as y.(%d != %d)", len(m.Alpha), ry))
+		log.Error().Msg(fmt.Sprintf("alpha must be a scalar or an array with same number of entries as y.(%d != %d)", len(m.Alpha), ry))
 	}
 	return m
 }
@@ -142,7 +146,7 @@ func (m *Regressor) LogMarginalLikelihood(Theta mat.Matrix, evalGradient bool) (
 ) {
 	if Theta == mat.Matrix(nil) {
 		if evalGradient {
-			panic("Gradient can only be evaluated for theta!=nil")
+			log.Error().Msg("Gradient can only be evaluated for theta!=nil")
 		}
 		return m.LogMarginalLikelihoodValue, nil
 	}
@@ -185,7 +189,7 @@ func (m *Regressor) LogMarginalLikelihood(Theta mat.Matrix, evalGradient bool) (
 	err := cho.SolveTo(alpha, m.Ytrain)
 
 	if err != nil {
-		panic(err)
+		log.Error().Msg(fmt.Sprintf("%w", err))
 	}
 	// log_likelihood_dims = -0.5 * np.einsum("ik,ik->k", y_train, alpha)
 	// log_likelihood_dims -= np.log(np.diag(L)).sum()
@@ -222,7 +226,7 @@ func (m *Regressor) LogMarginalLikelihood(Theta mat.Matrix, evalGradient bool) (
 		choSolved := &mat.Dense{}
 		err = cho.SolveTo(choSolved, eye(nx))
 		if err != nil {
-			panic(err)
+			log.Error().Msg(fmt.Sprintf("%w", err))
 		}
 		ni, nk := alpha.Dims()
 		nj := ni

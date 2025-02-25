@@ -4,6 +4,7 @@ import (
 	"math"
 
 	"github.com/mbatimel/RegressionAnalysis/internal/base"
+	"github.com/rs/zerolog/log"
 	"golang.org/x/exp/rand"
 	"gonum.org/v1/gonum/mat"
 )
@@ -132,7 +133,7 @@ func TrainTestSplit(X, Y mat.Matrix, testsize float64, randomstate uint64) (Xtra
 	src.WithLock(func(src base.Source) {
 		permer, ok := src.(base.Permer)
 		if !ok {
-			panic("Source does not implement Perm")
+			log.Error().Msg("Source does not implement Perm")
 		}
 		{
 			ind = permer.Perm(NSamples)
