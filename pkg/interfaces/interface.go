@@ -59,4 +59,6 @@ type Regression interface {
 	// @tg 400=github.com/mbatimel/RegressionAnalysis/swaggers/externalApi/models:Err400
 	// @tg 200=github.com/mbatimel/RegressionAnalysis/pkg/models:ElasticNetRegressionResp200
 	ElasticNetRegression(ctx context.Context, params models.ElasticNetParams) (formula map[string][]float64, err error)
+
+	// TODO: Логистик регрессия
 }
