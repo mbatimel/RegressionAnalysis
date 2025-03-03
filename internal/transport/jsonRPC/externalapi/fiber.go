@@ -34,7 +34,7 @@ func recoverHandler(ctx *fiber.Ctx) error {
 			if !ok {
 				err = errors.New(fmt.Sprintf("%v", r))
 			}
-			log.Ctx(ctx.UserContext()).Error().Stack().Err(errors.Wrap(err, "recover")).Str("method", ctx.Method()).Str("path", ctx.OriginalURL()).Msg("log.Error().Msg occurred")
+			log.Ctx(ctx.UserContext()).Error().Stack().Err(errors.Wrap(err, "recover")).Str("method", ctx.Method()).Str("path", ctx.OriginalURL()).Msg("panic occurred")
 			ctx.Status(fiber.StatusInternalServerError)
 		}
 	}()

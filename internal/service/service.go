@@ -30,6 +30,7 @@ func (rs *regressionService) MlrRegression(ctx context.Context, observer string,
 	if err := r.Run(); err != nil {
 		return "", fmt.Errorf("failed to train model: %w", err)
 	}
+	fmt.Println(r)
 	// Вывод результатов (можно заменить на логирование или возврат результата)
 	return fmt.Sprintf("Regression formula:%v", r.Formula), nil
 

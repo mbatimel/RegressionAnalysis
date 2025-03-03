@@ -44,12 +44,7 @@ func main() {
 	// }
 	svc := service.Newservice(log.Logger)
 
-	// innerServiceIDs := make(map[uuid.UUID]struct{}, len(config.Values().InnerServiceIDs))
-	// for _, id := range config.Values().InnerServiceIDs {
-	// 	innerServiceIDs[id] = struct{}{}
-	// }
-
-	// svc = middlewares.NewInternalMiddleware(svc, innerServiceIDs)
+	svc = middlewares.Newmiddleware(svc)
 
 	services := []externalapi.Option{
 		externalapi.Use(middlewares.Recover),

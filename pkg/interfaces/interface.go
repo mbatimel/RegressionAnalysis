@@ -21,7 +21,7 @@ import (
 // @tg 500=github.com/mbatimel/RegressionAnalysis/swaggers/externalApi/models:Err500
 type Regression interface {
 	// MlrRegression ...
-	// @tg http-method=GET
+	// @tg http-method=POST
 	// @tg http-path=/mlr
 	// @tg summary=`Ручка по рассчету MLR регрессии`
 	// @tg http-response=github.com/mbatimel/RegressionAnalysis/internal/transport/jsonRPC/custom-handlers:MlrRegression
@@ -31,7 +31,7 @@ type Regression interface {
 	MlrRegression(ctx context.Context, observer string, vars []string, dataPoints []models.DataPoint) (formula string, err error)
 	//
 	// RidgeRegression ...
-	// @tg http-method=GET
+	// @tg http-method=POST
 	// @tg http-path=/ridge
 	// @tg summary=`Ручка по рассчету ridge регрессии`
 	// @tg http-response=github.com/mbatimel/RegressionAnalysis/internal/transport/jsonRPC/custom-handlers:RidgeRegression
@@ -41,7 +41,7 @@ type Regression interface {
 	RidgeRegression(ctx context.Context, XData [][]float64, YData [][]float64, alpha float64, tol float64, normalize bool) (formula string, err error)
 	//
 	// LassoRegression ...
-	// @tg http-method=GET
+	// @tg http-method=POST
 	// @tg http-path=/lasso
 	// @tg summary=`Ручка по рассчету lasso регрессии`
 	// @tg http-response=github.com/mbatimel/RegressionAnalysis/internal/transport/jsonRPC/custom-handlers:LassoRegression
@@ -51,7 +51,7 @@ type Regression interface {
 	LassoRegression(ctx context.Context, XData [][]float64, YData [][]float64, alpha float64, tol float64, normalize bool) (formula string, err error)
 	//
 	// ElasticNetRegression ...
-	// @tg http-method=GET
+	// @tg http-method=POST
 	// @tg http-path=/elasticNet
 	// @tg summary=`Ручка по рассчету Elastic Net регрессии`
 	// @tg http-response=github.com/mbatimel/RegressionAnalysis/internal/transport/jsonRPC/custom-handlers:ElasticNetRegression
@@ -61,4 +61,7 @@ type Regression interface {
 	ElasticNetRegression(ctx context.Context, params models.ElasticNetParams) (formula map[string][]float64, err error)
 
 	// TODO: Логистик регрессия
+	// TODO: передача csv через curl запросы
+	// TODO: передача excel через curl
+	// TODO: переделываем вывод  результата MlrRegression
 }

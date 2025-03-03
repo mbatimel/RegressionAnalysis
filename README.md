@@ -3,7 +3,7 @@
 
 
 ДЛЯ MLR
-curl -X GET http://localhost:9000/api/v1/mlr \
+curl -X POST http://localhost:9000/api/v1/mlr \
 -H "Content-Type: application/json" \
 -d '{
     "observer": "Murders per annum per 1,000,000 inhabitants",

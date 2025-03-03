@@ -43,8 +43,8 @@ func (http *httpRegression) WithErrorHandler(handler ErrorHandler) *httpRegressi
 }
 
 func (http *httpRegression) SetRoutes(route *fiber.App) {
-	route.Get("/api/v1/mlr", http.serveMlrRegression)
-	route.Get("/api/v1/ridge", http.serveRidgeRegression)
-	route.Get("/api/v1/lasso", http.serveLassoRegression)
-	route.Get("/api/v1/elasticNet", http.serveElasticNetRegression)
+	route.Post("/api/v1/mlr", http.serveMlrRegression)
+	route.Post("/api/v1/ridge", http.serveRidgeRegression)
+	route.Post("/api/v1/lasso", http.serveLassoRegression)
+	route.Post("/api/v1/elasticNet", http.serveElasticNetRegression)
 }
