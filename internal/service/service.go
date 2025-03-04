@@ -2,8 +2,12 @@ package service
 
 import (
 	"context"
+	"encoding/csv"
 	"fmt"
+	"io"
 	"math"
+	"mime/multipart"
+	"strconv"
 
 	linearmodel "github.com/mbatimel/RegressionAnalysis/internal/linear_model"
 
@@ -34,6 +38,72 @@ func (rs *regressionService) MlrRegression(ctx context.Context, observer string,
 	// Вывод результатов (можно заменить на логирование или возврат результата)
 	return fmt.Sprintf("Regression formula:%v", r.Formula), nil
 
+}
+func (rs *regressionService) MlrRegressionCSV(ctx context.Context, observer string, vars []string, file multipart.File) (string, error) {
+	r := new(linearmodel.Regression)
+	r.SetObserved(observer)
+	for i, v := range vars {
+		r.SetVar(i, v)
+	}
+
+	reader := csv.NewReader(file)
+	header, err := reader.Read()
+	if err != nil {
+		return "", fmt.Errorf("failed to read CSV header: %w", err)
+	}
+
+	var dataPoints []models.DataPoint
+	for {
+		row, err := reader.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return "", fmt.Errorf("failed to read CSV row: %w", err)
+		}
+
+		if len(row) != len(header) {
+			return "", fmt.Errorf("row length mismatch with header")
+		}
+
+		observed, err := strconv.ParseFloat(row[0], 64)
+		if err != nil {
+			return "", fmt.Errorf("invalid observed value: %w", err)
+		}
+
+		variables := make([]float64, len(vars))
+		for i, v := range vars {
+			index := indexOf(v, header)
+			if index == -1 {
+				return "", fmt.Errorf("variable %s not found in CSV header", v)
+			}
+			variables[i], err = strconv.ParseFloat(row[index], 64)
+			if err != nil {
+				return "", fmt.Errorf("invalid variable value %s: %w", v, err)
+			}
+		}
+
+		dataPoints = append(dataPoints, models.DataPoint{Observed: observed, Variables: variables})
+	}
+
+	for _, dp := range dataPoints {
+		r.Train(linearmodel.DataPoint(dp.Observed, dp.Variables))
+	}
+
+	if err := r.Run(); err != nil {
+		return "", fmt.Errorf("failed to train model: %w", err)
+	}
+
+	return fmt.Sprintf("Regression formula: %v", r.Formula), nil
+}
+
+func indexOf(value string, list []string) int {
+	for i, v := range list {
+		if v == value {
+			return i
+		}
+	}
+	return -1
 }
 
 func (rs *regressionService) RidgeRegression(

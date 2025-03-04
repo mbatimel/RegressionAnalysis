@@ -6,6 +6,7 @@ import (
 	v2 "github.com/gofiber/fiber/v2"
 	"github.com/mbatimel/RegressionAnalysis/internal/models"
 	"github.com/mbatimel/RegressionAnalysis/pkg/interfaces"
+	"mime/multipart"
 	"strconv"
 	"time"
 )
@@ -39,6 +40,29 @@ func (m metricsRegression) MlrRegression(ctx context.Context, observer string, v
 	}(time.Now())
 
 	return m.next.MlrRegression(ctx, observer, vars, dataPoints)
+}
+
+func (m metricsRegression) MlrRegressionCSV(ctx context.Context, observer string, vars []string, file multipart.File) (formula string, err error) {
+
+	defer func(_begin time.Time) {
+		var (
+			success = true
+			errCode int
+		)
+		if err != nil {
+			success = false
+			errCode = v2.StatusInternalServerError
+			ec, ok := err.(withErrorCode)
+			if ok {
+				errCode = ec.Code()
+			}
+		}
+		RequestCount.WithLabelValues("regression", "mlrRegressionCSV", strconv.FormatBool(success), strconv.Itoa(errCode)).Add(1)
+		RequestCountAll.WithLabelValues("regression", "mlrRegressionCSV", strconv.FormatBool(success), strconv.Itoa(errCode)).Add(1)
+		RequestLatency.WithLabelValues("regression", "mlrRegressionCSV", strconv.FormatBool(success), strconv.Itoa(errCode)).Observe(time.Since(_begin).Seconds())
+	}(time.Now())
+
+	return m.next.MlrRegressionCSV(ctx, observer, vars, file)
 }
 
 func (m metricsRegression) RidgeRegression(ctx context.Context, xData [][]float64, yData [][]float64, alpha float64, tol float64, normalize bool) (formula string, err error) {

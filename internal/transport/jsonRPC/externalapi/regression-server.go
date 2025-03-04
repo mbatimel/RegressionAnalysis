@@ -5,11 +5,13 @@ import (
 	"context"
 	"github.com/mbatimel/RegressionAnalysis/internal/models"
 	"github.com/mbatimel/RegressionAnalysis/pkg/interfaces"
+	"mime/multipart"
 )
 
 type serverRegression struct {
 	svc                  interfaces.Regression
 	mlrRegression        RegressionMlrRegression
+	mlrRegressionCSV     RegressionMlrRegressionCSV
 	ridgeRegression      RegressionRidgeRegression
 	lassoRegression      RegressionLassoRegression
 	elasticNetRegression RegressionElasticNetRegression
@@ -18,6 +20,7 @@ type serverRegression struct {
 type MiddlewareSetRegression interface {
 	Wrap(m MiddlewareRegression)
 	WrapMlrRegression(m MiddlewareRegressionMlrRegression)
+	WrapMlrRegressionCSV(m MiddlewareRegressionMlrRegressionCSV)
 	WrapRidgeRegression(m MiddlewareRegressionRidgeRegression)
 	WrapLassoRegression(m MiddlewareRegressionLassoRegression)
 	WrapElasticNetRegression(m MiddlewareRegressionElasticNetRegression)
@@ -31,6 +34,7 @@ func newServerRegression(svc interfaces.Regression) *serverRegression {
 		elasticNetRegression: svc.ElasticNetRegression,
 		lassoRegression:      svc.LassoRegression,
 		mlrRegression:        svc.MlrRegression,
+		mlrRegressionCSV:     svc.MlrRegressionCSV,
 		ridgeRegression:      svc.RidgeRegression,
 		svc:                  svc,
 	}
@@ -39,6 +43,7 @@ func newServerRegression(svc interfaces.Regression) *serverRegression {
 func (srv *serverRegression) Wrap(m MiddlewareRegression) {
 	srv.svc = m(srv.svc)
 	srv.mlrRegression = srv.svc.MlrRegression
+	srv.mlrRegressionCSV = srv.svc.MlrRegressionCSV
 	srv.ridgeRegression = srv.svc.RidgeRegression
 	srv.lassoRegression = srv.svc.LassoRegression
 	srv.elasticNetRegression = srv.svc.ElasticNetRegression
@@ -46,6 +51,10 @@ func (srv *serverRegression) Wrap(m MiddlewareRegression) {
 
 func (srv *serverRegression) MlrRegression(ctx context.Context, observer string, vars []string, dataPoints []models.DataPoint) (formula string, err error) {
 	return srv.mlrRegression(ctx, observer, vars, dataPoints)
+}
+
+func (srv *serverRegression) MlrRegressionCSV(ctx context.Context, observer string, vars []string, file multipart.File) (formula string, err error) {
+	return srv.mlrRegressionCSV(ctx, observer, vars, file)
 }
 
 func (srv *serverRegression) RidgeRegression(ctx context.Context, xData [][]float64, yData [][]float64, alpha float64, tol float64, normalize bool) (formula string, err error) {
@@ -62,6 +71,10 @@ func (srv *serverRegression) ElasticNetRegression(ctx context.Context, params mo
 
 func (srv *serverRegression) WrapMlrRegression(m MiddlewareRegressionMlrRegression) {
 	srv.mlrRegression = m(srv.mlrRegression)
+}
+
+func (srv *serverRegression) WrapMlrRegressionCSV(m MiddlewareRegressionMlrRegressionCSV) {
+	srv.mlrRegressionCSV = m(srv.mlrRegressionCSV)
 }
 
 func (srv *serverRegression) WrapRidgeRegression(m MiddlewareRegressionRidgeRegression) {

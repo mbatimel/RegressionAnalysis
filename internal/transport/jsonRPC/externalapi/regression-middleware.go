@@ -5,9 +5,11 @@ import (
 	"context"
 	"github.com/mbatimel/RegressionAnalysis/internal/models"
 	"github.com/mbatimel/RegressionAnalysis/pkg/interfaces"
+	"mime/multipart"
 )
 
 type RegressionMlrRegression func(ctx context.Context, observer string, vars []string, dataPoints []models.DataPoint) (formula string, err error)
+type RegressionMlrRegressionCSV func(ctx context.Context, observer string, vars []string, file multipart.File) (formula string, err error)
 type RegressionRidgeRegression func(ctx context.Context, xData [][]float64, yData [][]float64, alpha float64, tol float64, normalize bool) (formula string, err error)
 type RegressionLassoRegression func(ctx context.Context, xData [][]float64, yData [][]float64, alpha float64, tol float64, normalize bool) (formula string, err error)
 type RegressionElasticNetRegression func(ctx context.Context, params models.ElasticNetParams) (formula map[string][]float64, err error)
@@ -15,6 +17,7 @@ type RegressionElasticNetRegression func(ctx context.Context, params models.Elas
 type MiddlewareRegression func(next interfaces.Regression) interfaces.Regression
 
 type MiddlewareRegressionMlrRegression func(next RegressionMlrRegression) RegressionMlrRegression
+type MiddlewareRegressionMlrRegressionCSV func(next RegressionMlrRegressionCSV) RegressionMlrRegressionCSV
 type MiddlewareRegressionRidgeRegression func(next RegressionRidgeRegression) RegressionRidgeRegression
 type MiddlewareRegressionLassoRegression func(next RegressionLassoRegression) RegressionLassoRegression
 type MiddlewareRegressionElasticNetRegression func(next RegressionElasticNetRegression) RegressionElasticNetRegression

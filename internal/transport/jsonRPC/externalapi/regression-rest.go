@@ -28,6 +28,27 @@ func (http *httpRegression) serveMlrRegression(ctx *fiber.Ctx) (err error) {
 
 	return customhandlers.MlrRegression(ctx, http.svc, request.Observer, request.Vars, request.DataPoints)
 }
+func (http *httpRegression) mlrRegressionCSV(ctx context.Context, request requestRegressionMlrRegressionCSV) (response responseRegressionMlrRegressionCSV, err error) {
+
+	response.Formula, err = http.svc.MlrRegressionCSV(ctx, request.Observer, request.Vars, request.File)
+	if err != nil {
+		if http.errorHandler != nil {
+			err = http.errorHandler(err)
+		}
+	}
+	return
+}
+func (http *httpRegression) serveMlrRegressionCSV(ctx *fiber.Ctx) (err error) {
+
+	var request requestRegressionMlrRegressionCSV
+	if err = ctx.BodyParser(&request); err != nil {
+		ctx.Response().SetStatusCode(fiber.StatusBadRequest)
+		_, err = ctx.WriteString("request body could not be decoded: " + err.Error())
+		return
+	}
+
+	return customhandlers.MlrRegressionCSV(ctx, http.svc, request.Observer, request.Vars, request.File)
+}
 func (http *httpRegression) ridgeRegression(ctx context.Context, request requestRegressionRidgeRegression) (response responseRegressionRidgeRegression, err error) {
 
 	response.Formula, err = http.svc.RidgeRegression(ctx, request.XData, request.YData, request.Alpha, request.Tol, request.Normalize)

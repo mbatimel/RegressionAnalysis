@@ -121,6 +121,42 @@ paths:
                     description: Method Not Allowed
                 "500":
                     description: Internal Server Error
+    /api/v1/mlrCSV:
+        post:
+            tags:
+                - Regression
+            summary: Ручка по рассчету MLR регрессии из scv
+            description: Ручка возвращает формулу и параметры
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/requestRegressionMlrRegressionCSV'
+            responses:
+                "200":
+                    description: Successful operation
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    additionalErrors: {}
+                                    data:
+                                        type: string
+                                        description: массив объектов оплат
+                                    error:
+                                        type: boolean
+                                        description: Флаг показывающий, что ответ пришел с ошибкой
+                                    errorText:
+                                        type: string
+                "400":
+                    description: Bad Request
+                "403":
+                    description: Forbidden
+                "405":
+                    description: Method Not Allowed
+                "500":
+                    description: Internal Server Error
     /api/v1/ridge:
         post:
             tags:
@@ -261,6 +297,22 @@ components:
                         type: string
                     nullable: true
             description: Ручка возвращает формулу и параметры
+        requestRegressionMlrRegressionCSV:
+            type: object
+            required:
+                - observer
+                - vars
+                - file
+            properties:
+                file: {}
+                observer:
+                    type: string
+                vars:
+                    type: array
+                    items:
+                        type: string
+                    nullable: true
+            description: Ручка возвращает формулу и параметры
         requestRegressionRidgeRegression:
             type: object
             required:
@@ -320,6 +372,14 @@ components:
                     type: string
             description: Ручка возвращает формулу и параметры
         responseRegressionMlrRegression:
+            type: object
+            required:
+                - formula
+            properties:
+                formula:
+                    type: string
+            description: Ручка возвращает формулу и параметры
+        responseRegressionMlrRegressionCSV:
             type: object
             required:
                 - formula

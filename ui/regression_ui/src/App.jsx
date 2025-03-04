@@ -6,7 +6,37 @@ function App() {
   const [responseRidgeData, setRidgeData] = useState(null);
   const [lassoResponse, setLassoResponse] = useState(null);
   const [elasticnetResponse, setElasticnetResponse] = useState(null);
+  const [file, setFile] = useState(null);
+  const [responseMLRCSVData, setMLRCSVData] = useState(null);
+  const handleFileChange = (event) => {
+    setFile(event.target.files[0]);
+  };
   
+  const uploadFile = async () => {
+    if (!file) {
+      alert("Выберите файл перед отправкой");
+      return;
+    }
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const response = await fetch('/api/v1/mlrCSV', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Ошибка загрузки файла');
+      }
+
+      const data = await response.json();
+      setMLRCSVData(data);
+      console.log(data);
+    } catch (error) {
+      console.error('Ошибка:', error);
+    }
+  };
 
   const MLR = async () => {
     const requestData = {
@@ -185,6 +215,16 @@ function App() {
               <pre>{JSON.stringify(elasticnetResponse, null, 2)}</pre>
             </div>
           )}
+
+        <h1>React File Upload</h1>
+        <input type="file" onChange={handleFileChange} />
+        <button onClick={uploadFile}>Отправить файл</button>
+        {responseMLRData && (
+          <div>
+            <h3>Ответ от сервера:</h3>
+            <pre>{JSON.stringify(responseMLRCSVData, null, 2)}</pre>
+          </div>
+        )}
       </header>
     </div>
   );

@@ -2,6 +2,7 @@ package customhandlers
 
 import (
 	"fmt"
+	"mime/multipart"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -57,6 +58,57 @@ func MlrRegression(ctx *fiber.Ctx, svc regression.Regression, observer string, v
 	}()
 
 	formula, err := svc.MlrRegression(ctx.Context(), observer, vars, dataPoints)
+	if err != nil {
+		sendResponse(ctx, log.Logger, nil, err)
+		return nil
+	}
+
+	sendResponse(ctx, log.Logger, formula, nil)
+	return err
+}
+func MlrRegressionCSV(ctx *fiber.Ctx, svc regression.Regression, observer string, vars []string, file multipart.File) error {
+	var (
+		methodName = "MlrRegressionCSV"
+		err        error
+	)
+
+	metrics := config.Metrics()
+	defer func(begin time.Time) {
+		fields := map[string]interface{}{
+			"method":   "get",
+			"path":     "/mlrCSV",
+			"observer": observer,
+			"vars":     vars,
+			"file":     file,
+			"service":  serviceName,
+			"took":     time.Since(begin).String(),
+		}
+		l := log.Info()
+		if err != nil {
+			if errors.Is(err, errors.ForbiddenError()) {
+				l = log.Warn().Err(err)
+			} else {
+				l = log.Error().Err(err)
+			}
+		}
+		l.Fields(fields).Msg("call")
+
+		metrics.RequestLatency.WithLabelValues(
+			serviceName,
+			methodName,
+			fmt.Sprint(err == nil),
+		).Observe(time.Since(begin).Seconds())
+	}(time.Now())
+
+	defer func() {
+		metrics.HttpCollector.WithLabelValues(
+			serviceName,
+			methodName,
+			fmt.Sprint(err == nil),
+		).Add(1)
+	}()
+
+	formula, err := svc.MlrRegressionCSV(ctx.Context(), observer, vars, file)
 	if err != nil {
 		sendResponse(ctx, log.Logger, nil, err)
 		return nil

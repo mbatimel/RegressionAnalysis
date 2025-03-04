@@ -19,7 +19,7 @@ curl -X POST http://localhost:9000/api/v1/mlr \
 
 
 Ridge
-curl -X GET http://localhost:9000/api/v1/ridge \
+curl -X POST http://localhost:9000/api/v1/ridge \
 -H "Content-Type: application/json" \
 -d '{
   "XData": [[0, 0], [1, 1], [2, 2]],
@@ -41,7 +41,7 @@ curl -X GET http://localhost:9000/api/v1/ridge \
 
 
 
-curl -X GET http://localhost:9000/api/v1/lasso \
+curl -X POST http://localhost:9000/api/v1/lasso \
 -H "Content-Type: application/json" \
 -d '{
   "XData": [[0, 0], [1, 1], [2, 2]],
@@ -55,7 +55,7 @@ curl -X GET http://localhost:9000/api/v1/lasso \
 
 
 elasticnet
-curl -X GET http://localhost:9000/api/v1/elasticnet \
+curl -X POST http://localhost:9000/api/v1/elasticnet \
   -H "Content-Type: application/json" \
   -d '{
     "params":{
@@ -66,3 +66,10 @@ curl -X GET http://localhost:9000/api/v1/elasticnet \
     "n_alphas": 20
     }
   }'
+
+MLR CSV
+curl -X POST http://localhost:9000/api/v1/mlrCSV \
+     -H "Content-Type: multipart/form-data" \
+     -F "file=@examples/autos.csv"
+
+/Users/macbook/Desktop/ДИПЛОМ/RegressionAnalysis/examples/autos.csv
