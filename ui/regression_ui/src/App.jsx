@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import './App.css';
+import './styles/App.css';
+import { Header } from './components/Header/Header';
 
 function App() {
   const [responseMLRData, setMLRData] = useState(null);
@@ -185,6 +186,9 @@ function App() {
 
   return (
     <div className="App">
+      <Header isRed={true}>
+        <span>Regression analytics</span>
+      </Header>
       <header className="App-header">
         <h1>React cURL Buttons</h1>
         <button onClick={MLR}>MLR </button>
