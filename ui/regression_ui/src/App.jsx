@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './styles/App.css';
+import './styles/Buttons.css';
 import { Header } from './components/Header/Header';
 
 function App() {
@@ -12,7 +13,23 @@ function App() {
   const handleFileChange = (event) => {
     setFile(event.target.files[0]);
   };
-  
+  const [rows, setRows] = useState(0);
+  const [cols, setCols] = useState(0);
+
+  const handleRowsChange = (e) => setRows(e.target.value);
+  const handleColsChange = (e) => setCols(e.target.value);
+
+  const generateTable = () => {
+    let table = [];
+    for (let i = 0; i < rows; i++) {
+      let row = [];
+      for (let j = 0; j < cols; j++) {
+        row.push(<td key={j}>Row {i + 1}, Col {j + 1}</td>);
+      }
+      table.push(<tr key={i}>{row}</tr>);
+    }
+    return table;
+  };
   const uploadFile = async () => {
     if (!file) {
       alert("Выберите файл перед отправкой");
@@ -183,36 +200,62 @@ function App() {
       console.error('Error:', error);
     }
   };
-
   return (
     <div className="App">
       <Header isRed={true}>
         <span>Regression analytics</span>
       </Header>
+      <div>
+      <div>
+        <label>
+          Количество строк:
+          <input
+            type="number"
+            value={rows}
+            onChange={handleRowsChange}
+          />
+        </label>
+      </div>
+      <div>
+        <label>
+          Количество столбцов:
+          <input
+            type="number"
+            value={cols}
+            onChange={handleColsChange}
+          />
+        </label>
+      </div>
+      <table border="1">
+        <tbody>
+          {generateTable()}
+        </tbody>
+      </table>
+    </div>
       <header className="App-header">
         <h1>React cURL Buttons</h1>
-        <button onClick={MLR}>MLR </button>
+        <button className="MLRButton" onClick={MLR}>MLR </button>
             {responseMLRData && (
             <div>
               <h3>Ответ от сервера:</h3>
               <pre>{JSON.stringify(responseMLRData, null, 2)}</pre>
             </div>
           )}
-        <button onClick={Ridge}>Ridge</button>
+        <button className="RidgeButton" onClick={Ridge}>Ridge</button>
         {responseRidgeData && (
             <div>
               <h3>Ответ от сервера:</h3>
               <pre>{JSON.stringify(responseRidgeData, null, 2)}</pre>
             </div>
           )}
-        <button onClick={Lasso}>Lasso</button>
+        <button className="LassoButton" onClick={Lasso}>Lasso</button>
         {lassoResponse && (
             <div>
               <h3>Ответ от сервера:</h3>
               <pre>{JSON.stringify(lassoResponse, null, 2)}</pre>
             </div>
           )}
-        <button onClick={ElasticNet}>Elastic</button>
+        <button className="ElastNetButton" onClick={ElasticNet}>Elastic</button>
         {elasticnetResponse && (
             <div>
               <h3>Ответ от сервера:</h3>
@@ -221,8 +264,8 @@ function App() {
           )}
 
         <h1>React File Upload</h1>
-        <input type="file" onChange={handleFileChange} />
-        <button onClick={uploadFile}>Отправить файл</button>
+        <input type="file" onChange={handleFileChange} /> 
+        <button className="UploadButton" onClick={uploadFile}>Отправить файл</button>
         {responseMLRData && (
           <div>
             <h3>Ответ от сервера:</h3>
