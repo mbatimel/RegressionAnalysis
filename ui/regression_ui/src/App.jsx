@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import './styles/App.css';
 import './styles/Buttons.css';
 import { Header } from './components/Header/Header';
+import Documentation from './components/Documentation/Documentation';
 
 function App() {
   const [responseMLRData, setMLRData] = useState(null);
@@ -10,6 +11,11 @@ function App() {
   const [elasticnetResponse, setElasticnetResponse] = useState(null);
   const [file, setFile] = useState(null);
   const [responseMLRCSVData, setMLRCSVData] = useState(null);
+  const [selectedMethod, setSelectedMethod] = useState("MLR");
+  
+  const handleMethodChange = (e) => {
+    setSelectedMethod(e.target.value);
+  };
   const handleFileChange = (event) => {
     setFile(event.target.files[0]);
   };
@@ -236,28 +242,28 @@ function App() {
         <h1>React cURL Buttons</h1>
         <button className="MLRButton" onClick={MLR}>MLR </button>
             {responseMLRData && (
-            <div>
+            <div className="result-box">
               <h3>Ответ от сервера:</h3>
               <pre>{JSON.stringify(responseMLRData, null, 2)}</pre>
             </div>
           )}
         <button className="RidgeButton" onClick={Ridge}>Ridge</button>
         {responseRidgeData && (
-            <div>
+            <div className="result-box">
               <h3>Ответ от сервера:</h3>
               <pre>{JSON.stringify(responseRidgeData, null, 2)}</pre>
             </div>
           )}
         <button className="LassoButton" onClick={Lasso}>Lasso</button>
         {lassoResponse && (
-            <div>
+            <div className="result-box">
               <h3>Ответ от сервера:</h3>
               <pre>{JSON.stringify(lassoResponse, null, 2)}</pre>
             </div>
           )}
         <button className="ElastNetButton" onClick={ElasticNet}>Elastic</button>
         {elasticnetResponse && (
-            <div>
+            <div className="result-box">
               <h3>Ответ от сервера:</h3>
               <pre>{JSON.stringify(elasticnetResponse, null, 2)}</pre>
             </div>
@@ -267,11 +273,24 @@ function App() {
         <input type="file" onChange={handleFileChange} /> 
         <button className="UploadButton" onClick={uploadFile}>Отправить файл</button>
         {responseMLRData && (
-          <div>
+          <div className="result-box">
             <h3>Ответ от сервера:</h3>
             <pre>{JSON.stringify(responseMLRCSVData, null, 2)}</pre>
           </div>
         )}
+        <h2>📜 Документация по методам регрессии</h2>
+        <div>
+          <label>Выберите метод регрессии: </label>
+          <select value={selectedMethod} onChange={handleMethodChange}>
+            <option value="MLR">MLR (Multiple Linear Regression)</option>
+            <option value="Ridge">Ridge Regression</option>
+            <option value="Lasso">Lasso Regression</option>
+            <option value="ElasticNet">Elastic Net Regression</option>
+          </select>
+        </div>
+
+        {/* Подключаем компонент с документацией */}
+        <Documentation selectedMethod={selectedMethod} />
       </header>
     </div>
   );
