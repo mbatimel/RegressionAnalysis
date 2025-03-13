@@ -12,30 +12,65 @@ function App() {
   const [file, setFile] = useState(null);
   const [responseMLRCSVData, setMLRCSVData] = useState(null);
   const [selectedMethod, setSelectedMethod] = useState("MLR");
+  const [tableData, setTableData] = useState([]);
+  const [headers, setHeaders] = useState([]);
   
+  const handleRowsChange = (e) => setRows(e.target.value)||1;
+  const handleColsChange = (e) => setCols(e.target.value)||1;
+  const updateTableData = (rowIndex, colIndex, value) => {
+    const newData = [...tableData];
+    if (!newData[rowIndex]) newData[rowIndex] = [];
+    newData[rowIndex][colIndex] = value;
+    setTableData(newData);
+  };
   const handleMethodChange = (e) => {
     setSelectedMethod(e.target.value);
   };
   const handleFileChange = (event) => {
     setFile(event.target.files[0]);
   };
-  const [rows, setRows] = useState(0);
-  const [cols, setCols] = useState(0);
-
-  const handleRowsChange = (e) => setRows(e.target.value);
-  const handleColsChange = (e) => setCols(e.target.value);
-
+  const [rows, setRows] = useState(1);
+  const [cols, setCols] = useState(1);
   const generateTable = () => {
-    let table = [];
-    for (let i = 0; i < rows; i++) {
-      let row = [];
-      for (let j = 0; j < cols; j++) {
-        row.push(<td key={j}>Row {i + 1}, Col {j + 1}</td>);
-      }
-      table.push(<tr key={i}>{row}</tr>);
-    }
-    return table;
-  };
+  if (cols < 1 || rows < 1) return <p>Введите корректные размеры таблицы</p>;
+  return(
+    <table border="1">
+      <thead>
+        <tr>
+          {["Y", ...Array(cols - 1).fill(0).map((_, i) => `X${i + 1}`)].map((label, index) => (
+            <th key={index}>
+              <input
+                type="text"
+                placeholder={label}
+                value={headers[index] || ""}
+                onChange={(e) => {
+                  const newHeaders = [...headers];
+                  newHeaders[index] = e.target.value;
+                  setHeaders(newHeaders);
+                }}
+              />
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {Array.from({ length: rows }).map((_, rowIndex) => (
+          <tr key={rowIndex}>
+            {Array.from({ length: cols }).map((_, colIndex) => (
+              <td key={colIndex}>
+                <input
+                  type="text"
+                  value={tableData[rowIndex]?.[colIndex] || ""}
+                  onChange={(e) => updateTableData(rowIndex, colIndex, e.target.value)}
+                />
+              </td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+};
   const uploadFile = async () => {
     if (!file) {
       alert("Выберите файл перед отправкой");
@@ -63,20 +98,18 @@ function App() {
   };
 
   const MLR = async () => {
+    if (!headers.length || !tableData.length) {
+      alert("Введите данные в таблицу перед отправкой запроса");
+      return;
+    }
+
     const requestData = {
-      observer: "Murders per annum per 1,000,000 inhabitants",
-      vars: [
-        "Inhabitants",
-        "Percent with incomes below $5000",
-        "Percent unemployed"
-      ],
-      dataPoints: [
-        { obs: 11.2, vares: [587000, 16.5, 6.2] },
-        { obs: 13.4, vares: [643000, 20.5, 6.4] },
-        { obs: 40.7, vares: [635000, 26.3, 9.3] },
-        { obs: 5.3, vares: [692000, 16.5, 5.3] },
-        { obs: 24.8, vares: [1248000, 19.2, 7.3] }
-      ]
+      observer: "Y",
+      vars: Array.from({ length: cols - 1 }, (_, i) => `X${i + 1}`),
+      dataPoints: tableData.map(row => ({
+        obs: parseFloat(row[0]),
+        vares: row.slice(1).map(Number),
+      })),
     };
 
     try {
@@ -93,8 +126,8 @@ function App() {
       } 
 
       const data = await response.json();
-      setMLRData(data);  
-      console.log(data); 
+      setMLRData(data);
+      console.log(data);
     } catch (error) {
       console.error('Error:', error);
     }
@@ -232,21 +265,20 @@ function App() {
           />
         </label>
       </div>
-      <table border="1">
-        <tbody>
-          {generateTable()}
-        </tbody>
-      </table>
+        {generateTable()}
     </div>
       <header className="App-header">
         <h1>React cURL Buttons</h1>
-        <button className="MLRButton" onClick={MLR}>MLR </button>
-            {responseMLRData && (
-            <div className="result-box">
-              <h3>Ответ от сервера:</h3>
-              <pre>{JSON.stringify(responseMLRData, null, 2)}</pre>
-            </div>
-          )}
+        <button className="MLRButton" onClick={MLR}>MLR</button>
+      {responseMLRData && (
+        <div className="result-box">
+          <h3>Формула:</h3>
+          <p>Y = {headers[0]}</p>
+          {headers.slice(1).map((name, i) => <p key={i}>X{i + 1} = {name}</p>)}
+          <h3>Ответ от сервера:</h3>
+          <pre>{JSON.stringify(responseMLRData, null, 2)}</pre>
+        </div>
+      )}
         <button className="RidgeButton" onClick={Ridge}>Ridge</button>
         {responseRidgeData && (
             <div className="result-box">
@@ -297,4 +329,3 @@ function App() {
 }
 
 export default App;
-
