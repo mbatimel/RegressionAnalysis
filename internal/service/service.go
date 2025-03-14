@@ -4,10 +4,12 @@ import (
 	"context"
 	"encoding/csv"
 	"fmt"
-	"io"
+	"strconv"
+	"strings"
+
 	"math"
 	"mime/multipart"
-	"strconv"
+	"os"
 
 	linearmodel "github.com/mbatimel/RegressionAnalysis/internal/linear_model"
 
@@ -41,39 +43,34 @@ func (rs *regressionService) MlrRegression(ctx context.Context, observer string,
 }
 func (rs *regressionService) MlrRegressionCSV(ctx context.Context, file multipart.File) (string, error) {
 	r := new(linearmodel.Regression)
-	reader := csv.NewReader(file)
-	header, err := reader.Read()
-	
+	_ =file
+	csvFile, err := os.Open("/Users/macbook/Desktop/ДИПЛОМ/RegressionAnalysis/examples/autos2.csv")
+	if err != nil {
+		fmt.Println(err)
+	}
+	reader := csv.NewReader(csvFile)
+	header, err := reader.ReadAll()
 	if err != nil {
 		return "", fmt.Errorf("failed to read CSV header: %w", err)
 	}
+	parts := strings.Split(header[0][0], ";")
+	r.SetObserved(parts[0])
+	for i := 1; i<len(parts);i++{
+		r.SetVar(i-1,parts[i])
+	}
+
 	var dataPoints []models.DataPoint
-	for {
-		row, err := reader.Read()
-
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			return "", fmt.Errorf("failed to read CSV row: %w", err)
-		}
-
-		if len(row) != len(header) {
-			return "", fmt.Errorf("row length mismatch with header")
-		}
-
-		// Первая колонка — целевая переменная (observed)
-		observed, err := strconv.ParseFloat(row[0], 64)
+	for i:=1;i<len(header)-1;i++ {
+		parts := strings.Split(header[i][0], ";")
+		observed, err := strconv.ParseFloat(parts[0], 64)
 		if err != nil {
 			return "", fmt.Errorf("invalid observed value: %w", err)
 		}
-
-		// Оставшиеся колонки — переменные
-		variables := make([]float64, len(header)-1)
-		for i := 1; i < len(header); i++ {
-			variables[i-1], err = strconv.ParseFloat(row[i], 64)
+		variables := make([]float64, len(parts)-1)
+		for j := 1; j < len(parts); j++ {
+			variables[j-1], err = strconv.ParseFloat(parts[j], 64)
 			if err != nil {
-				return "", fmt.Errorf("invalid variable value in column %s: %w", header[i], err)
+				return "", fmt.Errorf("invalid variable value in column %s: %w", header[j], err)
 			}
 		}
 
@@ -84,7 +81,6 @@ func (rs *regressionService) MlrRegressionCSV(ctx context.Context, file multipar
 	for _, dp := range dataPoints {
 		r.Train(linearmodel.DataPoint(dp.Observed, dp.Variables))
 	}
-
 	if err := r.Run(); err != nil {
 		return "", fmt.Errorf("failed to train model: %w", err)
 	}
