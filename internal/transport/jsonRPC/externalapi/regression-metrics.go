@@ -42,7 +42,7 @@ func (m metricsRegression) MlrRegression(ctx context.Context, observer string, v
 	return m.next.MlrRegression(ctx, observer, vars, dataPoints)
 }
 
-func (m metricsRegression) MlrRegressionCSV(ctx context.Context, observer string, vars []string, file multipart.File) (formula string, err error) {
+func (m metricsRegression) MlrRegressionCSV(ctx context.Context, file multipart.File) (formula string, err error) {
 
 	defer func(_begin time.Time) {
 		var (
@@ -62,7 +62,7 @@ func (m metricsRegression) MlrRegressionCSV(ctx context.Context, observer string
 		RequestLatency.WithLabelValues("regression", "mlrRegressionCSV", strconv.FormatBool(success), strconv.Itoa(errCode)).Observe(time.Since(_begin).Seconds())
 	}(time.Now())
 
-	return m.next.MlrRegressionCSV(ctx, observer, vars, file)
+	return m.next.MlrRegressionCSV(ctx, file)
 }
 
 func (m metricsRegression) RidgeRegression(ctx context.Context, xData [][]float64, yData [][]float64, alpha float64, tol float64, normalize bool) (formula string, err error) {

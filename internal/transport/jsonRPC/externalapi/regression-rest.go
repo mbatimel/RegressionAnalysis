@@ -30,7 +30,7 @@ func (http *httpRegression) serveMlrRegression(ctx *fiber.Ctx) (err error) {
 }
 func (http *httpRegression) mlrRegressionCSV(ctx context.Context, request requestRegressionMlrRegressionCSV) (response responseRegressionMlrRegressionCSV, err error) {
 
-	response.Formula, err = http.svc.MlrRegressionCSV(ctx, request.Observer, request.Vars, request.File)
+	response.Formula, err = http.svc.MlrRegressionCSV(ctx, request.File)
 	if err != nil {
 		if http.errorHandler != nil {
 			err = http.errorHandler(err)
@@ -47,7 +47,7 @@ func (http *httpRegression) serveMlrRegressionCSV(ctx *fiber.Ctx) (err error) {
 		return
 	}
 
-	return customhandlers.MlrRegressionCSV(ctx, http.svc, request.Observer, request.Vars, request.File)
+	return customhandlers.MlrRegressionCSV(ctx, http.svc, request.File)
 }
 func (http *httpRegression) ridgeRegression(ctx context.Context, request requestRegressionRidgeRegression) (response responseRegressionRidgeRegression, err error) {
 

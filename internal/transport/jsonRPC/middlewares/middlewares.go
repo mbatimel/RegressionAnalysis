@@ -15,8 +15,8 @@ type middleware struct {
 func (m *middleware) MlrRegression(ctx context.Context, observer string, vars []string, dataPoints []models.DataPoint) (formula string, err error) {
 	return m.regression.MlrRegression(ctx, observer, vars, dataPoints)
 }
-func (m *middleware) MlrRegressionCSV(ctx context.Context, observer string, vars []string, file multipart.File) (formula string, err error) {
-	return m.regression.MlrRegressionCSV(ctx, observer, vars, file)
+func (m *middleware) MlrRegressionCSV(ctx context.Context,file multipart.File) (formula string, err error) {
+	return m.regression.MlrRegressionCSV(ctx, file)
 }
 
 func (m *middleware) RidgeRegression(ctx context.Context, XData [][]float64, YData [][]float64, alpha float64, tol float64, normalize bool) (formula string, err error) {

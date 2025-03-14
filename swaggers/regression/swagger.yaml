@@ -300,18 +300,9 @@ components:
         requestRegressionMlrRegressionCSV:
             type: object
             required:
-                - observer
-                - vars
                 - file
             properties:
                 file: {}
-                observer:
-                    type: string
-                vars:
-                    type: array
-                    items:
-                        type: string
-                    nullable: true
             description: Ручка возвращает формулу и параметры
         requestRegressionRidgeRegression:
             type: object

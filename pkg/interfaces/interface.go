@@ -38,7 +38,7 @@ type Regression interface {
 	// @tg desc=`Ручка возвращает формулу и параметры`
 	// @tg 400=github.com/mbatimel/RegressionAnalysis/swaggers/externalApi/models:Err400
 	// @tg 200=github.com/mbatimel/RegressionAnalysis/pkg/models:MlrRegressionResp200
-	MlrRegressionCSV(ctx context.Context, observer string, vars []string, file multipart.File) (formula string, err error)
+	MlrRegressionCSV(ctx context.Context, file multipart.File) (formula string, err error)
 	//
 	// RidgeRegression ...
 	// @tg http-method=POST

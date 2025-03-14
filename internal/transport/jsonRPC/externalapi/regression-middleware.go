@@ -9,7 +9,7 @@ import (
 )
 
 type RegressionMlrRegression func(ctx context.Context, observer string, vars []string, dataPoints []models.DataPoint) (formula string, err error)
-type RegressionMlrRegressionCSV func(ctx context.Context, observer string, vars []string, file multipart.File) (formula string, err error)
+type RegressionMlrRegressionCSV func(ctx context.Context, file multipart.File) (formula string, err error)
 type RegressionRidgeRegression func(ctx context.Context, xData [][]float64, yData [][]float64, alpha float64, tol float64, normalize bool) (formula string, err error)
 type RegressionLassoRegression func(ctx context.Context, xData [][]float64, yData [][]float64, alpha float64, tol float64, normalize bool) (formula string, err error)
 type RegressionElasticNetRegression func(ctx context.Context, params models.ElasticNetParams) (formula map[string][]float64, err error)

@@ -17,9 +17,7 @@ type responseRegressionMlrRegression struct {
 }
 
 type requestRegressionMlrRegressionCSV struct {
-	Observer string         `json:"observer,omitempty"`
-	Vars     []string       `json:"vars,omitempty"`
-	File     multipart.File `json:"file,omitempty"`
+	File multipart.File `json:"file,omitempty"`
 }
 
 type responseRegressionMlrRegressionCSV struct {

@@ -39,22 +39,18 @@ func (rs *regressionService) MlrRegression(ctx context.Context, observer string,
 	return fmt.Sprintf("Regression formula:%v", r.Formula), nil
 
 }
-func (rs *regressionService) MlrRegressionCSV(ctx context.Context, observer string, vars []string, file multipart.File) (string, error) {
+func (rs *regressionService) MlrRegressionCSV(ctx context.Context, file multipart.File) (string, error) {
 	r := new(linearmodel.Regression)
-	r.SetObserved(observer)
-	for i, v := range vars {
-		r.SetVar(i, v)
-	}
-
 	reader := csv.NewReader(file)
 	header, err := reader.Read()
+	
 	if err != nil {
 		return "", fmt.Errorf("failed to read CSV header: %w", err)
 	}
-
 	var dataPoints []models.DataPoint
 	for {
 		row, err := reader.Read()
+
 		if err == io.EOF {
 			break
 		}
@@ -66,26 +62,25 @@ func (rs *regressionService) MlrRegressionCSV(ctx context.Context, observer stri
 			return "", fmt.Errorf("row length mismatch with header")
 		}
 
+		// Первая колонка — целевая переменная (observed)
 		observed, err := strconv.ParseFloat(row[0], 64)
 		if err != nil {
 			return "", fmt.Errorf("invalid observed value: %w", err)
 		}
 
-		variables := make([]float64, len(vars))
-		for i, v := range vars {
-			index := indexOf(v, header)
-			if index == -1 {
-				return "", fmt.Errorf("variable %s not found in CSV header", v)
-			}
-			variables[i], err = strconv.ParseFloat(row[index], 64)
+		// Оставшиеся колонки — переменные
+		variables := make([]float64, len(header)-1)
+		for i := 1; i < len(header); i++ {
+			variables[i-1], err = strconv.ParseFloat(row[i], 64)
 			if err != nil {
-				return "", fmt.Errorf("invalid variable value %s: %w", v, err)
+				return "", fmt.Errorf("invalid variable value in column %s: %w", header[i], err)
 			}
 		}
 
 		dataPoints = append(dataPoints, models.DataPoint{Observed: observed, Variables: variables})
 	}
 
+	// Обучение модели
 	for _, dp := range dataPoints {
 		r.Train(linearmodel.DataPoint(dp.Observed, dp.Variables))
 	}
@@ -97,14 +92,6 @@ func (rs *regressionService) MlrRegressionCSV(ctx context.Context, observer stri
 	return fmt.Sprintf("Regression formula: %v", r.Formula), nil
 }
 
-func indexOf(value string, list []string) int {
-	for i, v := range list {
-		if v == value {
-			return i
-		}
-	}
-	return -1
-}
 
 func (rs *regressionService) RidgeRegression(
 	ctx context.Context,

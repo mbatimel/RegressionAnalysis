@@ -66,7 +66,7 @@ func MlrRegression(ctx *fiber.Ctx, svc regression.Regression, observer string, v
 	sendResponse(ctx, log.Logger, formula, nil)
 	return err
 }
-func MlrRegressionCSV(ctx *fiber.Ctx, svc regression.Regression, observer string, vars []string, file multipart.File) error {
+func MlrRegressionCSV(ctx *fiber.Ctx, svc regression.Regression, file multipart.File) error {
 	var (
 		methodName = "MlrRegressionCSV"
 		err        error
@@ -77,8 +77,6 @@ func MlrRegressionCSV(ctx *fiber.Ctx, svc regression.Regression, observer string
 		fields := map[string]interface{}{
 			"method":   "get",
 			"path":     "/mlrCSV",
-			"observer": observer,
-			"vars":     vars,
 			"file":     file,
 			"service":  serviceName,
 			"took":     time.Since(begin).String(),
@@ -107,8 +105,7 @@ func MlrRegressionCSV(ctx *fiber.Ctx, svc regression.Regression, observer string
 			fmt.Sprint(err == nil),
 		).Add(1)
 	}()
-
-	formula, err := svc.MlrRegressionCSV(ctx.Context(), observer, vars, file)
+	formula, err := svc.MlrRegressionCSV(ctx.Context(), file)
 	if err != nil {
 		sendResponse(ctx, log.Logger, nil, err)
 		return nil
