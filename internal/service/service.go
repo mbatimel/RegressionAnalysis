@@ -6,11 +6,11 @@ import (
 	"encoding/csv"
 	"fmt"
 	"io"
+	"sync"
 
 	"strconv"
 
 	"math"
-
 
 	linearmodel "github.com/mbatimel/RegressionAnalysis/internal/linear_model"
 
@@ -44,8 +44,10 @@ func (rs *regressionService) MlrRegression(ctx context.Context, observer string,
 }
 func (rs *regressionService) MlrRegressionCSV(ctx context.Context, file []byte) (string, error) {
 	r := new(linearmodel.Regression)
-	reader := csv.NewReader(bytes.NewReader(file)) // Обернули []byte в io.Reader
-	reader.Comma = ';'                            
+	reader := csv.NewReader(bytes.NewReader(file))
+	reader.Comma = ';'
+
+	// Читаем заголовки
 	header, err := reader.Read()
 	if err != nil {
 		rs.logger.Println("Ошибка чтения заголовков")
@@ -58,49 +60,71 @@ func (rs *regressionService) MlrRegressionCSV(ctx context.Context, file []byte) 
 		r.SetVar(i-1, header[i])
 	}
 
-	var dataPoints []models.DataPoint
+	// Канал для передачи данных
+	dataChan := make(chan models.DataPoint, 100)
+	errChan := make(chan error, 1)
+	var wg sync.WaitGroup
 
-	for {
-		record, err := reader.Read()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			return "", fmt.Errorf("error reading CSV row: %w", err)
-		}
-
-		observed, err := strconv.ParseFloat(record[0], 64)
-		if err != nil {
-			return "", fmt.Errorf("invalid observed value: %w", err)
-		}
-
-		variables := make([]float64, len(record)-1)
-		for j := 1; j < len(record); j++ {
-			variables[j-1], err = strconv.ParseFloat(record[j], 64)
-			if err != nil {
-				return "", fmt.Errorf("invalid variable value: %w", err)
+	// Запускаем обработку строк в отдельных горутинах
+	const workerCount = 10
+	for i := 0; i < workerCount; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for record := range dataChan {
+				r.Train(linearmodel.DataPoint(record.Observed, record.Variables))
 			}
+		}()
+	}
+
+	// Читаем строки и отправляем их в канал
+	go func() {
+		defer close(dataChan)
+		for {
+			record, err := reader.Read()
+			if err == io.EOF {
+				break
+			}
+			if err != nil {
+				errChan <- fmt.Errorf("error reading CSV row: %w", err)
+				return
+			}
+
+			observed, err := strconv.ParseFloat(record[0], 64)
+			if err != nil {
+				errChan <- fmt.Errorf("invalid observed value: %w", err)
+				return
+			}
+
+			variables := make([]float64, len(record)-1)
+			for j := 1; j < len(record); j++ {
+				variables[j-1], err = strconv.ParseFloat(record[j], 64)
+				if err != nil {
+					errChan <- fmt.Errorf("invalid variable value: %w", err)
+					return
+				}
+			}
+
+			dataChan <- models.DataPoint{Observed: observed, Variables: variables}
 		}
+	}()
 
-		dataPoints = append(dataPoints, models.DataPoint{
-			Observed:  observed,
-			Variables: variables,
-		})
+	// Ждем завершения всех горутин
+	wg.Wait()
+	close(errChan)
+
+	// Проверяем ошибки
+	if err, ok := <-errChan; ok {
+		return "", err
 	}
 
-	// Обучаем модель
-	for _, dp := range dataPoints {
-		r.Train(linearmodel.DataPoint(dp.Observed, dp.Variables))
-	}
-
+	// Запускаем расчет модели
 	if err := r.Run(); err != nil {
 		return "", fmt.Errorf("failed to train model: %w", err)
 	}
 
 	return fmt.Sprintf("Regression formula: %v", r.Formula), nil
 }
-
-
 
 func (rs *regressionService) RidgeRegression(
 	ctx context.Context,
