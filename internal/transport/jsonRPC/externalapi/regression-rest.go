@@ -3,6 +3,7 @@ package externalapi
 
 import (
 	"context"
+	"io"
 	"github.com/gofiber/fiber/v2"
 	customhandlers "github.com/mbatimel/RegressionAnalysis/internal/transport/jsonRPC/custom-handlers"
 )
@@ -38,17 +39,34 @@ func (http *httpRegression) mlrRegressionCSV(ctx context.Context, request reques
 	}
 	return
 }
-func (http *httpRegression) serveMlrRegressionCSV(ctx *fiber.Ctx) (err error) {
-
-	var request requestRegressionMlrRegressionCSV
-	if err = ctx.BodyParser(&request); err != nil {
-		ctx.Response().SetStatusCode(fiber.StatusBadRequest)
-		_, err = ctx.WriteString("request body could not be decoded: " + err.Error())
-		return
+func (http *httpRegression) serveMlrRegressionCSV(ctx *fiber.Ctx) error {
+	// кастомная реализация, не убирать и возвращать
+	// Получаем файл из формы
+	fileHeader, err := ctx.FormFile("file")
+	if err != nil {
+		ctx.Status(fiber.StatusBadRequest).SendString("failed to get file: " + err.Error())
+		return err
 	}
 
-	return customhandlers.MlrRegressionCSV(ctx, http.svc, request.File)
+	// Открываем файл
+	file, err := fileHeader.Open()
+	if err != nil {
+		ctx.Status(fiber.StatusInternalServerError).SendString("failed to open file: " + err.Error())
+		return err
+	}
+	defer file.Close()
+
+	// Читаем файл в []byte
+	fileBytes, err := io.ReadAll(file)
+	if err != nil {
+		ctx.Status(fiber.StatusInternalServerError).SendString("failed to read file: " + err.Error())
+		return err
+	}
+
+	// Передаём файл в обработчик
+	return customhandlers.MlrRegressionCSV(ctx, http.svc, fileBytes)
 }
+
 func (http *httpRegression) ridgeRegression(ctx context.Context, request requestRegressionRidgeRegression) (response responseRegressionRidgeRegression, err error) {
 
 	response.Formula, err = http.svc.RidgeRegression(ctx, request.XData, request.YData, request.Alpha, request.Tol, request.Normalize)

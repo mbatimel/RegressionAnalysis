@@ -1,15 +1,16 @@
 package service
 
 import (
+	"bytes"
 	"context"
 	"encoding/csv"
 	"fmt"
+	"io"
+
 	"strconv"
-	"strings"
 
 	"math"
-	"mime/multipart"
-	"os"
+
 
 	linearmodel "github.com/mbatimel/RegressionAnalysis/internal/linear_model"
 
@@ -41,52 +42,64 @@ func (rs *regressionService) MlrRegression(ctx context.Context, observer string,
 	return fmt.Sprintf("Regression formula:%v", r.Formula), nil
 
 }
-func (rs *regressionService) MlrRegressionCSV(ctx context.Context, file multipart.File) (string, error) {
+func (rs *regressionService) MlrRegressionCSV(ctx context.Context, file []byte) (string, error) {
 	r := new(linearmodel.Regression)
-	_ =file
-	csvFile, err := os.Open("/Users/macbook/Desktop/ДИПЛОМ/RegressionAnalysis/examples/autos2.csv")
+	reader := csv.NewReader(bytes.NewReader(file)) // Обернули []byte в io.Reader
+	reader.Comma = ';'                            
+	header, err := reader.Read()
 	if err != nil {
-		fmt.Println(err)
-	}
-	reader := csv.NewReader(csvFile)
-	header, err := reader.ReadAll()
-	if err != nil {
+		rs.logger.Println("Ошибка чтения заголовков")
 		return "", fmt.Errorf("failed to read CSV header: %w", err)
 	}
-	parts := strings.Split(header[0][0], ";")
-	r.SetObserved(parts[0])
-	for i := 1; i<len(parts);i++{
-		r.SetVar(i-1,parts[i])
+
+	rs.logger.Println("Заголовки CSV прочитаны")
+	r.SetObserved(header[0])
+	for i := 1; i < len(header); i++ {
+		r.SetVar(i-1, header[i])
 	}
 
 	var dataPoints []models.DataPoint
-	for i:=1;i<len(header)-1;i++ {
-		parts := strings.Split(header[i][0], ";")
-		observed, err := strconv.ParseFloat(parts[0], 64)
+
+	for {
+		record, err := reader.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return "", fmt.Errorf("error reading CSV row: %w", err)
+		}
+
+		observed, err := strconv.ParseFloat(record[0], 64)
 		if err != nil {
 			return "", fmt.Errorf("invalid observed value: %w", err)
 		}
-		variables := make([]float64, len(parts)-1)
-		for j := 1; j < len(parts); j++ {
-			variables[j-1], err = strconv.ParseFloat(parts[j], 64)
+
+		variables := make([]float64, len(record)-1)
+		for j := 1; j < len(record); j++ {
+			variables[j-1], err = strconv.ParseFloat(record[j], 64)
 			if err != nil {
-				return "", fmt.Errorf("invalid variable value in column %s: %w", header[j], err)
+				return "", fmt.Errorf("invalid variable value: %w", err)
 			}
 		}
 
-		dataPoints = append(dataPoints, models.DataPoint{Observed: observed, Variables: variables})
+		dataPoints = append(dataPoints, models.DataPoint{
+			Observed:  observed,
+			Variables: variables,
+		})
 	}
 
-	// Обучение модели
+	// Обучаем модель
 	for _, dp := range dataPoints {
 		r.Train(linearmodel.DataPoint(dp.Observed, dp.Variables))
 	}
+
 	if err := r.Run(); err != nil {
 		return "", fmt.Errorf("failed to train model: %w", err)
 	}
 
 	return fmt.Sprintf("Regression formula: %v", r.Formula), nil
 }
+
 
 
 func (rs *regressionService) RidgeRegression(

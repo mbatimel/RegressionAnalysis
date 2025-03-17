@@ -2,7 +2,6 @@ package middlewares
 
 import (
 	"context"
-	"mime/multipart"
 
 	"github.com/mbatimel/RegressionAnalysis/internal/models"
 	external_service "github.com/mbatimel/RegressionAnalysis/pkg/interfaces"
@@ -15,7 +14,7 @@ type middleware struct {
 func (m *middleware) MlrRegression(ctx context.Context, observer string, vars []string, dataPoints []models.DataPoint) (formula string, err error) {
 	return m.regression.MlrRegression(ctx, observer, vars, dataPoints)
 }
-func (m *middleware) MlrRegressionCSV(ctx context.Context,file multipart.File) (formula string, err error) {
+func (m *middleware) MlrRegressionCSV(ctx context.Context,file []byte) (formula string, err error) {
 	return m.regression.MlrRegressionCSV(ctx, file)
 }
 

@@ -6,7 +6,6 @@ import (
 	v2 "github.com/gofiber/fiber/v2"
 	"github.com/mbatimel/RegressionAnalysis/internal/models"
 	"github.com/mbatimel/RegressionAnalysis/pkg/interfaces"
-	"mime/multipart"
 	"strconv"
 	"time"
 )
@@ -42,7 +41,7 @@ func (m metricsRegression) MlrRegression(ctx context.Context, observer string, v
 	return m.next.MlrRegression(ctx, observer, vars, dataPoints)
 }
 
-func (m metricsRegression) MlrRegressionCSV(ctx context.Context, file multipart.File) (formula string, err error) {
+func (m metricsRegression) MlrRegressionCSV(ctx context.Context, file []byte) (formula string, err error) {
 
 	defer func(_begin time.Time) {
 		var (

@@ -2,7 +2,6 @@ package customhandlers
 
 import (
 	"fmt"
-	"mime/multipart"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -66,7 +65,7 @@ func MlrRegression(ctx *fiber.Ctx, svc regression.Regression, observer string, v
 	sendResponse(ctx, log.Logger, formula, nil)
 	return err
 }
-func MlrRegressionCSV(ctx *fiber.Ctx, svc regression.Regression, file multipart.File) error {
+func MlrRegressionCSV(ctx *fiber.Ctx, svc regression.Regression, file []byte) error {
 	var (
 		methodName = "MlrRegressionCSV"
 		err        error

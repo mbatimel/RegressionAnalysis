@@ -19,26 +19,6 @@ paths:
             responses:
                 "200":
                     description: Successful operation
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    additionalErrors: {}
-                                    data:
-                                        type: object
-                                        description: массив объектов оплат
-                                        additionalProperties:
-                                            type: array
-                                            items:
-                                                type: number
-                                                format: float
-                                            nullable: true
-                                    error:
-                                        type: boolean
-                                        description: Флаг показывающий, что ответ пришел с ошибкой
-                                    errorText:
-                                        type: string
                 "400":
                     description: Bad Request
                 "403":
@@ -61,22 +41,6 @@ paths:
             responses:
                 "200":
                     description: Successful operation
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    additionalErrors: {}
-                                    data:
-                                        description: массив объектов оплат
-                                        oneOf:
-                                            - description: массив объектов оплат
-                                            - nullable: true
-                                    error:
-                                        type: boolean
-                                        description: Флаг показывающий, что ответ пришел с ошибкой
-                                    errorText:
-                                        type: string
                 "400":
                     description: Bad Request
                 "403":
@@ -99,20 +63,6 @@ paths:
             responses:
                 "200":
                     description: Successful operation
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    additionalErrors: {}
-                                    data:
-                                        type: string
-                                        description: массив объектов оплат
-                                    error:
-                                        type: boolean
-                                        description: Флаг показывающий, что ответ пришел с ошибкой
-                                    errorText:
-                                        type: string
                 "400":
                     description: Bad Request
                 "403":
@@ -135,20 +85,6 @@ paths:
             responses:
                 "200":
                     description: Successful operation
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    additionalErrors: {}
-                                    data:
-                                        type: string
-                                        description: массив объектов оплат
-                                    error:
-                                        type: boolean
-                                        description: Флаг показывающий, что ответ пришел с ошибкой
-                                    errorText:
-                                        type: string
                 "400":
                     description: Bad Request
                 "403":
@@ -171,22 +107,6 @@ paths:
             responses:
                 "200":
                     description: Successful operation
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    additionalErrors: {}
-                                    data:
-                                        description: массив объектов оплат
-                                        oneOf:
-                                            - description: массив объектов оплат
-                                            - nullable: true
-                                    error:
-                                        type: boolean
-                                        description: Флаг показывающий, что ответ пришел с ошибкой
-                                    errorText:
-                                        type: string
                 "400":
                     description: Bad Request
                 "403":
@@ -302,7 +222,9 @@ components:
             required:
                 - file
             properties:
-                file: {}
+                file:
+                    type: string
+                    format: byte
             description: Ручка возвращает формулу и параметры
         requestRegressionRidgeRegression:
             type: object

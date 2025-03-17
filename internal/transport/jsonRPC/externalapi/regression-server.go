@@ -5,7 +5,6 @@ import (
 	"context"
 	"github.com/mbatimel/RegressionAnalysis/internal/models"
 	"github.com/mbatimel/RegressionAnalysis/pkg/interfaces"
-	"mime/multipart"
 )
 
 type serverRegression struct {
@@ -53,7 +52,7 @@ func (srv *serverRegression) MlrRegression(ctx context.Context, observer string,
 	return srv.mlrRegression(ctx, observer, vars, dataPoints)
 }
 
-func (srv *serverRegression) MlrRegressionCSV(ctx context.Context, file multipart.File) (formula string, err error) {
+func (srv *serverRegression) MlrRegressionCSV(ctx context.Context, file []byte) (formula string, err error) {
 	return srv.mlrRegressionCSV(ctx, file)
 }
 

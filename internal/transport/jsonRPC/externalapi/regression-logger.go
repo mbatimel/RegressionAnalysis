@@ -8,7 +8,6 @@ import (
 	"github.com/mbatimel/RegressionAnalysis/pkg/interfaces"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	"mime/multipart"
 	"time"
 )
 
@@ -46,7 +45,7 @@ func (m loggerRegression) MlrRegression(ctx context.Context, observer string, va
 	return m.next.MlrRegression(ctx, observer, vars, dataPoints)
 }
 
-func (m loggerRegression) MlrRegressionCSV(ctx context.Context, file multipart.File) (formula string, err error) {
+func (m loggerRegression) MlrRegressionCSV(ctx context.Context, file []byte) (formula string, err error) {
 	logger := log.Ctx(ctx).With().Str("service", "Regression").Str("method", "mlrRegressionCSV").Logger()
 	defer func(_begin time.Time) {
 		logHandle := func(ev *zerolog.Event) {
