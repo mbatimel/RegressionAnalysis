@@ -18,7 +18,7 @@ func metricsMiddlewareRegression(next interfaces.Regression) interfaces.Regressi
 	return &metricsRegression{next: next}
 }
 
-func (m metricsRegression) MlrRegression(ctx context.Context, observer string, vars []string, dataPoints []models.DataPoint) (formula string, err error) {
+func (m metricsRegression) MlrRegression(ctx context.Context, observer string, vars []string, dataPoints []models.DataPoint) (formula map[string]interface{}, err error) {
 
 	defer func(_begin time.Time) {
 		var (
@@ -41,7 +41,7 @@ func (m metricsRegression) MlrRegression(ctx context.Context, observer string, v
 	return m.next.MlrRegression(ctx, observer, vars, dataPoints)
 }
 
-func (m metricsRegression) MlrRegressionCSV(ctx context.Context, file []byte) (formula string, err error) {
+func (m metricsRegression) MlrRegressionCSV(ctx context.Context, file []byte) (formula map[string]interface{}, err error) {
 
 	defer func(_begin time.Time) {
 		var (
@@ -64,7 +64,7 @@ func (m metricsRegression) MlrRegressionCSV(ctx context.Context, file []byte) (f
 	return m.next.MlrRegressionCSV(ctx, file)
 }
 
-func (m metricsRegression) RidgeRegression(ctx context.Context, xData [][]float64, yData [][]float64, alpha float64, tol float64, normalize bool) (formula string, err error) {
+func (m metricsRegression) RidgeRegression(ctx context.Context, xData [][]float64, yData [][]float64, alpha float64, tol float64, normalize bool) (formula map[string]interface{}, err error) {
 
 	defer func(_begin time.Time) {
 		var (
@@ -87,7 +87,7 @@ func (m metricsRegression) RidgeRegression(ctx context.Context, xData [][]float6
 	return m.next.RidgeRegression(ctx, xData, yData, alpha, tol, normalize)
 }
 
-func (m metricsRegression) LassoRegression(ctx context.Context, xData [][]float64, yData [][]float64, alpha float64, tol float64, normalize bool) (formula string, err error) {
+func (m metricsRegression) LassoRegression(ctx context.Context, xData [][]float64, yData [][]float64, alpha float64, tol float64, normalize bool) (formula map[string]interface{}, err error) {
 
 	defer func(_begin time.Time) {
 		var (

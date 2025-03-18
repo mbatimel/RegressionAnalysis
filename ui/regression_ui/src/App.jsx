@@ -5,6 +5,8 @@ import { Header } from './components/Header/Header';
 import Documentation from './components/Documentation/Documentation';
 import Tables from './components/Tables/Tables';
 import Buttons from './components/Buttons/Buttons';
+import Graphics from "./components/Graphics/Graphics";
+
 
 function App() {
   const [responseMLRData, setMLRData] = useState(null);
@@ -196,6 +198,7 @@ function App() {
       </Header>
 
       <Tables tableData={tableData} setTableData={setTableData} headers={headers} setHeaders={setHeaders} rows={rows} setRows={setRows} cols={cols} setCols={setCols} />
+      <Graphics tableData={tableData} headers={headers} />
       <Buttons
   MLR={MLR}
   Ridge={Ridge}

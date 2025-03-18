@@ -10,7 +10,7 @@ type requestRegressionMlrRegression struct {
 }
 
 type responseRegressionMlrRegression struct {
-	Formula string `json:"formula,omitempty"`
+	Formula map[string]interface{} `json:"formula,omitempty"`
 }
 
 type requestRegressionMlrRegressionCSV struct {
@@ -18,7 +18,7 @@ type requestRegressionMlrRegressionCSV struct {
 }
 
 type responseRegressionMlrRegressionCSV struct {
-	Formula string `json:"formula,omitempty"`
+	Formula map[string]interface{} `json:"formula,omitempty"`
 }
 
 type requestRegressionRidgeRegression struct {
@@ -30,7 +30,7 @@ type requestRegressionRidgeRegression struct {
 }
 
 type responseRegressionRidgeRegression struct {
-	Formula string `json:"formula,omitempty"`
+	Formula map[string]interface{} `json:"formula,omitempty"`
 }
 
 type requestRegressionLassoRegression struct {
@@ -42,7 +42,7 @@ type requestRegressionLassoRegression struct {
 }
 
 type responseRegressionLassoRegression struct {
-	Formula string `json:"formula,omitempty"`
+	Formula map[string]interface{} `json:"formula,omitempty"`
 }
 
 type requestRegressionElasticNetRegression struct {

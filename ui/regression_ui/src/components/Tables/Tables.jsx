@@ -1,6 +1,15 @@
 import React from "react";
 
-const Tables = ({ tableData, setTableData, headers, setHeaders, rows, setRows, cols, setCols }) => {
+const Tables = ({
+  tableData,
+  setTableData,
+  headers,
+  setHeaders,
+  rows,
+  setRows,
+  cols,
+  setCols,
+}) => {
   const handleRowsChange = (e) => setRows(Number(e.target.value) || 1);
   const handleColsChange = (e) => setCols(Number(e.target.value) || 1);
 
@@ -28,7 +37,12 @@ const Tables = ({ tableData, setTableData, headers, setHeaders, rows, setRows, c
       <table border="1">
         <thead>
           <tr>
-            {["Y", ...Array(cols - 1).fill(0).map((_, i) => `X${i + 1}`)].map((label, index) => (
+            {[
+              "Y",
+              ...Array(cols - 1)
+                .fill(0)
+                .map((_, i) => `X${i + 1}`),
+            ].map((label, index) => (
               <th key={index}>
                 <input
                   type="text"
@@ -52,7 +66,9 @@ const Tables = ({ tableData, setTableData, headers, setHeaders, rows, setRows, c
                   <input
                     type="text"
                     value={tableData[rowIndex]?.[colIndex] || ""}
-                    onChange={(e) => updateTableData(rowIndex, colIndex, e.target.value)}
+                    onChange={(e) =>
+                      updateTableData(rowIndex, colIndex, e.target.value)
+                    }
                   />
                 </td>
               ))}

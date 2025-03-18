@@ -3,10 +3,11 @@ package linearmodel
 import (
 	"errors"
 	"fmt"
-	"github.com/rs/zerolog/log"
 	"math"
 	"strconv"
 	"strings"
+
+	"github.com/rs/zerolog/log"
 
 	"github.com/mbatimel/RegressionAnalysis/internal/models"
 	"gonum.org/v1/gonum/mat"
@@ -23,16 +24,16 @@ var (
 
 // Regression is the exposed data structure for interacting with the API.
 type Regression struct {
-	names             describe
-	data              []*models.DataPoint
-	coeff             map[int]float64
-	R2                float64
-	Varianceobserved  float64
-	VariancePredicted float64
-	initialised       bool
-	Formula           string
-	crosses           []featureCross
-	hasRun            bool
+	names             describe            `json:"names"`
+	data              []*models.DataPoint `json:"dataPoints"`
+	coeff             map[int]float64     `json:"coeff"`
+	R2                float64             `json:"R2"`
+	Varianceobserved  float64             `json:"Varianceobserved"`
+	VariancePredicted float64             `json:"VariancePredicted"`
+	initialised       bool                `json:"initialised"`
+	Formula           string              `json:"Formula"`
+	crosses           []featureCross      `json:"crosses"`
+	hasRun            bool                `json:"hasRun"`
 }
 
 type describe struct {
@@ -47,6 +48,10 @@ type DataPoints []*models.DataPoint
 // DataPoint creates a well formed *datapoint used for training.
 func DataPoint(obs float64, vars []float64) *models.DataPoint {
 	return &models.DataPoint{Observed: obs, Variables: vars}
+}
+
+func (r *Regression)GetDataPoints() []*models.DataPoint{
+	return r.data
 }
 
 // Predict updates the "Predicted" value for the inputed features.

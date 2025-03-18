@@ -28,7 +28,7 @@ type Regression interface {
 	// @tg desc=`Ручка возвращает формулу и параметры`
 	// @tg 400=github.com/mbatimel/RegressionAnalysis/swaggers/externalApi/models:Err400
 	// @tg 200=github.com/mbatimel/RegressionAnalysis/pkg/models:MlrRegressionResp200
-	MlrRegression(ctx context.Context, observer string, vars []string, dataPoints []models.DataPoint) (formula string, err error)
+	MlrRegression(ctx context.Context, observer string, vars []string, dataPoints []models.DataPoint) (formula map[string]interface{}, err error)
 	// MlrRegressionCSV ...
 	// @tg http-method=POST
 	// @tg http-path=/mlrCSV
@@ -36,8 +36,8 @@ type Regression interface {
 	// @tg http-response=github.com/mbatimel/RegressionAnalysis/internal/transport/jsonRPC/custom-handlers:MlrRegressionCSV
 	// @tg desc=`Ручка возвращает формулу и параметры`
 	// @tg 400=github.com/mbatimel/RegressionAnalysis/swaggers/externalApi/models:Err400
-	// @tg 200=github.com/mbatimel/RegressionAnalysis/pkg/models:MlrRegressionResp200
-	MlrRegressionCSV(ctx context.Context, file []byte) (formula string, err error)
+	// @tg 200=github.com/mbatimel/RegressionAnalysis/pkg/models:MlrRegressionRespCSV200
+	MlrRegressionCSV(ctx context.Context, file []byte) (formula map[string]interface{}, err error)
 	//
 	// RidgeRegression ...
 	// @tg http-method=POST
@@ -47,7 +47,7 @@ type Regression interface {
 	// @tg desc=`Ручка возвращает формулу и параметры`
 	// @tg 400=github.com/mbatimel/RegressionAnalysis/swaggers/externalApi/models:Err400
 	// @tg 200=github.com/mbatimel/RegressionAnalysis/pkg/models:RidgeRegressionResp200
-	RidgeRegression(ctx context.Context, XData [][]float64, YData [][]float64, alpha float64, tol float64, normalize bool) (formula string, err error)
+	RidgeRegression(ctx context.Context, XData [][]float64, YData [][]float64, alpha float64, tol float64, normalize bool) (formula map[string]interface{}, err error)
 	//
 	// LassoRegression ...
 	// @tg http-method=POST
@@ -57,7 +57,7 @@ type Regression interface {
 	// @tg desc=`Ручка возвращает формулу и параметры`
 	// @tg 400=github.com/mbatimel/RegressionAnalysis/swaggers/externalApi/models:Err400
 	// @tg 200=github.com/mbatimel/RegressionAnalysis/pkg/models:LassoRegressionResp200
-	LassoRegression(ctx context.Context, XData [][]float64, YData [][]float64, alpha float64, tol float64, normalize bool) (formula string, err error)
+	LassoRegression(ctx context.Context, XData [][]float64, YData [][]float64, alpha float64, tol float64, normalize bool) (formula map[string]interface{}, err error)
 	//
 	// ElasticNetRegression ...
 	// @tg http-method=POST

@@ -74,11 +74,11 @@ func MlrRegressionCSV(ctx *fiber.Ctx, svc regression.Regression, file []byte) er
 	metrics := config.Metrics()
 	defer func(begin time.Time) {
 		fields := map[string]interface{}{
-			"method":   "get",
-			"path":     "/mlrCSV",
-			"file":     file,
-			"service":  serviceName,
-			"took":     time.Since(begin).String(),
+			"method":  "get",
+			"path":    "/mlrCSV",
+			"file":    file,
+			"service": serviceName,
+			"took":    time.Since(begin).String(),
 		}
 		l := log.Info()
 		if err != nil {

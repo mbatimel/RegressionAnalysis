@@ -25,7 +25,7 @@ type regressionService struct {
 	logger zerolog.Logger
 }
 
-func (rs *regressionService) MlrRegression(ctx context.Context, observer string, vars []string, dataPoints []models.DataPoint) (string, error) {
+func (rs *regressionService) MlrRegression(ctx context.Context, observer string, vars []string, dataPoints []models.DataPoint) (map[string]interface{}, error) {
 	r := new(linearmodel.Regression)
 	r.SetObserved(observer)
 	for i, v := range vars {
@@ -35,14 +35,17 @@ func (rs *regressionService) MlrRegression(ctx context.Context, observer string,
 		r.Train(linearmodel.DataPoint(dp.Observed, dp.Variables))
 	}
 	if err := r.Run(); err != nil {
-		return "", fmt.Errorf("failed to train model: %w", err)
+		return nil, fmt.Errorf("failed to train model: %w", err)
 	}
 	fmt.Println(r)
-	// Вывод результатов (можно заменить на логирование или возврат результата)
-	return fmt.Sprintf("Regression formula:%v", r.Formula), nil
+	res := map[string]interface{}{
+		"data": r,
+		"coeff": r.GetCoeffs(),
+	}
+		return res, nil
 
 }
-func (rs *regressionService) MlrRegressionCSV(ctx context.Context, file []byte) (string, error) {
+func (rs *regressionService) MlrRegressionCSV(ctx context.Context, file []byte) (map[string]interface{}, error) {
 	r := new(linearmodel.Regression)
 	reader := csv.NewReader(bytes.NewReader(file))
 	reader.Comma = ';'
@@ -51,7 +54,7 @@ func (rs *regressionService) MlrRegressionCSV(ctx context.Context, file []byte) 
 	header, err := reader.Read()
 	if err != nil {
 		rs.logger.Println("Ошибка чтения заголовков")
-		return "", fmt.Errorf("failed to read CSV header: %w", err)
+		return nil, fmt.Errorf("failed to read CSV header: %w", err)
 	}
 
 	rs.logger.Println("Заголовки CSV прочитаны")
@@ -115,17 +118,20 @@ func (rs *regressionService) MlrRegressionCSV(ctx context.Context, file []byte) 
 
 	// Проверяем ошибки
 	if err, ok := <-errChan; ok {
-		return "", err
+		return nil, err
 	}
 
 	// Запускаем расчет модели
 	if err := r.Run(); err != nil {
-		return "", fmt.Errorf("failed to train model: %w", err)
+		return nil, fmt.Errorf("failed to train model: %w", err)
 	}
-
-	return fmt.Sprintf("Regression formula: %v", r.Formula), nil
+res := map[string]interface{}{
+	"data": r,
+	"coeff": r.GetCoeffs(),
+	"datapoints": r.GetDataPoints(),
 }
-
+	return res, nil
+}
 func (rs *regressionService) RidgeRegression(
 	ctx context.Context,
 	XData [][]float64,
@@ -133,7 +139,7 @@ func (rs *regressionService) RidgeRegression(
 	alpha float64,
 	tol float64,
 	normalize bool,
-) (string, error) {
+) (map[string]interface{}, error) {
 	X := mat.NewDense(len(XData), len(XData[0]), nil)
 	Y := mat.NewDense(len(YData), len(YData[0]), nil)
 
@@ -158,7 +164,15 @@ func (rs *regressionService) RidgeRegression(
 
 	Ypred := mat.NewDense(len(YData), len(YData[0]), nil)
 	regr.Predict(X, Ypred)
-	res := fmt.Sprintf("Ypred:\n%.2f\n", mat.Formatted(Ypred))
+	res := map[string]interface{}{
+		"Ypred": fmt.Sprintf("%.2f\n", mat.Formatted(Ypred)),
+		"LinearRegression":regr.LinearRegression,
+		"Solver": regr.Solver,
+		"Tol":regr.Tol,
+		"Alpha":regr.Alpha,
+		"L1Ratio":regr.L1Ratio,
+		"ActivationFunction":regr.ActivationFunction,
+	}
 	return res, nil
 }
 
@@ -170,7 +184,7 @@ func (rs *regressionService) LassoRegression(
 	alpha float64, // Гиперпараметр регуляризации
 	tol float64, // Допустимая ошибка
 	normalize bool, // Флаг нормализации данных
-) (string, error) {
+) (map[string]interface{}, error) {
 	// Преобразование данных в матрицы Gonum
 	X := mat.NewDense(len(XData), len(XData[0]), nil)
 	Y := mat.NewDense(len(YData), len(YData[0]), nil)
@@ -196,7 +210,18 @@ func (rs *regressionService) LassoRegression(
 	// Делаем предсказания
 	Ypred := mat.NewDense(len(YData), len(YData[0]), nil)
 	regr.Predict(X, Ypred)
-	res := fmt.Sprintf("Ypred:\n%.2f\n", mat.Formatted(Ypred))
+	res := map[string]interface{}{
+		"Ypred": fmt.Sprintf("%.2f\n", mat.Formatted(Ypred)),
+		"LinearRegression":regr.LinearRegression,
+		"MaxIter": regr.MaxIter,
+		"Tol":regr.Tol,
+		"Alpha":regr.Alpha,
+		"L1Ratio":regr.L1Ratio,
+		"Selection":regr.Selection,
+		"WarmStart":regr.WarmStart,
+		"Positive":regr.Positive,
+		"CDResult":regr.CDResult,
+	}
 	return res, nil
 }
 

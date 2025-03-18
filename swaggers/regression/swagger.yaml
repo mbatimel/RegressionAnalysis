@@ -282,7 +282,10 @@ components:
                 - formula
             properties:
                 formula:
-                    type: string
+                    type: object
+                    additionalProperties:
+                        type: object
+                        nullable: true
             description: Ручка возвращает формулу и параметры
         responseRegressionMlrRegression:
             type: object
@@ -290,7 +293,10 @@ components:
                 - formula
             properties:
                 formula:
-                    type: string
+                    type: object
+                    additionalProperties:
+                        type: object
+                        nullable: true
             description: Ручка возвращает формулу и параметры
         responseRegressionMlrRegressionCSV:
             type: object
@@ -298,7 +304,10 @@ components:
                 - formula
             properties:
                 formula:
-                    type: string
+                    type: object
+                    additionalProperties:
+                        type: object
+                        nullable: true
             description: Ручка возвращает формулу и параметры
         responseRegressionRidgeRegression:
             type: object
@@ -306,5 +315,8 @@ components:
                 - formula
             properties:
                 formula:
-                    type: string
+                    type: object
+                    additionalProperties:
+                        type: object
+                        nullable: true
             description: Ручка возвращает формулу и параметры

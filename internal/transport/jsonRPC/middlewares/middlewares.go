@@ -11,18 +11,18 @@ type middleware struct {
 	regression external_service.Regression
 }
 
-func (m *middleware) MlrRegression(ctx context.Context, observer string, vars []string, dataPoints []models.DataPoint) (formula string, err error) {
+func (m *middleware) MlrRegression(ctx context.Context, observer string, vars []string, dataPoints []models.DataPoint) (formula map[string]interface{}, err error) {
 	return m.regression.MlrRegression(ctx, observer, vars, dataPoints)
 }
-func (m *middleware) MlrRegressionCSV(ctx context.Context,file []byte) (formula string, err error) {
+func (m *middleware) MlrRegressionCSV(ctx context.Context, file []byte) (formula map[string]interface{}, err error) {
 	return m.regression.MlrRegressionCSV(ctx, file)
 }
 
-func (m *middleware) RidgeRegression(ctx context.Context, XData [][]float64, YData [][]float64, alpha float64, tol float64, normalize bool) (formula string, err error) {
+func (m *middleware) RidgeRegression(ctx context.Context, XData [][]float64, YData [][]float64, alpha float64, tol float64, normalize bool) (formula map[string]interface{}, err error) {
 	return m.regression.RidgeRegression(ctx, XData, YData, alpha, tol, normalize)
 }
 
-func (m *middleware) LassoRegression(ctx context.Context, XData [][]float64, YData [][]float64, alpha float64, tol float64, normalize bool) (formula string, err error) {
+func (m *middleware) LassoRegression(ctx context.Context, XData [][]float64, YData [][]float64, alpha float64, tol float64, normalize bool) (formula map[string]interface{}, err error) {
 	return m.regression.LassoRegression(ctx, XData, YData, alpha, tol, normalize)
 }
 
