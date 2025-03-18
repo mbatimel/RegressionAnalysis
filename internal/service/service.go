@@ -39,10 +39,10 @@ func (rs *regressionService) MlrRegression(ctx context.Context, observer string,
 	}
 	fmt.Println(r)
 	res := map[string]interface{}{
-		"data": r,
+		"data":  r,
 		"coeff": r.GetCoeffs(),
 	}
-		return res, nil
+	return res, nil
 
 }
 func (rs *regressionService) MlrRegressionCSV(ctx context.Context, file []byte) (map[string]interface{}, error) {
@@ -125,11 +125,98 @@ func (rs *regressionService) MlrRegressionCSV(ctx context.Context, file []byte) 
 	if err := r.Run(); err != nil {
 		return nil, fmt.Errorf("failed to train model: %w", err)
 	}
-res := map[string]interface{}{
-	"data": r,
-	"coeff": r.GetCoeffs(),
-	"datapoints": r.GetDataPoints(),
+	res := map[string]interface{}{
+		"data":       r,
+		"coeff":      r.GetCoeffs(),
+		"datapoints": r.GetDataPoints(),
+	}
+	return res, nil
 }
+func (rs *regressionService) MlrRegressionExcel(ctx context.Context, file []byte) (map[string]interface{}, error) {
+	r := new(linearmodel.Regression)
+	reader := csv.NewReader(bytes.NewReader(file))
+	reader.Comma = ';'
+
+	// Читаем заголовки
+	header, err := reader.Read()
+	if err != nil {
+		rs.logger.Println("Ошибка чтения заголовков")
+		return nil, fmt.Errorf("failed to read CSV header: %w", err)
+	}
+
+	rs.logger.Println("Заголовки CSV прочитаны")
+	r.SetObserved(header[0])
+	for i := 1; i < len(header); i++ {
+		r.SetVar(i-1, header[i])
+	}
+
+	// Канал для передачи данных
+	dataChan := make(chan models.DataPoint, 100)
+	errChan := make(chan error, 1)
+	var wg sync.WaitGroup
+
+	// Запускаем обработку строк в отдельных горутинах
+	const workerCount = 10
+	for i := 0; i < workerCount; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for record := range dataChan {
+				r.Train(linearmodel.DataPoint(record.Observed, record.Variables))
+			}
+		}()
+	}
+
+	// Читаем строки и отправляем их в канал
+	go func() {
+		defer close(dataChan)
+		for {
+			record, err := reader.Read()
+			if err == io.EOF {
+				break
+			}
+			if err != nil {
+				errChan <- fmt.Errorf("error reading CSV row: %w", err)
+				return
+			}
+
+			observed, err := strconv.ParseFloat(record[0], 64)
+			if err != nil {
+				errChan <- fmt.Errorf("invalid observed value: %w", err)
+				return
+			}
+
+			variables := make([]float64, len(record)-1)
+			for j := 1; j < len(record); j++ {
+				variables[j-1], err = strconv.ParseFloat(record[j], 64)
+				if err != nil {
+					errChan <- fmt.Errorf("invalid variable value: %w", err)
+					return
+				}
+			}
+
+			dataChan <- models.DataPoint{Observed: observed, Variables: variables}
+		}
+	}()
+
+	// Ждем завершения всех горутин
+	wg.Wait()
+	close(errChan)
+
+	// Проверяем ошибки
+	if err, ok := <-errChan; ok {
+		return nil, err
+	}
+
+	// Запускаем расчет модели
+	if err := r.Run(); err != nil {
+		return nil, fmt.Errorf("failed to train model: %w", err)
+	}
+	res := map[string]interface{}{
+		"data":       r,
+		"coeff":      r.GetCoeffs(),
+		"datapoints": r.GetDataPoints(),
+	}
 	return res, nil
 }
 func (rs *regressionService) RidgeRegression(
@@ -165,13 +252,13 @@ func (rs *regressionService) RidgeRegression(
 	Ypred := mat.NewDense(len(YData), len(YData[0]), nil)
 	regr.Predict(X, Ypred)
 	res := map[string]interface{}{
-		"Ypred": fmt.Sprintf("%.2f\n", mat.Formatted(Ypred)),
-		"LinearRegression":regr.LinearRegression,
-		"Solver": regr.Solver,
-		"Tol":regr.Tol,
-		"Alpha":regr.Alpha,
-		"L1Ratio":regr.L1Ratio,
-		"ActivationFunction":regr.ActivationFunction,
+		"Ypred":              fmt.Sprintf("%.2f\n", mat.Formatted(Ypred)),
+		"LinearRegression":   regr.LinearRegression,
+		"Solver":             regr.Solver,
+		"Tol":                regr.Tol,
+		"Alpha":              regr.Alpha,
+		"L1Ratio":            regr.L1Ratio,
+		"ActivationFunction": regr.ActivationFunction,
 	}
 	return res, nil
 }
@@ -211,16 +298,16 @@ func (rs *regressionService) LassoRegression(
 	Ypred := mat.NewDense(len(YData), len(YData[0]), nil)
 	regr.Predict(X, Ypred)
 	res := map[string]interface{}{
-		"Ypred": fmt.Sprintf("%.2f\n", mat.Formatted(Ypred)),
-		"LinearRegression":regr.LinearRegression,
-		"MaxIter": regr.MaxIter,
-		"Tol":regr.Tol,
-		"Alpha":regr.Alpha,
-		"L1Ratio":regr.L1Ratio,
-		"Selection":regr.Selection,
-		"WarmStart":regr.WarmStart,
-		"Positive":regr.Positive,
-		"CDResult":regr.CDResult,
+		"Ypred":            fmt.Sprintf("%.2f\n", mat.Formatted(Ypred)),
+		"LinearRegression": regr.LinearRegression,
+		"MaxIter":          regr.MaxIter,
+		"Tol":              regr.Tol,
+		"Alpha":            regr.Alpha,
+		"L1Ratio":          regr.L1Ratio,
+		"Selection":        regr.Selection,
+		"WarmStart":        regr.WarmStart,
+		"Positive":         regr.Positive,
+		"CDResult":         regr.CDResult,
 	}
 	return res, nil
 }

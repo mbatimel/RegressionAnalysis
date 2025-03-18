@@ -65,6 +65,26 @@ func (m loggerRegression) MlrRegressionCSV(ctx context.Context, file []byte) (fo
 	return m.next.MlrRegressionCSV(ctx, file)
 }
 
+func (m loggerRegression) MlrRegressionExcel(ctx context.Context, file []byte) (formula map[string]interface{}, err error) {
+	logger := log.Ctx(ctx).With().Str("service", "Regression").Str("method", "mlrRegressionExcel").Logger()
+	defer func(_begin time.Time) {
+		logHandle := func(ev *zerolog.Event) {
+			fields := map[string]interface{}{
+				"method":   "regression.mlrRegressionExcel",
+				"request":  viewer.Sprintf("%+v", requestRegressionMlrRegressionExcel{File: file}),
+				"response": viewer.Sprintf("%+v", responseRegressionMlrRegressionExcel{Formula: formula}),
+			}
+			ev.Fields(fields).Str("took", time.Since(_begin).String())
+		}
+		if err != nil {
+			logger.Error().Err(err).Func(logHandle).Msg("call mlrRegressionExcel")
+			return
+		}
+		logger.Info().Func(logHandle).Msg("call mlrRegressionExcel")
+	}(time.Now())
+	return m.next.MlrRegressionExcel(ctx, file)
+}
+
 func (m loggerRegression) RidgeRegression(ctx context.Context, xData [][]float64, yData [][]float64, alpha float64, tol float64, normalize bool) (formula map[string]interface{}, err error) {
 	logger := log.Ctx(ctx).With().Str("service", "Regression").Str("method", "ridgeRegression").Logger()
 	defer func(_begin time.Time) {

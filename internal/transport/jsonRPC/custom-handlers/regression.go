@@ -23,7 +23,7 @@ func MlrRegression(ctx *fiber.Ctx, svc regression.Regression, observer string, v
 	metrics := config.Metrics()
 	defer func(begin time.Time) {
 		fields := map[string]interface{}{
-			"method":     "get",
+			"method":     "post",
 			"path":       "/mlr",
 			"observer":   observer,
 			"vars":       vars,
@@ -74,7 +74,7 @@ func MlrRegressionCSV(ctx *fiber.Ctx, svc regression.Regression, file []byte) er
 	metrics := config.Metrics()
 	defer func(begin time.Time) {
 		fields := map[string]interface{}{
-			"method":  "get",
+			"method":  "post",
 			"path":    "/mlrCSV",
 			"file":    file,
 			"service": serviceName,
@@ -105,6 +105,55 @@ func MlrRegressionCSV(ctx *fiber.Ctx, svc regression.Regression, file []byte) er
 		).Add(1)
 	}()
 	formula, err := svc.MlrRegressionCSV(ctx.Context(), file)
+	if err != nil {
+		sendResponse(ctx, log.Logger, nil, err)
+		return nil
+	}
+
+	sendResponse(ctx, log.Logger, formula, nil)
+	return err
+}
+
+func MlrRegressionExcel(ctx *fiber.Ctx, svc regression.Regression, file []byte) error {
+	var (
+		methodName = "MlrRegressionExcel"
+		err        error
+	)
+
+	metrics := config.Metrics()
+	defer func(begin time.Time) {
+		fields := map[string]interface{}{
+			"method":  "post",
+			"path":    "/mlrExecl",
+			"file":    file,
+			"service": serviceName,
+			"took":    time.Since(begin).String(),
+		}
+		l := log.Info()
+		if err != nil {
+			if errors.Is(err, errors.ForbiddenError()) {
+				l = log.Warn().Err(err)
+			} else {
+				l = log.Error().Err(err)
+			}
+		}
+		l.Fields(fields).Msg("call")
+
+		metrics.RequestLatency.WithLabelValues(
+			serviceName,
+			methodName,
+			fmt.Sprint(err == nil),
+		).Observe(time.Since(begin).Seconds())
+	}(time.Now())
+
+	defer func() {
+		metrics.HttpCollector.WithLabelValues(
+			serviceName,
+			methodName,
+			fmt.Sprint(err == nil),
+		).Add(1)
+	}()
+	formula, err := svc.MlrRegressionExcel(ctx.Context(), file)
 	if err != nil {
 		sendResponse(ctx, log.Logger, nil, err)
 		return nil

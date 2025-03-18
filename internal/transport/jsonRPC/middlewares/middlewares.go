@@ -17,6 +17,9 @@ func (m *middleware) MlrRegression(ctx context.Context, observer string, vars []
 func (m *middleware) MlrRegressionCSV(ctx context.Context, file []byte) (formula map[string]interface{}, err error) {
 	return m.regression.MlrRegressionCSV(ctx, file)
 }
+func (m *middleware) MlrRegressionExcel(ctx context.Context, file []byte) (formula map[string]interface{}, err error) {
+	return m.regression.MlrRegressionExcel(ctx, file)
+}
 
 func (m *middleware) RidgeRegression(ctx context.Context, XData [][]float64, YData [][]float64, alpha float64, tol float64, normalize bool) (formula map[string]interface{}, err error) {
 	return m.regression.RidgeRegression(ctx, XData, YData, alpha, tol, normalize)

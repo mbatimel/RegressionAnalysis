@@ -93,6 +93,28 @@ paths:
                     description: Method Not Allowed
                 "500":
                     description: Internal Server Error
+    /api/v1/mlrExcel:
+        post:
+            tags:
+                - Regression
+            summary: Ручка по рассчету MLR регрессии из Execel
+            description: Ручка возвращает формулу и параметры
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/requestRegressionMlrRegressionExcel'
+            responses:
+                "200":
+                    description: Successful operation
+                "400":
+                    description: Bad Request
+                "403":
+                    description: Forbidden
+                "405":
+                    description: Method Not Allowed
+                "500":
+                    description: Internal Server Error
     /api/v1/ridge:
         post:
             tags:
@@ -226,6 +248,15 @@ components:
                     type: string
                     format: byte
             description: Ручка возвращает формулу и параметры
+        requestRegressionMlrRegressionExcel:
+            type: object
+            required:
+                - file
+            properties:
+                file:
+                    type: string
+                    format: byte
+            description: Ручка возвращает формулу и параметры
         requestRegressionRidgeRegression:
             type: object
             required:
@@ -299,6 +330,17 @@ components:
                         nullable: true
             description: Ручка возвращает формулу и параметры
         responseRegressionMlrRegressionCSV:
+            type: object
+            required:
+                - formula
+            properties:
+                formula:
+                    type: object
+                    additionalProperties:
+                        type: object
+                        nullable: true
+            description: Ручка возвращает формулу и параметры
+        responseRegressionMlrRegressionExcel:
             type: object
             required:
                 - formula

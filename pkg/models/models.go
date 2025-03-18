@@ -5,9 +5,6 @@ import (
 	"go/types"
 )
 
-
-
-
 type MlrRegressionResp200 struct {
 	// @tg desc=`массив объектов оплат`
 	Data map[string]interface{} `json:"data"`
@@ -26,9 +23,18 @@ type MlrRegressionRespCSV200 struct {
 	ErrorText        string    `json:"errorText"`
 	AdditionalErrors types.Nil `json:"additionalErrors"`
 }
+type MlrRegressionRespExcel200 struct {
+	// @tg desc=`массив объектов оплат`
+	Data map[string]interface{} `json:"data"`
+	// @tg desc=`Флаг показывающий, что ответ пришел с ошибкой`
+	Error bool `json:"error"`
+	// @tg example=``
+	ErrorText        string    `json:"errorText"`
+	AdditionalErrors types.Nil `json:"additionalErrors"`
+}
 type RidgeRegressionResp200 struct {
 	// @tg desc=`массив объектов оплат`
-	Data map[string]interface{}`json:"data"`
+	Data map[string]interface{} `json:"data"`
 	// @tg desc=`Флаг показывающий, что ответ пришел с ошибкой`
 	Error bool `json:"error"`
 	// @tg example=``

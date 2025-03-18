@@ -21,6 +21,14 @@ type responseRegressionMlrRegressionCSV struct {
 	Formula map[string]interface{} `json:"formula,omitempty"`
 }
 
+type requestRegressionMlrRegressionExcel struct {
+	File []byte `json:"file,omitempty"`
+}
+
+type responseRegressionMlrRegressionExcel struct {
+	Formula map[string]interface{} `json:"formula,omitempty"`
+}
+
 type requestRegressionRidgeRegression struct {
 	XData     [][]float64 `json:"XData,omitempty"`
 	YData     [][]float64 `json:"YData,omitempty"`

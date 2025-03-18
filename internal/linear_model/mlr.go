@@ -50,7 +50,7 @@ func DataPoint(obs float64, vars []float64) *models.DataPoint {
 	return &models.DataPoint{Observed: obs, Variables: vars}
 }
 
-func (r *Regression)GetDataPoints() []*models.DataPoint{
+func (r *Regression) GetDataPoints() []*models.DataPoint {
 	return r.data
 }
 

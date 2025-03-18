@@ -64,6 +64,29 @@ func (m metricsRegression) MlrRegressionCSV(ctx context.Context, file []byte) (f
 	return m.next.MlrRegressionCSV(ctx, file)
 }
 
+func (m metricsRegression) MlrRegressionExcel(ctx context.Context, file []byte) (formula map[string]interface{}, err error) {
+
+	defer func(_begin time.Time) {
+		var (
+			success = true
+			errCode int
+		)
+		if err != nil {
+			success = false
+			errCode = v2.StatusInternalServerError
+			ec, ok := err.(withErrorCode)
+			if ok {
+				errCode = ec.Code()
+			}
+		}
+		RequestCount.WithLabelValues("regression", "mlrRegressionExcel", strconv.FormatBool(success), strconv.Itoa(errCode)).Add(1)
+		RequestCountAll.WithLabelValues("regression", "mlrRegressionExcel", strconv.FormatBool(success), strconv.Itoa(errCode)).Add(1)
+		RequestLatency.WithLabelValues("regression", "mlrRegressionExcel", strconv.FormatBool(success), strconv.Itoa(errCode)).Observe(time.Since(_begin).Seconds())
+	}(time.Now())
+
+	return m.next.MlrRegressionExcel(ctx, file)
+}
+
 func (m metricsRegression) RidgeRegression(ctx context.Context, xData [][]float64, yData [][]float64, alpha float64, tol float64, normalize bool) (formula map[string]interface{}, err error) {
 
 	defer func(_begin time.Time) {

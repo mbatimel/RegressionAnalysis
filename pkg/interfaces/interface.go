@@ -38,7 +38,15 @@ type Regression interface {
 	// @tg 400=github.com/mbatimel/RegressionAnalysis/swaggers/externalApi/models:Err400
 	// @tg 200=github.com/mbatimel/RegressionAnalysis/pkg/models:MlrRegressionRespCSV200
 	MlrRegressionCSV(ctx context.Context, file []byte) (formula map[string]interface{}, err error)
-	//
+	// MlrRegressionExcel ...
+	// @tg http-method=POST
+	// @tg http-path=/mlrExcel
+	// @tg summary=`Ручка по рассчету MLR регрессии из Execel`
+	// @tg http-response=github.com/mbatimel/RegressionAnalysis/internal/transport/jsonRPC/custom-handlers:MlrRegressionExcel
+	// @tg desc=`Ручка возвращает формулу и параметры`
+	// @tg 400=github.com/mbatimel/RegressionAnalysis/swaggers/externalApi/models:Err400
+	// @tg 200=github.com/mbatimel/RegressionAnalysis/pkg/models:MlrRegressionRespExcel200
+	MlrRegressionExcel(ctx context.Context, file []byte) (formula map[string]interface{}, err error)
 	// RidgeRegression ...
 	// @tg http-method=POST
 	// @tg http-path=/ridge
@@ -68,7 +76,4 @@ type Regression interface {
 	// @tg 400=github.com/mbatimel/RegressionAnalysis/swaggers/externalApi/models:Err400
 	// @tg 200=github.com/mbatimel/RegressionAnalysis/pkg/models:ElasticNetRegressionResp200
 	ElasticNetRegression(ctx context.Context, params models.ElasticNetParams) (formula map[string][]float64, err error)
-	//TODO: MlrRegressionExcel
-	// TODO: переделываем вывод  результата во всех функция
-	// TODO: Логистик регрессия
 }
