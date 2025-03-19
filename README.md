@@ -74,6 +74,6 @@ curl -X POST http://localhost:9000/api/v1/mlrCSV \
      
 curl -X POST http://localhost:9000/api/v1/mlrExcel \
      -H "Content-Type: multipart/form-data" \
-     -F "file=@/Users/macbook/Desktop/ДИПЛОМ/RegressionAnalysis/examples/autos3.csv"
+     -F "file=@/Users/macbook/Desktop/ДИПЛОМ/RegressionAnalysis/examples/auto.xlsx"
 
 /Users/macbook/Desktop/ДИПЛОМ/RegressionAnalysis/examples/autos2.csv

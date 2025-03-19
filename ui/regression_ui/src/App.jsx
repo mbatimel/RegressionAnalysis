@@ -37,11 +37,17 @@ function App() {
       alert("Выберите файл перед отправкой");
       return;
     }
+    
     const formData = new FormData();
     formData.append("file", file);
+    
+    let url = "/api/v1/mlrCSV";
+    if (file.name.endsWith(".xlsx") || file.name.endsWith(".xls")) {
+      url = "/api/v1/mlrExcel";
+    }
 
     try {
-      const response = await fetch("/api/v1/mlrCSV", {
+      const response = await fetch(url, {
         method: "POST",
         body: formData,
       });
@@ -51,7 +57,11 @@ function App() {
       }
 
       const data = await response.json();
-      setMLRCSVData(data);
+      if (url.includes("mlrCSV")) {
+        setMLRCSVData(data);
+      } else {
+        setMLRCSVData(data);
+      }
       console.log(data);
     } catch (error) {
       console.error("Ошибка:", error);
