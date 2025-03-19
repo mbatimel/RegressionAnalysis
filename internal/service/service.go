@@ -40,8 +40,9 @@ func (rs *regressionService) MlrRegression(ctx context.Context, observer string,
 	}
 	fmt.Println(r)
 	res := map[string]interface{}{
-		"data":  r,
-		"coeff": r.GetCoeffs(),
+		"data":       r,
+		"names":      r.GetNames(),
+		"coeff":      r.GetCoeffs(),
 	}
 	return res, nil
 
@@ -128,6 +129,7 @@ func (rs *regressionService) MlrRegressionCSV(ctx context.Context, file []byte) 
 	}
 	res := map[string]interface{}{
 		"data":       r,
+		"names":      r.GetNames(),
 		"coeff":      r.GetCoeffs(),
 		"datapoints": r.GetDataPoints(),
 	}
@@ -221,6 +223,7 @@ func (rs *regressionService) MlrRegressionExcel(ctx context.Context, file []byte
 
 	res := map[string]interface{}{
 		"data":       r,
+		"names":      r.GetNames(),
 		"coeff":      r.GetCoeffs(),
 		"datapoints": r.GetDataPoints(),
 	}

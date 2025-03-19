@@ -37,7 +37,8 @@ function App() {
       alert("Выберите файл перед отправкой");
       return;
     }
-    
+    setTableData([]);
+    setHeaders([]);
     const formData = new FormData();
     formData.append("file", file);
     
@@ -73,7 +74,7 @@ function App() {
       alert("Введите данные в таблицу перед отправкой запроса");
       return;
     }
-
+    setMLRCSVData(null);
     const requestData = {
       observer: "Y",
       vars: Array.from({ length: cols - 1 }, (_, i) => `X${i + 1}`),
@@ -109,7 +110,7 @@ function App() {
       alert("Введите данные в таблицу перед отправкой запроса");
       return;
     }
-  
+    setMLRCSVData(null);
     const requestData = {
       XData,
       YData,
@@ -141,7 +142,7 @@ function App() {
       alert("Введите данные в таблицу перед отправкой запроса");
       return;
     }
-  
+    setMLRCSVData(null);
     const requestData = {
       XData,
       YData,
@@ -173,7 +174,7 @@ function App() {
       alert("Введите данные в таблицу перед отправкой запроса");
       return;
     }
-  
+    setMLRCSVData(null);
     const requestData = {
       XData,
       YData,
@@ -199,7 +200,6 @@ function App() {
       console.error("Error:", error);
     }
   };
-  
 
   return (
     <div className="App">
@@ -208,7 +208,7 @@ function App() {
       </Header>
 
       <Tables tableData={tableData} setTableData={setTableData} headers={headers} setHeaders={setHeaders} rows={rows} setRows={setRows} cols={cols} setCols={setCols} />
-      <Graphics tableData={tableData} headers={headers} />
+      <Graphics tableData={tableData} headers={responseMLRCSVData?.data?.names||headers} datapoints={responseMLRCSVData?.data?.datapoints || []}/>
       <Buttons
   MLR={MLR}
   Ridge={Ridge}

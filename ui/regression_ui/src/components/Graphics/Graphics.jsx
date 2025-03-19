@@ -2,23 +2,35 @@ import React from "react";
 import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { schemeCategory10 } from "d3-scale-chromatic"; // Палитра цветов
 
-const Graphics = ({ tableData = [], headers = [] }) => {
-  if (!tableData.length || !headers.length) {
+const Graphics = ({ tableData = [], headers = [], datapoints = [] }) => {
+  if (!tableData.length && !datapoints.length) {
     return <p>⚠️ Нет данных для построения графика.</p>;
   }
 
-  // Создаём массив точек для каждой переменной X1, X2, ...
-  const datasets = headers.slice(1).map((header, index) => ({
-    name: header,
-    data: tableData
-      .map((row) => ({
-        x: Number(row[index + 1]), // X1, X2, X3, ...
-        y: Number(row[0]), // Y
-        label: `${header}: (${row[index + 1]}, ${row[0]})`, // Подпись точки
+  // Если есть данные из файла, используем их
+  const datasets = datapoints.length
+    ? headers.slice(0).map((header, index) => ({
+        name: header,
+        data: datapoints
+          .map((point) => ({
+            x: Number(point.vares[index]), // X1, X2, X3, ...
+            y: Number(point.obs), // Y
+            label: `${header}: (${point.vares[index]}, ${point.obs})`, // Подпись точки
+          }))
+          .filter((point) => !isNaN(point.x) && !isNaN(point.y)), // Убираем NaN
+        color: schemeCategory10[index % schemeCategory10.length], // Цвета из палитры
       }))
-      .filter((point) => !isNaN(point.x) && !isNaN(point.y)), // Убираем NaN
-    color: schemeCategory10[index % schemeCategory10.length], // Цвета из палитры
-  }));
+    : headers.slice(1).map((header, index) => ({
+        name: header,
+        data: tableData
+          .map((row) => ({
+            x: Number(row[index + 1]), // X1, X2, X3, ...
+            y: Number(row[0]), // Y
+            label: `${header}: (${row[index + 1]}, ${row[0]})`, // Подпись точки
+          }))
+          .filter((point) => !isNaN(point.x) && !isNaN(point.y)), // Убираем NaN
+        color: schemeCategory10[index % schemeCategory10.length], // Цвета из палитры
+      }));
 
   return (
     <div style={{ width: "100%", height: 450 }}>
@@ -35,7 +47,6 @@ const Graphics = ({ tableData = [], headers = [] }) => {
           ))}
         </ScatterChart>
       </ResponsiveContainer>
-
     </div>
   );
 };

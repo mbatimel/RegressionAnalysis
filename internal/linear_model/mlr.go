@@ -53,6 +53,13 @@ func DataPoint(obs float64, vars []float64) *models.DataPoint {
 func (r *Regression) GetDataPoints() []*models.DataPoint {
 	return r.data
 }
+func (r *Regression) GetNames() []string {
+	namesVars := make([]string,0)
+	for i := 0; i < len(r.names.vars); i++ {
+		namesVars = append(namesVars, r.GetVar(i))
+	}
+	return namesVars
+}
 
 // Predict updates the "Predicted" value for the inputed features.
 func (r *Regression) Predict(vars []float64) (float64, error) {
