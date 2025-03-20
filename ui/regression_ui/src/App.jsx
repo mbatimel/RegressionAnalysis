@@ -208,7 +208,7 @@ function App() {
       </Header>
 
       <Tables tableData={tableData} setTableData={setTableData} headers={headers} setHeaders={setHeaders} rows={rows} setRows={setRows} cols={cols} setCols={setCols} />
-      <Graphics tableData={tableData} headers={responseMLRCSVData?.data?.names||headers} datapoints={responseMLRCSVData?.data?.datapoints || []}/>
+      <Graphics tableData={tableData} headers={responseMLRCSVData?.data?.names||headers} datapoints={responseMLRCSVData?.data?.datapoints || []} graphics={responseMLRCSVData?.data?.graphics || responseMLRData?.data?.graphics }/>
       <Buttons
   MLR={MLR}
   Ridge={Ridge}
