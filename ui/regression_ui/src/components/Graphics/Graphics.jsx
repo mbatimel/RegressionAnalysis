@@ -1,15 +1,50 @@
-import React, { useState } from "react";
-import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Line } from "recharts";
+import React, { useState, useEffect } from "react";
+import {
+  ScatterChart,
+  Scatter,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Line,
+  LineChart,
+  Legend,
+} from "recharts";
 import { schemeCategory10 } from "d3-scale-chromatic";
 
-const Graphics = ({ tableData = [], headers = [], datapoints = [], graphics = {} }) => {
-    // Состояние видимости графиков
-    const [visibleGraphs, setVisibleGraphs] = useState({});
-  if (!tableData.length && !datapoints.length && !Object.keys(graphics).length) {
+const Graphics = ({
+  tableData = [],
+  headers = [],
+  datapoints = [],
+  graphics = {},
+}) => {
+  // Состояние видимости графиков
+  const [visibleGraphs, setVisibleGraphs] = useState({});
+  useEffect(() => {
+    const initialVisibility = {};
+
+    // Добавляем видимость для графиков из headers
+    headers.forEach((header) => {
+      initialVisibility[header] = false; // По умолчанию все графики из headers скрыты
+    });
+
+    // Добавляем видимость для графиков из graphics
+    Object.keys(graphics).forEach((key) => {
+      initialVisibility[`График ${key}`] = false; // По умолчанию все графики из graphics скрыты
+    });
+
+    setVisibleGraphs(initialVisibility);
+  }, [headers, graphics]);
+  
+  if (
+    !tableData.length &&
+    !datapoints.length &&
+    !Object.keys(graphics).length
+  ) {
     return <p>⚠️ Нет данных для построения графика.</p>;
   }
 
-  
   // Данные из файлов или таблицы
   const datasets = datapoints.length
     ? headers.slice(0).map((header, index) => ({
@@ -52,7 +87,6 @@ const Graphics = ({ tableData = [], headers = [], datapoints = [], graphics = {}
       color: "red", // Все графики красного цвета
     };
   });
-
   // Обработчик клика по легенде (скрытие/показ графиков)
   const handleLegendClick = (graphName) => {
     setVisibleGraphs((prev) => ({
@@ -60,24 +94,34 @@ const Graphics = ({ tableData = [], headers = [], datapoints = [], graphics = {}
       [graphName]: !prev[graphName],
     }));
   };
-
+  
   // Собираем все элементы легенды (сначала таблица, потом graphics)
   const legendItems = [
     ...datasets.map(({ name, color }) => ({ name, color })),
     ...graphicsData.map(({ name }) => ({ name, color: "red" })), // Графики красного цвета
   ];
-
+  
   return (
     <div style={{ width: "100%", height: 500 }}>
       <h2>📊 График зависимостей Y от X</h2>
 
       {/* Кастомная легенда */}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "15px", marginBottom: "10px" }}>
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: "15px",
+          marginBottom: "10px",
+        }}
+      >
         {legendItems.map(({ name, color }) => (
-          <label key={name} style={{ cursor: "pointer", display: "flex", alignItems: "center" }}>
+          <label
+            key={name}
+            style={{ cursor: "pointer", display: "flex", alignItems: "center" }}
+          >
             <input
               type="checkbox"
-              checked={!visibleGraphs[name]}
+              checked={visibleGraphs[name]}
               onChange={() => handleLegendClick(name)}
             />
             <span style={{ marginLeft: "5px", color }}>{name}</span>
@@ -90,14 +134,50 @@ const Graphics = ({ tableData = [], headers = [], datapoints = [], graphics = {}
           <CartesianGrid />
           <XAxis type="number" dataKey="x" name="X" />
           <YAxis type="number" dataKey="y" name="Y" />
-          <Tooltip cursor={{ strokeDasharray: "3 3" }} formatter={(value, name, props) => props.payload.label} />
+          <Tooltip
+            cursor={{ strokeDasharray: "3 3" }}
+            formatter={(value, name, props) => props.payload.label}
+          />
 
           {/* Отображаем точки из таблицы */}
           {datasets.map(({ name, data, color }, i) =>
-            !visibleGraphs[name] ? <Scatter key={i} name={name} data={data} fill={color} /> : null
+            visibleGraphs[name] ? (
+              <Scatter key={i} name={name} data={data} fill={color} />
+            ) : null
           )}
 
           {/* Отображаем графики из graphics */}
+          {graphicsData.map(({ name, data, color }, i) =>
+            visibleGraphs[name] ? (
+              <Line
+                key={i}
+                type="linear"
+                dataKey="y"
+                data={data}
+                stroke={color}
+                dot={{ fill: { color }, r: 4 }}
+                name={name}
+                connectNulls={true}
+              />
+            ) : null
+          )}
+        </ScatterChart>
+        <LineChart
+          width={500}
+          height={300}
+          data={graphicsData}
+          margin={{
+            top: 5,
+            right: 30,
+            left: 20,
+            bottom: 5,
+          }}
+        >
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Tooltip />
+          <Legend />
           {graphicsData.map(({ name, data, color }, i) =>
             !visibleGraphs[name] ? (
               <Line
@@ -106,13 +186,13 @@ const Graphics = ({ tableData = [], headers = [], datapoints = [], graphics = {}
                 dataKey="y"
                 data={data}
                 stroke={color}
-                dot={{ fill: {color}, r: 4 }}
+                dot={{ fill: {color}, r: 2 }}
                 name={name}
                 connectNulls={true}
               />
             ) : null
           )}
-        </ScatterChart>
+        </LineChart>
       </ResponsiveContainer>
     </div>
   );

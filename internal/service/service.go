@@ -40,9 +40,9 @@ func (rs *regressionService) MlrRegression(ctx context.Context, observer string,
 	}
 	fmt.Println(r)
 	res := map[string]interface{}{
-		"data":       r,
-		"names":      r.GetNames(),
-		"coeff":      r.GetCoeffs(),
+		"data":     r,
+		"names":    r.GetNames(),
+		"coeff":    r.GetCoeffs(),
 		"graphics": makeGraphics(r),
 	}
 	return res, nil
@@ -133,7 +133,7 @@ func (rs *regressionService) MlrRegressionCSV(ctx context.Context, file []byte) 
 		"names":      r.GetNames(),
 		"coeff":      r.GetCoeffs(),
 		"datapoints": r.GetDataPoints(),
-		"graphics": makeGraphics(r),
+		"graphics":   makeGraphics(r),
 	}
 	return res, nil
 }
@@ -228,27 +228,27 @@ func (rs *regressionService) MlrRegressionExcel(ctx context.Context, file []byte
 		"names":      r.GetNames(),
 		"coeff":      r.GetCoeffs(),
 		"datapoints": r.GetDataPoints(),
-		"graphics": makeGraphics(r),
+		"graphics":   makeGraphics(r),
 	}
 	return res, nil
 }
 
-func makeGraphics(r *linearmodel.Regression ) map[int]map[string]float64{
-res := make(map[int]map[string]float64)
+func makeGraphics(r *linearmodel.Regression) map[int]map[string]float64 {
+	res := make(map[int]map[string]float64)
 
-coeff := r.GetCoeffs()
-datapoints:= r.GetDataPoints()
-for i:=1;i<len(coeff);i++{
-	xyPlot := make(map[string]float64)
-	for j := 0; j<len(datapoints); j++{
-		x := datapoints[j].Variables[i-1] 
-		y := coeff[0] + coeff[i] * x
-		xyPlot[fmt.Sprintf("%f", y)] = x
+	coeff := r.GetCoeffs()
+	datapoints := r.GetDataPoints()
+	for i := 1; i < len(coeff); i++ {
+		xyPlot := make(map[string]float64)
+		for j := 0; j < len(datapoints); j++ {
+			x := datapoints[j].Variables[i-1]
+			y := coeff[0] + coeff[i]*x
+			xyPlot[fmt.Sprintf("%f", y)] = x
+		}
+		res[i] = xyPlot
 	}
-	res[i]=xyPlot
-}
 
-return res
+	return res
 }
 func (rs *regressionService) RidgeRegression(
 	ctx context.Context,
