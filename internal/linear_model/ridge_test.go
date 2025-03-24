@@ -34,7 +34,7 @@ func TestRidge(t *testing.T) {
 		regr.Fit(X, Y)
 		elapsed := time.Since(start)
 		unused(elapsed)
-		//fmt.Println("XOffset", regr.XOffset, "Intercept", regr.Intercept, "Coef", regr.Coef)
+		fmt.Println("XOffset", regr.XOffset, "Intercept", regr.Intercept, "Coef", regr.Coef)
 		Ypred := mat.NewDense(nSamples, nOutputs, nil)
 		regr.Predict(X, Ypred)
 		r2score := metrics.R2Score(Y, Ypred, nil, "").At(0, 0)

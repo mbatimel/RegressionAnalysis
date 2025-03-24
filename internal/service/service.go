@@ -48,6 +48,7 @@ func (rs *regressionService) MlrRegression(ctx context.Context, observer string,
 	return res, nil
 
 }
+
 func (rs *regressionService) MlrRegressionCSV(ctx context.Context, file []byte) (map[string]interface{}, error) {
 	r := new(linearmodel.Regression)
 	reader := csv.NewReader(bytes.NewReader(file))
@@ -137,6 +138,7 @@ func (rs *regressionService) MlrRegressionCSV(ctx context.Context, file []byte) 
 	}
 	return res, nil
 }
+
 func (rs *regressionService) MlrRegressionExcel(ctx context.Context, file []byte) (map[string]interface{}, error) {
 	r := new(linearmodel.Regression)
 	reader := bytes.NewReader(file)
@@ -242,7 +244,7 @@ func makeGraphics(r *linearmodel.Regression) map[int]map[string]float64 {
 		xyPlot := make(map[string]float64)
 		for j := 0; j < len(datapoints); j++ {
 			x := datapoints[j].Variables[i-1]
-			y := coeff[0] + coeff[i]*x
+			y := datapoints[j].Predicted
 			xyPlot[fmt.Sprintf("%f", y)] = x
 		}
 		res[i] = xyPlot
@@ -250,6 +252,8 @@ func makeGraphics(r *linearmodel.Regression) map[int]map[string]float64 {
 
 	return res
 }
+
+// выполнение Ridge регрессии
 func (rs *regressionService) RidgeRegression(
 	ctx context.Context,
 	XData [][]float64,
@@ -285,6 +289,7 @@ func (rs *regressionService) RidgeRegression(
 	res := map[string]interface{}{
 		"Ypred":              fmt.Sprintf("%.2f\n", mat.Formatted(Ypred)),
 		"LinearRegression":   regr.LinearRegression,
+		"Coef":               regr.LinearRegression.Coef,
 		"Solver":             regr.Solver,
 		"Tol":                regr.Tol,
 		"Alpha":              regr.Alpha,
@@ -329,7 +334,7 @@ func (rs *regressionService) LassoRegression(
 	Ypred := mat.NewDense(len(YData), len(YData[0]), nil)
 	regr.Predict(X, Ypred)
 	res := map[string]interface{}{
-		"Ypred":            fmt.Sprintf("%.2f\n", mat.Formatted(Ypred)),
+		"Ypred":            fmt.Sprintf("%.5f\n", mat.Formatted(Ypred)),
 		"LinearRegression": regr.LinearRegression,
 		"MaxIter":          regr.MaxIter,
 		"Tol":              regr.Tol,
@@ -398,6 +403,7 @@ func (rs *regressionService) ElasticNetRegression(ctx context.Context, params mo
 	return result, nil
 }
 
+// Newservice - создание сервиса
 func Newservice(logger zerolog.Logger) externalApi.Regression {
 	return &regressionService{
 		logger: logger,
