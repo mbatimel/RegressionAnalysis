@@ -76,7 +76,7 @@ func ExampleSVR() {
 		svr.Fit(Xsc, Ysc)
 		svr.Predict(Xsc, Ypred[opt.kernel])
 		Ypred[opt.kernel], _ = yscaler.InverseTransform(Ypred[opt.kernel], nil)
-		//log.Println(base.MatStr(X, Y, Ypred[opt.kernel]))
+		fmt.Println(base.MatStr(X, Y, Ypred[opt.kernel]))
 	}
 
 	if *visualDebug {

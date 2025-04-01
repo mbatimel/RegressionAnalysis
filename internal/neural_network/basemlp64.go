@@ -275,6 +275,16 @@ func (mlp *BaseMultilayerPerceptron64) forwardPass(activations []blas64General) 
 	outputActivation(activations[i+1])
 }
 
+func (mlp *BaseMultilayerPerceptron64) GetpackedGrads() []float64 {
+	return mlp.packedGrads
+}
+func (mlp *BaseMultilayerPerceptron64) GetpackedParameters() []float64 {
+	return mlp.packedParameters
+}
+func (mlp *BaseMultilayerPerceptron64) SetbeforeMinimize(checkGradients func(optimize.Problem, []float64)) {
+	mlp.beforeMinimize = checkGradients
+}
+
 // batchNormalize computes norms of activations and divides activations
 func (mlp *BaseMultilayerPerceptron64) batchNormalize(activations []blas64General) {
 	for i := 0; i < mlp.NLayers-2; i++ {
@@ -406,7 +416,9 @@ func (mlp *BaseMultilayerPerceptron64) backprop(X, y blas64General, activations,
 	}
 	return loss
 }
-
+func (mlp *BaseMultilayerPerceptron64) Initializer(yCols int, layerUnits []int, isClassifier, isMultiClass bool) {
+	mlp.initialize(yCols, layerUnits, isClassifier, isMultiClass)
+}
 func (mlp *BaseMultilayerPerceptron64) initialize(yCols int, layerUnits []int, isClassifier, isMultiClass bool) {
 	// # set all attributes, allocate weights etc for first call
 	// # Initialize parameters

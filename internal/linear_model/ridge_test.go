@@ -2,10 +2,11 @@ package linearmodel
 
 import (
 	"fmt"
-	"golang.org/x/exp/rand"
 	"math"
 	"testing"
 	"time"
+
+	"golang.org/x/exp/rand"
 
 	"github.com/mbatimel/RegressionAnalysis/internal/metrics"
 	"gonum.org/v1/gonum/mat"
@@ -74,4 +75,47 @@ func ExampleRidge() {
 	// ⎢1.00  1.00⎥
 	// ⎣1.80  1.80⎦
 
+}
+func ExampleRidge2() {
+	X := mat.NewDense(5, 3, []float64{
+		587000, 16.5, 6.2,
+		643000, 20.5, 6.4,
+		635000, 26.3, 9.3,
+		692000, 16.5, 5.3,
+		1248000, 19.2, 7.3,
+	})
+
+	Y := mat.NewDense(5, 1, []float64{
+		11.2,
+		13.4,
+		40.7,
+		5.3,
+		24.8,
+	})
+
+	clf := NewRidge()
+	clf.Tol = 1e-3
+	clf.Normalize = false
+	clf.Alpha = 1
+	clf.L1Ratio = 0.
+	clf.Fit(X, Y)
+
+	fmt.Printf("Coef:\n%.2f\n", mat.Formatted(clf.Coef.T()))
+	fmt.Printf("Intercept:\n%.2f\n", mat.Formatted(clf.Intercept.T()))
+
+	Ypred := mat.NewDense(5, 1, nil)
+	clf.Predict(X, Ypred)
+
+	fmt.Printf("Ypred:\n%.2f\n", mat.Formatted(Ypred))
+	// Output:
+	// Coef:
+	// [0.00  1.57  4.63]
+	// Intercept:
+	// ⎡-51.12⎤
+	// Ypred:
+	// ⎡ 9.02⎤
+	// ⎢16.76⎥
+	// ⎢39.24⎥
+	// ⎢ 5.84⎥
+	// ⎣24.54⎦
 }

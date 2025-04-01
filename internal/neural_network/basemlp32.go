@@ -721,7 +721,7 @@ func (mlp *BaseMultilayerPerceptron32) fitLbfgs(X, y blas32General, activations,
 	}
 	res, err := optimize.Minimize(problem, w, settings, method)
 	if err != nil {
-		log.Error().Msg(fmt.Sprintf("%w", err))
+		log.Error().Err(err)
 	}
 	if res.Status != optimize.GradientThreshold && res.Status != optimize.FunctionConvergence {
 		log.Printf("lbfgs optimizer: Maximum iterations (%d) reached and the optimization hasn't converged yet.\n", mlp.MaxIter)
@@ -1156,7 +1156,7 @@ func (mlp *BaseMultilayerPerceptron32) Unmarshal(buf []byte) error {
 	mp := Map{}
 	err := json.Unmarshal(buf, &mp)
 	if err != nil {
-		log.Error().Msg(fmt.Sprintf("%w", err))
+		log.Error().Err(err)
 	}
 	if params, ok := mp["params"]; ok {
 		if pmap, ok := params.(Map); ok {

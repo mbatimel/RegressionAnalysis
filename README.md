@@ -20,15 +20,14 @@ curl -X POST http://localhost:9000/api/v1/mlr \
 
 Ridge
 curl -X POST http://localhost:9000/api/v1/ridge \
--H "Content-Type: application/json" \
--d '{
-  "XData": [[587000, 643000,635000,692000,1248000], [16.5, 20.5, 26.3, 16.5, 19.2], [6.2, 6.4, 9.3, 5.3, 7.3]],
-  "YData": [[11.2, 13.4, 40.7, 5.3, 24.8], [11.2, 13.4, 40.7, 5.3, 24.8], [11.2, 13.4, 40.7, 5.3, 24.8]],
-  "alpha": 1,
-  "tol": 0.001,
-  "normalize": true
-  
-}'
+ -H "Content-Type: application/json" \
+ -d '{
+   "XData": [[0, 0], [1, 1], [2, 2]],
+   "YData": [[0, 0], [1, 1], [2, 2]],
+   "alpha": 1.0,
+   "tol": 0.001,
+   "normalize": true
+ }'
 
 ожидаемый ответ:
 {

@@ -54,7 +54,7 @@ func (r *Regression) GetDataPoints() []*models.DataPoint {
 	return r.data
 }
 func (r *Regression) GetNames() []string {
-	namesVars := make([]string,0)
+	namesVars := make([]string, 0)
 	for i := 0; i < len(r.names.vars); i++ {
 		namesVars = append(namesVars, r.GetVar(i))
 	}

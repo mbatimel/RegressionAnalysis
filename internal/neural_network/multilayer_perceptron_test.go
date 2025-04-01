@@ -78,7 +78,7 @@ func TestMLPClassifierMicrochip(t *testing.T) {
 	chkGrad := func(context string, expectedGradient []float64) {
 		actualGradient := mlp.packedGrads[:len(expectedGradient)]
 
-		//fmt.Printf("%s grad=%v expected %v\n", context, actualGradient, expectedGradient)
+		fmt.Printf("%s grad=%v expected %v\n", context, actualGradient, expectedGradient)
 		for j := 0; j < len(expectedGradient); j++ {
 			if !scalar.EqualWithinAbs(expectedGradient[j], actualGradient[j], 1e-4) {
 				t.Errorf("%s grad=%v expected %v", context, actualGradient, expectedGradient)
@@ -176,7 +176,7 @@ func TestMLPClassifierMicrochip(t *testing.T) {
 	}
 	fmt.Println("MLPClassifier BEST SETUP:", best)
 
-	// // fmt.Println("acc:", metrics.AccuracyScore(Ytrue, Ypred,true,nil))
+	fmt.Println("acc:", metrics.AccuracyScore(Ytrue, Ypred, true, nil))
 	// fmt.Println("ok")
 }
 
