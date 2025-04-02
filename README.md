@@ -7,13 +7,13 @@ curl -X POST http://localhost:9000/api/v1/mlr \
 -H "Content-Type: application/json" \
 -d '{
     "observer": "Murders per annum per 1,000,000 inhabitants",
-    "vars": ["Inhabitants", "Percent with incomes below $5000", "Percent unemployed"],
+    "vars": ["Inhabitants", "Percent with incomes below $5000", "Percent unemployed", "popa"],
     "dataPoints": [
-        {"obs": 11.2, "vares": [587000, 16.5, 6.2]},
-        {"obs": 13.4, "vares": [643000, 20.5, 6.4]},
-        {"obs": 40.7, "vares": [635000, 26.3, 9.3]},
-        {"obs": 5.3, "vares": [692000, 16.5, 5.3]},
-        {"obs": 24.8, "vares": [1248000, 19.2, 7.3]}
+        {"obs": 11.2, "vares": [587000, 16.5, 6.2, 6.2]},
+        {"obs": 13.4, "vares": [643000, 20.5, 6.4, 6.2]},
+        {"obs": 40.7, "vares": [635000, 26.3, 9.3, 6.2]},
+        {"obs": 5.3, "vares": [692000, 16.5, 5.3, 6.2]},
+        {"obs": 24.8, "vares": [1248000, 19.2, 7.3, 6.2]}
     ]
 }'
 

@@ -117,12 +117,16 @@ func lassoChecking(dataPoints []models.DataPoint) (map[string]interface{}, error
 	regr.Predict(variables, Ypred)
 
 	fmt.Println("Predicted Y:\n", mat.Formatted(Ypred))
+	rss := &mat.VecDense{}
+	rss.SubVec(Ypred.ColView(0), observed.ColView(0))
+	rss.MulElemVec(rss, rss)
 	res := map[string]interface{}{
 		"Ypred":      fmt.Sprintf("%.5f\n", mat.Formatted(Ypred)),
-		"Coef":       fmt.Sprintf("%.2f\n", mat.Formatted(regr.LinearRegression.Coef)),
-		"XOffsetoef": fmt.Sprintf("%.2f\n", mat.Formatted(regr.LinearRegression.XOffset)),
-		"XScale":     fmt.Sprintf("%.2f\n", mat.Formatted(regr.LinearRegression.XScale)),
-		"Intercept":  fmt.Sprintf("%.2f\n", mat.Formatted(regr.LinearRegression.Intercept)),
+		"Coef":       fmt.Sprintf("%.2f\n", mat.Formatted(regr.LinearRegression.Coef.T())),
+		"XOffsetoef": fmt.Sprintf("%.2f\n", mat.Formatted(regr.LinearRegression.XOffset.T())),
+		"XScale":     fmt.Sprintf("%.2f\n", mat.Formatted(regr.LinearRegression.XScale.T())),
+		"Intercept":  fmt.Sprintf("%.2f\n", mat.Formatted(regr.LinearRegression.Intercept.T())),
+		"RSS": mat.Sum(rss),
 		"MaxIter":    regr.MaxIter,
 		"Tol":        regr.Tol,
 		"Alpha":      regr.Alpha,
@@ -205,7 +209,7 @@ func logisticChecking(dataPoints []models.DataPoint) (map[string]interface{}, er
 	// Создаем модель LogisticRegression
 	regr := linearmodel.NewLogisticRegression()
 	regr.Alpha = 1e-5
-	regr.MaxIter = 10000000
+	regr.MaxIter = 4
 
 	beforeMinimize := func(problem optimize.Problem, initX []float64) {
 		// check gradients
@@ -276,8 +280,9 @@ func svrChecking(dataPoints []models.DataPoint) (map[string]interface{}, error) 
 		C, gamma, coef0, degree float64
 	}{
 		{kernel: "rbf", C: 1e3, gamma: .1},
-		{kernel: "linear", C: 1e3},
+		{kernel: "sigmoid", C: 1e3, gamma: .1},
 		{kernel: "poly", gamma: 1, coef0: 1, C: 1e3, degree: 2},
+		{kernel: "linear", C: 1e3},
 	} {
 		Ypred[opt.kernel] = &mat.Dense{}
 		svr := svm.NewSVR()
@@ -296,9 +301,9 @@ func svrChecking(dataPoints []models.DataPoint) (map[string]interface{}, error) 
 		Ypred[opt.kernel], _ = yscaler.InverseTransform(Ypred[opt.kernel], nil)
 		fmt.Println(base.MatStr(variables, observed, Ypred[opt.kernel]))
 		res = map[string]interface{}{
-			"Ypred":      fmt.Sprintf("%.5f\n", mat.Formatted(Ypred[opt.kernel])),
+			"YPred "+opt.kernel: fmt.Sprintf("%.2f\n", mat.Formatted(Ypred[opt.kernel])),
+			"Score "+opt.kernel: svr.Score(Xsc, Ysc),
 		}
-
 	}
 
 	return res, nil
@@ -310,7 +315,7 @@ func polynomialChecking(dataPoints []models.DataPoint, degree int) (map[string]i
 	// Создаем матрицы X (variables) и Y (observed)
 	observed := mat.NewDense(numOfSamples, 1, nil)          // Y - вектор (numOfSamples × 1)
 	variables := mat.NewDense(numOfSamples, numOfVars, nil) // X - матрица (numOfSamples × numOfVars)
-	nSamples, _ := observed.Dims()
+	nSamples, _ := variables.Dims()
 	// Заполняем матрицы
 	for i := 0; i < numOfSamples; i++ {
 		for j := 0; j < numOfVars; j++ {
@@ -318,10 +323,6 @@ func polynomialChecking(dataPoints []models.DataPoint, degree int) (map[string]i
 		}
 		observed.Set(i, 0, dataPoints[i].Observed)
 	}
-
-	fmt.Println("X (variables):\n", mat.Formatted(variables))
-	fmt.Println("Y (observed):\n", mat.Formatted(observed))
-
 	// Добавляем полиномиальные признаки
 	poly := preprocessing.NewPolynomialFeatures(degree)
 	poly.IncludeBias = false
@@ -330,13 +331,13 @@ func polynomialChecking(dataPoints []models.DataPoint, degree int) (map[string]i
 
 	_, nFeatures := Xp.Dims()
 	_, nOutputs := observed.Dims()
-	Ypred := mat.NewDense(numOfSamples, 1, nil)
+	Ypred := mat.NewDense(nSamples, nOutputs, nil)
 
 	Alpha := 1.
 	mlp := neuralnetwork.NewMLPClassifier([]int{}, "logistic", "adam", Alpha)
 	mlp.BatchSize = nSamples
 	// we allocate Coef here because we use it for loss and grad tests before Fit
-	mlp.Initializer(numOfVars, []int{numOfVars, numOfSamples}, true, false)
+	mlp.Initializer(observed.RawMatrix().Cols, []int{nFeatures, nOutputs}, true, false)
 	mlp.WarmStart = true
 	mlp.Shuffle = false
 	var J float64

@@ -815,11 +815,10 @@ func (mlp *BaseMultilayerPerceptron64) fitStochastic(X, y blas64General, activat
 				for _, a := range activations {
 					a.Rows = Xbatch.Rows
 				}
-
+				
 				//X, y blas64General, activations, deltas, coefGrads []blas64General, interceptGrads
 				batchLoss := mlp.backprop(Xbatch, Ybatch, activations, deltas, coefGrads, interceptGrads)
 				accumulatedLoss += batchLoss * float64(batch[1]-batch[0])
-
 				//# update weights
 				mlp.optimizer.updateParams(packedGrads)
 			}
@@ -863,10 +862,12 @@ func (mlp *BaseMultilayerPerceptron64) fitStochastic(X, y blas64General, activat
 		}
 	}()
 	if earlyStopping {
+
 		// # restore best weights
 		copy(mlp.packedParameters, mlp.bestParameters)
 	}
 	if mlp.Shuffle {
+
 		sort.Sort(indexedXY{idx: sort.IntSlice(idx), X: general64FastSwap(X), Y: general64FastSwap(y)})
 	}
 }

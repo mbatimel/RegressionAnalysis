@@ -191,7 +191,7 @@ func ExampleLasso() {
 	rss := &mat.VecDense{}
 	rss.SubVec(Ypred.ColView(0), Y.ColView(0))
 	rss.MulElemVec(rss, rss)
-	//fmt.Println("gap", m.CDResult.Gap, "Eps", m.CDResult.Eps, "nIter", m.CDResult.NIter)
+	fmt.Println("gap", m.CDResult.Gap, "Eps", m.CDResult.Eps, "nIter", m.CDResult.NIter)
 	fmt.Printf("rss=%.4f intercept=%.4f coef=%.4f\n", mat.Sum(rss), mat.Formatted(m.Intercept.T()), mat.Formatted(m.Coef.T()))
 	// Output:
 	// rss=0.0149 intercept=[0.0570] coef=[ 1.2368  -0.3934  -0.0127   0.0000   0.0007   0.0001   0.0000   0.0000   0.0000  -0.0000  -0.0000  -0.0000  -0.0000  -0.0000  -0.0000]

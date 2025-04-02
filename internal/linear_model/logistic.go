@@ -445,7 +445,7 @@ func (m *LogisticRegression) fitLbfgs(X, y blas64.General, activations []blas64.
 	}
 	res, err := optimize.Minimize(problem, w, settings, method)
 	if err != nil {
-		log.Printf("%w",err)
+		log.Print(err)
 	}
 	if res.Status != optimize.GradientThreshold && res.Status != optimize.FunctionConvergence {
 		log.Printf("lbfgs optimizer: Maximum iterations (%d) reached and the optimization hasn't converged yet.\n", m.MaxIter)
