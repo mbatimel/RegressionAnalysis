@@ -211,9 +211,6 @@ function App() {
       <Graphics tableData={tableData} headers={responseMLRCSVData?.data?.names||headers} datapoints={responseMLRCSVData?.data?.datapoints || []} graphics={responseMLRCSVData?.data?.graphics || responseMLRData?.data?.graphics }/>
       <Buttons
   MLR={MLR}
-  Ridge={Ridge}
-  Lasso={Lasso}
-  ElasticNet={ElasticNet}
   uploadFile={uploadFile}
   handleFileChange={handleFileChange}
   file={file}

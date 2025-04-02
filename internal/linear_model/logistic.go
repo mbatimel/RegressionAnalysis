@@ -60,7 +60,7 @@ type LogisticRegression struct {
 	beforeMinimize func(optimize.Problem, []float64)
 }
 
-func(log *LogisticRegression)SetbeforeMinimize(beforeMinimize func(optimize.Problem, []float64)){
+func (log *LogisticRegression) SetbeforeMinimize(beforeMinimize func(optimize.Problem, []float64)) {
 	log.beforeMinimize = beforeMinimize
 }
 
@@ -377,7 +377,7 @@ func (m *LogisticRegression) Fit(X, Y mat.Matrix) base.Fiter {
 	deltas := blas64.General{Rows: batchSize, Cols: nFanOut, Stride: nFanOut, Data: make([]float64, batchSize*nFanOut)}
 
 	// # Run the LBFGS solver
-	m.fitLbfgs(x, y, activations, deltas, m.CoefsGrads,m.InterceptsGrads, layerUnits)
+	m.fitLbfgs(x, y, activations, deltas, m.CoefsGrads, m.InterceptsGrads, layerUnits)
 	return m
 }
 

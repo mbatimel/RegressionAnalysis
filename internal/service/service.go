@@ -8,7 +8,6 @@ import (
 	"io"
 	"sync"
 
-
 	"strconv"
 
 	"math"
@@ -23,7 +22,6 @@ import (
 	"golang.org/x/exp/rand"
 
 	"gonum.org/v1/gonum/mat"
-	
 )
 
 type regressionService struct {
@@ -77,15 +75,15 @@ func (rs *regressionService) MlrRegression(ctx context.Context, observer string,
 	}
 	res := map[string]interface{}{
 		"ridge":      ridgeCheck,
-		"lasso": lassoCheck,
+		"lasso":      lassoCheck,
 		"elastic":    elasticCheck,
 		"logistic":   logisticCheck,
 		"SRV":        svrCheck,
 		"polynomial": polynomialCheck,
-		"data":     r,
-		"names":    r.GetNames(),
-		"coeff":    r.GetCoeffs(),
-		"graphics": makeGraphics(r),
+		"data":       r,
+		"names":      r.GetNames(),
+		"coeff":      r.GetCoeffs(),
+		"graphics":   makeGraphics(r),
 	}
 	return res, nil
 
@@ -94,7 +92,7 @@ func (rs *regressionService) MlrRegressionCSV(ctx context.Context, file []byte) 
 	r := new(linearmodel.Regression)
 	reader := csv.NewReader(bytes.NewReader(file))
 	reader.Comma = ';'
-	dataPoints :=make([]models.DataPoint,0)
+	dataPoints := make([]models.DataPoint, 0)
 	// Читаем заголовки
 	header, err := reader.Read()
 	if err != nil {
@@ -204,21 +202,21 @@ func (rs *regressionService) MlrRegressionCSV(ctx context.Context, file []byte) 
 	}
 	res := map[string]interface{}{
 		"ridge":      ridgeCheck,
-		"lasso": lassoCheck,
+		"lasso":      lassoCheck,
 		"elastic":    elasticCheck,
 		"logistic":   logisticCheck,
 		"SRV":        svrCheck,
 		"polynomial": polynomialCheck,
-		"data":     r,
-		"names":    r.GetNames(),
-		"coeff":    r.GetCoeffs(),
-		"graphics": makeGraphics(r),
+		"data":       r,
+		"names":      r.GetNames(),
+		"coeff":      r.GetCoeffs(),
+		"graphics":   makeGraphics(r),
 	}
 	return res, nil
 }
 func (rs *regressionService) MlrRegressionExcel(ctx context.Context, file []byte) (map[string]interface{}, error) {
 	r := new(linearmodel.Regression)
-	dataPoints :=make([]models.DataPoint,0)
+	dataPoints := make([]models.DataPoint, 0)
 	reader := bytes.NewReader(file)
 	xlFile, err := excelize.OpenReader(reader)
 	if err != nil {
@@ -337,15 +335,15 @@ func (rs *regressionService) MlrRegressionExcel(ctx context.Context, file []byte
 	}
 	res := map[string]interface{}{
 		"ridge":      ridgeCheck,
-		"lasso": lassoCheck,
+		"lasso":      lassoCheck,
 		"elastic":    elasticCheck,
 		"logistic":   logisticCheck,
 		"SRV":        svrCheck,
 		"polynomial": polynomialCheck,
-		"data":     r,
-		"names":    r.GetNames(),
-		"coeff":    r.GetCoeffs(),
-		"graphics": makeGraphics(r),
+		"data":       r,
+		"names":      r.GetNames(),
+		"coeff":      r.GetCoeffs(),
+		"graphics":   makeGraphics(r),
 	}
 	return res, nil
 }

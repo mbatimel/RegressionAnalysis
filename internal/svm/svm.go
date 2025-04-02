@@ -296,7 +296,7 @@ func (m *BaseLibSVM) fit(X, Y *mat.Dense, svmTrain func(X *mat.Dense, Y []float6
 	base.Parallelize(-1, Noutputs, func(th, start, end int) {
 		y := make([]float64, NSamples)
 		for output := start; output < end; output++ {
-		
+
 			mat.Col(y, output, Y)
 			m.Model[output] = svmTrain(X, y, m.C, m.Epsilon, K, m.Tol, m.MaxIter, m.CacheSize, m.RandomState)
 			model := m.Model[output]

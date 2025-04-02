@@ -203,9 +203,15 @@ type Optimizer64 interface {
 }
 
 func addIntercepts64(a blas64General, b []float64) {
-	for arow, apos := 0, 0; arow < a.Rows; arow, apos = arow+1, apos+a.Stride {
-		for c := 0; c < a.Cols; c++ {
-			a.Data[apos+c] += b[c]
+
+	if len(b) != a.Cols {
+		log.Printf("Размерность вектора b (%d) не совпадает с числом столбцов a (%d) и Data (%f)", len(b), a.Cols)
+
+	} else {
+		for arow, apos := 0, 0; arow < a.Rows; arow, apos = arow+1, apos+a.Stride {
+			for c := 0; c < a.Cols; c++ {
+				a.Data[apos+c] += b[c]
+			}
 		}
 	}
 }
@@ -280,6 +286,9 @@ func (mlp *BaseMultilayerPerceptron64) GetpackedGrads() []float64 {
 }
 func (mlp *BaseMultilayerPerceptron64) GetpackedParameters() []float64 {
 	return mlp.packedParameters
+}
+func (mlp *BaseMultilayerPerceptron64) SetpackedParameters(i int, value float64) {
+	mlp.packedParameters[i] = value
 }
 func (mlp *BaseMultilayerPerceptron64) SetbeforeMinimize(checkGradients func(optimize.Problem, []float64)) {
 	mlp.beforeMinimize = checkGradients
@@ -815,7 +824,6 @@ func (mlp *BaseMultilayerPerceptron64) fitStochastic(X, y blas64General, activat
 				for _, a := range activations {
 					a.Rows = Xbatch.Rows
 				}
-				
 				//X, y blas64General, activations, deltas, coefGrads []blas64General, interceptGrads
 				batchLoss := mlp.backprop(Xbatch, Ybatch, activations, deltas, coefGrads, interceptGrads)
 				accumulatedLoss += batchLoss * float64(batch[1]-batch[0])
