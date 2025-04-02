@@ -500,7 +500,7 @@ func (mlp *BaseMultilayerPerceptron64) fit(X, y blas64General, incremental bool)
 	mlp.validateHyperparameters()
 	for _, s := range mlp.HiddenLayerSizes {
 		if s < 0 {
-			log.Panicf("hiddenLayerSizes must be > 0, got %v.", mlp.HiddenLayerSizes)
+			log.Printf("hiddenLayerSizes must be > 0, got %v.", mlp.HiddenLayerSizes)
 		}
 	}
 	X, y = mlp.validateInput(X, y, incremental)
@@ -572,10 +572,12 @@ func (mlp *BaseMultilayerPerceptron64) fit(X, y blas64General, incremental bool)
 	}
 
 	if strings.EqualFold(mlp.Solver, "lbfgs") {
+		log.Println("LBFGS solver")
 		// # Run the LBFGS solver
 		mlp.fitLbfgs(X, y, activations, deltas, CoefsGrads,
 			InterceptsGrads, packedGrads, layerUnits)
 	} else {
+		log.Println("Stochastic optimization solver")
 		// # Run the Stochastic optimization solver
 		mlp.fitStochastic(X, y, activations, deltas, CoefsGrads,
 			InterceptsGrads, packedGrads, layerUnits, incremental)
@@ -638,31 +640,31 @@ func (mlp *BaseMultilayerPerceptron64) Predict(X mat.Matrix, Y Mutable) {
 
 func (mlp *BaseMultilayerPerceptron64) validateHyperparameters() {
 	if mlp.MaxIter <= 0 {
-		log.Panicf("maxIter must be > 0, got %d.", mlp.MaxIter)
+		log.Printf("maxIter must be > 0, got %d.", mlp.MaxIter)
 	}
 	if mlp.Alpha < 0.0 {
-		log.Panicf("alpha must be >= 0, got %g.", mlp.Alpha)
+		log.Printf("alpha must be >= 0, got %g.", mlp.Alpha)
 	}
 	if mlp.LearningRateInit <= 0.0 {
-		log.Panicf("learningRateInit must be > 0, got %g.", mlp.LearningRateInit)
+		log.Printf("learningRateInit must be > 0, got %g.", mlp.LearningRateInit)
 	}
 	if mlp.Momentum > 1 || mlp.Momentum < 0 {
-		log.Panicf("momentum must be >= 0 and <= 1, got %g", mlp.Momentum)
+		log.Printf("momentum must be >= 0 and <= 1, got %g", mlp.Momentum)
 	}
 	if mlp.ValidationFraction < 0 || mlp.ValidationFraction >= 1 {
-		log.Panicf("validationFraction must be >= 0 and < 1, got %g", mlp.ValidationFraction)
+		log.Printf("validationFraction must be >= 0 and < 1, got %g", mlp.ValidationFraction)
 	}
 	if mlp.Beta1 < 0 || mlp.Beta1 >= 1 {
-		log.Panicf("beta_1 must be >= 0 and < 1, got %g", mlp.Beta1)
+		log.Printf("beta_1 must be >= 0 and < 1, got %g", mlp.Beta1)
 	}
 	if mlp.Beta2 < 0 || mlp.Beta2 >= 1 {
-		log.Panicf("beta_2 must be >= 0 and < 1, got %g", mlp.Beta2)
+		log.Printf("beta_2 must be >= 0 and < 1, got %g", mlp.Beta2)
 	}
 	if mlp.Epsilon <= 0.0 {
-		log.Panicf("epsilon must be > 0, got %g.", mlp.Epsilon)
+		log.Printf("epsilon must be > 0, got %g.", mlp.Epsilon)
 	}
 	if mlp.NIterNoChange <= 0 {
-		log.Panicf("nIterNoChange must be > 0, got %d.", mlp.NIterNoChange)
+		log.Printf("nIterNoChange must be > 0, got %d.", mlp.NIterNoChange)
 	}
 	//# raise ValueError if not registered
 
@@ -672,17 +674,17 @@ func (mlp *BaseMultilayerPerceptron64) validateHyperparameters() {
 	}
 
 	if _, ok := Activations64[mlp.Activation]; !ok {
-		log.Panicf("The activation \"%s\" is not supported. Supported activations are %s.", mlp.Activation, supportedActivations)
+		log.Printf("The activation \"%s\" is not supported. Supported activations are %s.", mlp.Activation, supportedActivations)
 	}
 	switch mlp.LearningRate {
 	case "constant", "invscaling", "adaptive":
 	default:
-		log.Panicf("learning rate %s is not supported.", mlp.LearningRate)
+		log.Printf("learning rate %s is not supported.", mlp.LearningRate)
 	}
 	switch mlp.Solver {
 	case "sgd", "adam", "lbfgs":
 	default:
-		log.Panicf("The solver %s is not supported.", mlp.Solver)
+		log.Printf("The solver %s is not supported.", mlp.Solver)
 	}
 }
 
@@ -733,7 +735,7 @@ func (mlp *BaseMultilayerPerceptron64) fitLbfgs(X, y blas64General, activations,
 	}
 	res, err := optimize.Minimize(problem, w, settings, method)
 	if err != nil {
-		log.Panic(err)
+		log.Println(err)
 	}
 	if res.Status != optimize.GradientThreshold && res.Status != optimize.FunctionConvergence {
 		log.Printf("lbfgs optimizer: Maximum iterations (%d) reached and the optimization hasn't converged yet.\n", mlp.MaxIter)
@@ -794,7 +796,7 @@ func (mlp *BaseMultilayerPerceptron64) fitStochastic(X, y blas64General, activat
 	func() {
 		if r := recover(); r != nil {
 			// ...
-			log.Panic(r)
+			log.Println(r)
 		}
 		for it := 0; it < mlp.MaxIter; it++ {
 			if mlp.Shuffle {

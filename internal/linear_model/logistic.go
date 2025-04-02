@@ -60,6 +60,10 @@ type LogisticRegression struct {
 	beforeMinimize func(optimize.Problem, []float64)
 }
 
+func(log *LogisticRegression)SetbeforeMinimize(beforeMinimize func(optimize.Problem, []float64)){
+	log.beforeMinimize = beforeMinimize
+}
+
 // logregActivation is a map containing the inplace_activation functions
 var logregActivation = map[string]func(z blas64.General){
 	"logistic": func(z blas64.General) {
@@ -365,7 +369,6 @@ func (m *LogisticRegression) Fit(X, Y mat.Matrix) base.Fiter {
 		m.RandomState = rand.New(base.NewLockedSource(uint64(time.Now().UnixNano())))
 	}
 	m.initialize(y.Cols, layerUnits, y.Cols > 1)
-
 	// # Initialize lists
 	batchSize := nSamples
 	activations := []blas64.General{x}
@@ -374,8 +377,7 @@ func (m *LogisticRegression) Fit(X, Y mat.Matrix) base.Fiter {
 	deltas := blas64.General{Rows: batchSize, Cols: nFanOut, Stride: nFanOut, Data: make([]float64, batchSize*nFanOut)}
 
 	// # Run the LBFGS solver
-	m.fitLbfgs(x, y, activations, deltas, m.CoefsGrads,
-		m.InterceptsGrads, layerUnits)
+	m.fitLbfgs(x, y, activations, deltas, m.CoefsGrads,m.InterceptsGrads, layerUnits)
 	return m
 }
 
@@ -389,13 +391,13 @@ func (m *LogisticRegression) GetNOutputs() int {
 
 func (m *LogisticRegression) validateHyperparameters() {
 	if m.MaxIter <= 0 {
-		log.Panicf("maxIter must be > 0, got %d.", m.MaxIter)
+		log.Printf("maxIter must be > 0, got %d.", m.MaxIter)
 	}
 	if m.Alpha < 0.0 {
-		log.Panicf("alpha must be >= 0, got %g.", m.Alpha)
+		log.Printf("alpha must be >= 0, got %g.", m.Alpha)
 	}
 	if m.NIterNoChange <= 0 {
-		log.Panicf("nIterNoChange must be > 0, got %d.", m.NIterNoChange)
+		log.Printf("nIterNoChange must be > 0, got %d.", m.NIterNoChange)
 	}
 }
 
@@ -443,7 +445,7 @@ func (m *LogisticRegression) fitLbfgs(X, y blas64.General, activations []blas64.
 	}
 	res, err := optimize.Minimize(problem, w, settings, method)
 	if err != nil {
-		log.Panic(err)
+		log.Printf("%w",err)
 	}
 	if res.Status != optimize.GradientThreshold && res.Status != optimize.FunctionConvergence {
 		log.Printf("lbfgs optimizer: Maximum iterations (%d) reached and the optimization hasn't converged yet.\n", m.MaxIter)
