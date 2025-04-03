@@ -6,13 +6,11 @@ import Documentation from './components/Documentation/Documentation';
 import Tables from './components/Tables/Tables';
 import Buttons from './components/Buttons/Buttons';
 import Graphics from "./components/Graphics/Graphics";
+import Results from "./components/Results/Results";
 
 
 function App() {
   const [responseMLRData, setMLRData] = useState(null);
-  const [responseRidgeData, setRidgeData] = useState(null);
-  const [lassoResponse, setLassoResponse] = useState(null);
-  const [elasticnetResponse, setElasticnetResponse] = useState(null);
   const [file, setFile] = useState(null);
   const [responseMLRCSVData, setMLRCSVData] = useState(null);
   const [selectedMethod, setSelectedMethod] = useState("MLR");
@@ -20,8 +18,6 @@ function App() {
   const [headers, setHeaders] = useState([]);
   const [rows, setRows] = useState(1);
   const [cols, setCols] = useState(1);
-  const XData = tableData.map((row) => row.slice(1).map(Number)); // Преобразуем X в числа
-  const YData = tableData.map((row) => [Number(row[0])]); // Преобразуем Y в числа
 
 
   const handleMethodChange = (e) => {
@@ -105,102 +101,6 @@ function App() {
     }
   };
 
-  const Ridge = async () => {
-    if (!headers.length || !tableData.length) {
-      alert("Введите данные в таблицу перед отправкой запроса");
-      return;
-    }
-    setMLRCSVData(null);
-    const requestData = {
-      XData,
-      YData,
-      alpha: 1,
-      tol: 0.001,
-      normalize: false,
-    };
-  
-    try {
-      const response = await fetch("/api/v1/ridge", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(requestData),
-      });
-  
-      if (!response.ok) throw new Error("Ridge Request failed");
-  
-      const data = await response.json();
-      setRidgeData(data);
-      console.log(data);
-    } catch (error) {
-      console.error("Error:", error);
-    }
-  };
-  
-
-  const Lasso = async () => {
-    if (!headers.length || !tableData.length) {
-      alert("Введите данные в таблицу перед отправкой запроса");
-      return;
-    }
-    setMLRCSVData(null);
-    const requestData = {
-      XData,
-      YData,
-      alpha: 0.5,
-      tol: 0.001,
-      normalize: false,
-    };
-  
-    try {
-      const response = await fetch("/api/v1/lasso", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(requestData),
-      });
-  
-      if (!response.ok) throw new Error("Lasso Request failed");
-  
-      const data = await response.json();
-      setLassoResponse(data);
-      console.log(data);
-    } catch (error) {
-      console.error("Error:", error);
-    }
-  };
-  
-
-  const ElasticNet = async () => {
-    if (!headers.length || !tableData.length) {
-      alert("Введите данные в таблицу перед отправкой запроса");
-      return;
-    }
-    setMLRCSVData(null);
-    const requestData = {
-      XData,
-      YData,
-      params: {
-        l1_ratio: 0.7,
-        n_alphas: 20,
-      },
-    };
-  
-    try {
-      const response = await fetch("/api/v1/elasticnet", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(requestData),
-      });
-  
-      if (!response.ok) throw new Error("ElasticNet Request failed");
-  
-      const data = await response.json();
-      setElasticnetResponse(data);
-      console.log(data);
-    } catch (error) {
-      console.error("Error:", error);
-    }
-  };
-
   return (
     <div className="App">
       <Header isRed={true}>
@@ -214,9 +114,19 @@ function App() {
   uploadFile={uploadFile}
   handleFileChange={handleFileChange}
   file={file}
-  responses={{ responseMLRData, responseRidgeData, lassoResponse, elasticnetResponse, responseMLRCSVData }}
+  responses={{ responseMLRData, responseMLRCSVData }}
   headers={headers} 
 />
+{responseMLRCSVData &&
+  Object.keys(responseMLRCSVData.data || {}).map((method) => (
+    <Results key={method} title={`Анализ через ${method} регрессию`} data={responseMLRCSVData.data[method]} />
+  ))}
+
+{responseMLRData &&
+  Object.keys(responseMLRData.data || {}).map((method) => (
+    <Results key={method} title={`Анализ через ${method} регрессию`} data={responseMLRData.data[method]} />
+  ))}
+
 
       <h2>📜 Документация по методам регрессии</h2>
       <div>

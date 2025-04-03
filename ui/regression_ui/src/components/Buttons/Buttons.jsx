@@ -4,7 +4,7 @@ const Buttons = ({ MLR, uploadFile, handleFileChange, file, responses, headers }
   return (
     <div>
       <h1>React cURL Buttons</h1>
-      <button className="MLRButton" onClick={MLR}>MLR</button>
+      <button className="MLRButton" onClick={MLR}>Приступить к анализу</button>
       {responses.responseMLRData && (
         <div className="result-box">
           <h3>Формула:</h3>
@@ -16,7 +16,7 @@ const Buttons = ({ MLR, uploadFile, handleFileChange, file, responses, headers }
       )}
       <h1>React File Upload</h1>
       <input type="file" onChange={handleFileChange} />
-      <button className="UploadButton" onClick={uploadFile}>Отправить файл</button>
+      <button className="UploadButton" onClick={uploadFile}>Приступить к анализу файла</button>
       {responses.responseMLRCSVData && (
         <div className="result-box">
           <h3>Ответ от сервера (MLR CSV):</h3>

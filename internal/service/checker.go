@@ -72,12 +72,12 @@ func ridgeChecking(dataPoints []models.DataPoint) (map[string]interface{}, error
 
 	// Возвращаем результаты
 	res := map[string]interface{}{
-		"Ypred":              fmt.Sprintf("%.2f\n", mat.Formatted(Ypred)),
-		"Coef":               fmt.Sprintf("%.2f\n", mat.Formatted(regr.LinearRegression.Coef)),
-		"XOffsetoef":         fmt.Sprintf("%.2f\n", mat.Formatted(regr.LinearRegression.XOffset)),
-		"XScale":             fmt.Sprintf("%.2f\n", mat.Formatted(regr.LinearRegression.XScale)),
-		"Intercept":          fmt.Sprintf("%.2f\n", mat.Formatted(regr.LinearRegression.Intercept)),
-		"ActivationFunction": regr.ActivationFunction,
+		"ridge Ypred":              fmt.Sprintf("%.2f\n", mat.Formatted(Ypred)),
+		"ridge Coef":               fmt.Sprintf("%.2f\n", mat.Formatted(regr.LinearRegression.Coef)),
+		"ridge XOffsetoef":         fmt.Sprintf("%.2f\n", mat.Formatted(regr.LinearRegression.XOffset)),
+		"ridge XScale":             fmt.Sprintf("%.2f\n", mat.Formatted(regr.LinearRegression.XScale)),
+		"ridge Intercept":          fmt.Sprintf("%.2f\n", mat.Formatted(regr.LinearRegression.Intercept)),
+		"ridge ActivationFunction": regr.ActivationFunction,
 	}
 
 	return res, nil
@@ -115,20 +115,20 @@ func lassoChecking(dataPoints []models.DataPoint) (map[string]interface{}, error
 	rss.SubVec(Ypred.ColView(0), observed.ColView(0))
 	rss.MulElemVec(rss, rss)
 	res := map[string]interface{}{
-		"Ypred":      fmt.Sprintf("%.5f\n", mat.Formatted(Ypred)),
-		"Coef":       fmt.Sprintf("%.2f\n", mat.Formatted(regr.LinearRegression.Coef.T())),
-		"XOffsetoef": fmt.Sprintf("%.2f\n", mat.Formatted(regr.LinearRegression.XOffset.T())),
-		"XScale":     fmt.Sprintf("%.2f\n", mat.Formatted(regr.LinearRegression.XScale.T())),
-		"Intercept":  fmt.Sprintf("%.2f\n", mat.Formatted(regr.LinearRegression.Intercept.T())),
-		"RSS":        mat.Sum(rss),
-		"MaxIter":    regr.MaxIter,
-		"Tol":        regr.Tol,
-		"Alpha":      regr.Alpha,
-		"L1Ratio":    regr.L1Ratio,
-		"Selection":  regr.Selection,
-		"WarmStart":  regr.WarmStart,
-		"Positive":   regr.Positive,
-		"CDResult":   regr.CDResult,
+		"lasso Ypred":      fmt.Sprintf("%.5f\n", mat.Formatted(Ypred)),
+		"lasso Coef":       fmt.Sprintf("%.2f\n", mat.Formatted(regr.LinearRegression.Coef.T())),
+		"lasso XOffsetoef": fmt.Sprintf("%.2f\n", mat.Formatted(regr.LinearRegression.XOffset.T())),
+		"lasso XScale":     fmt.Sprintf("%.2f\n", mat.Formatted(regr.LinearRegression.XScale.T())),
+		"lasso Intercept":  fmt.Sprintf("%.2f\n", mat.Formatted(regr.LinearRegression.Intercept.T())),
+		"lasso RSS":        mat.Sum(rss),
+		"lasso MaxIter":    regr.MaxIter,
+		"lasso Tol":        regr.Tol,
+		"lasso Alpha":      regr.Alpha,
+		"lasso L1Ratio":    regr.L1Ratio,
+		"lasso Selection":  regr.Selection,
+		"lasso WarmStart":  regr.WarmStart,
+		"lasso Positive":   regr.Positive,
+		"lasso CDResult":   regr.CDResult,
 	}
 	return res, nil
 }
@@ -164,19 +164,19 @@ func elasticChecking(dataPoints []models.DataPoint, l1Ratio float64) (map[string
 
 	// Возвращаем результаты
 	res := map[string]interface{}{
-		"Ypred":      fmt.Sprintf("%.5f\n", mat.Formatted(Ypred)),
-		"Coef":       fmt.Sprintf("%.7f\n", mat.Formatted(enet.LinearRegression.Coef)),
-		"XOffsetoef": fmt.Sprintf("%.2f\n", mat.Formatted(enet.LinearRegression.XOffset)),
-		"XScale":     fmt.Sprintf("%.2f\n", mat.Formatted(enet.LinearRegression.XScale)),
-		"Intercept":  fmt.Sprintf("%.2f\n", mat.Formatted(enet.LinearRegression.Intercept)),
-		"MaxIter":    enet.MaxIter,
-		"Tol":        enet.Tol,
-		"Alpha":      enet.Alpha,
-		"L1Ratio":    enet.L1Ratio,
-		"Selection":  enet.Selection,
-		"WarmStart":  enet.WarmStart,
-		"Positive":   enet.Positive,
-		"CDResult":   enet.CDResult,
+		"elastic Ypred":      fmt.Sprintf("%.5f\n", mat.Formatted(Ypred)),
+		"elastic Coef":       fmt.Sprintf("%.7f\n", mat.Formatted(enet.LinearRegression.Coef)),
+		"elastic XOffsetoef": fmt.Sprintf("%.2f\n", mat.Formatted(enet.LinearRegression.XOffset)),
+		"elastic XScale":     fmt.Sprintf("%.2f\n", mat.Formatted(enet.LinearRegression.XScale)),
+		"elastic Intercept":  fmt.Sprintf("%.2f\n", mat.Formatted(enet.LinearRegression.Intercept)),
+		"elastic MaxIter":    enet.MaxIter,
+		"elastic Tol":        enet.Tol,
+		"elastic Alpha":      enet.Alpha,
+		"elastic L1Ratio":    enet.L1Ratio,
+		"elastic Selection":  enet.Selection,
+		"elastic WarmStart":  enet.WarmStart,
+		"elastic Positive":   enet.Positive,
+		"elastic CDResult":   enet.CDResult,
 	}
 
 	return res, nil
@@ -234,11 +234,11 @@ func logisticChecking(dataPoints []models.DataPoint) (map[string]interface{}, er
 
 	// Возвращаем результаты
 	res := map[string]interface{}{
-		"Ypred":     fmt.Sprintf("%.2f\n", mat.Formatted(Ypred)),
-		"Coef":      regr.Coef,
-		"Intercept": regr.Intercept,
-		"Tol":       regr.Tol,
-		"Alpha":     regr.Alpha,
+		"logistic Ypred":     fmt.Sprintf("%.2f\n", mat.Formatted(Ypred)),
+		"logistic Coef":      regr.Coef,
+		"logistic Intercept": regr.Intercept,
+		"logistic Tol":       regr.Tol,
+		"logistic Alpha":     regr.Alpha,
 	}
 
 	return res, nil
@@ -295,8 +295,8 @@ func svrChecking(dataPoints []models.DataPoint) (map[string]interface{}, error) 
 		Ypred[opt.kernel], _ = yscaler.InverseTransform(Ypred[opt.kernel], nil)
 		fmt.Println(base.MatStr(variables, observed, Ypred[opt.kernel]))
 		res = map[string]interface{}{
-			"YPred " + opt.kernel: fmt.Sprintf("%.2f\n", mat.Formatted(Ypred[opt.kernel])),
-			"Score " + opt.kernel: svr.Score(Xsc, Ysc),
+			"svr YPred " + opt.kernel: fmt.Sprintf("%.2f\n", mat.Formatted(Ypred[opt.kernel])),
+			"svr Score " + opt.kernel: svr.Score(Xsc, Ysc),
 		}
 	}
 
@@ -392,9 +392,9 @@ func polynomialChecking(dataPoints []models.DataPoint, degree int) (map[string]i
 
 	// Возвращаем результаты
 	res := map[string]interface{}{
-		"Ypred": fmt.Sprintf("%.2f\n", mat.Formatted(Ypred)),
-		"best":  best,
-		"acc":   metrics.AccuracyScore(observed, Ypred, true, nil),
+		"poly Ypred": fmt.Sprintf("%.2f\n", mat.Formatted(Ypred)),
+		"poly best":  best,
+		"poly acc":   metrics.AccuracyScore(observed, Ypred, true, nil),
 	}
 
 	return res, nil

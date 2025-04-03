@@ -1,7 +1,42 @@
 .MLRButton{
-  
+    display: flex;
+    width: 100px;
+    height: var(--size-button-s-height, 32px);
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+    border-radius: var(--size-button-s-radius, 8px);
+background: linear-gradient(90deg, var(--color-extra-main-00, #55D9C6) 0%, var(--color-extra-main-01, #331E15) 100%);
+
+/* shadow/button/02 */
+box-shadow: 0px 0px 12px 0px rgba(181, 217, 130, 0.20);
 }
-.RidgeButton{}
-.UploadButton{}
-.ElastNetButton{}
-.LassoButton{}
+
+
+.UploadButton{
+    display: flex;
+    width: 100px;
+    height: var(--size-button-s-height, 32px);
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+    border-radius: var(--size-button-s-radius, 8px);
+background: linear-gradient(90deg, var(--color-extra-main-00, #55D9C6) 0%, var(--color-extra-main-01, #331E15) 100%);
+
+/* shadow/button/02 */
+box-shadow: 0px 0px 12px 0px rgba(181, 217, 130, 0.20);
+}
+
+.UploadFile{
+    display: flex;
+    width: 90px;
+    height: var(--size-button-s-height, 32px);
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+    border-radius: var(--size-button-s-radius, 8px);
+background: linear-gradient(90deg, var(--color-extra-main-00, #55D9C6) 0%, var(--color-extra-main-01, #331E15) 100%);
+
+/* shadow/button/02 */
+box-shadow: 0px 0px 12px 0px rgba(181, 217, 130, 0.20);
+}

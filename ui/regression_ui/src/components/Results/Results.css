@@ -1,0 +1,28 @@
+.results-container {
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin: 15px 0;
+    border-radius: 8px;
+    background: #f9f9f9;
+  }
+  
+  .results-container h2 {
+    font-size: 20px;
+    margin-bottom: 10px;
+  }
+  
+  .results-content {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  
+  .result-item {
+    padding: 5px;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .result-item:last-child {
+    border-bottom: none;
+  }
+  
