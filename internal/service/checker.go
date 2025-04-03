@@ -38,6 +38,32 @@ func makeGraphics(r *linearmodel.Regression) map[int]map[string]float64 {
 
 	return res
 }
+func makeGraphicsForOtherMethod(datapoints []models.DataPoint, matrixCoeff *mat.Dense, YPred *mat.Dense) map[int]map[string]float64 {
+	res := make(map[int]map[string]float64)
+
+	coeff := denseToSlice(matrixCoeff)
+	yPred := denseToSlice(YPred)
+	for i := 1; i < len(coeff); i++ {
+		xyPlot := make(map[string]float64)
+		for j := 0; j < len(datapoints); j++ {
+			x := datapoints[j].Variables[i-1]
+			xyPlot[fmt.Sprintf("%f", yPred[j])] = x
+		}
+		res[i] = xyPlot
+	}
+
+	return res
+}
+func denseToSlice(d *mat.Dense) []float64 {
+	r, c := d.Dims()
+	data := make([]float64, r*c)
+	for i := 0; i < r; i++ {
+		for j := 0; j < c; j++ {
+			data[i*c+j] = d.At(i, j)
+		}
+	}
+	return data
+}
 func ridgeChecking(dataPoints []models.DataPoint) (map[string]interface{}, error) {
 	numOfSamples := len(dataPoints)
 	numOfVars := len(dataPoints[0].Variables)
@@ -68,8 +94,6 @@ func ridgeChecking(dataPoints []models.DataPoint) (map[string]interface{}, error
 	Ypred := mat.NewDense(numOfSamples, 1, nil)
 	regr.Predict(variables, Ypred)
 
-	fmt.Println("Predicted Y:\n", mat.Formatted(Ypred))
-
 	// Возвращаем результаты
 	res := map[string]interface{}{
 		"ridge Ypred":              fmt.Sprintf("%.2f\n", mat.Formatted(Ypred)),
@@ -78,6 +102,7 @@ func ridgeChecking(dataPoints []models.DataPoint) (map[string]interface{}, error
 		"ridge XScale":             fmt.Sprintf("%.2f\n", mat.Formatted(regr.LinearRegression.XScale)),
 		"ridge Intercept":          fmt.Sprintf("%.2f\n", mat.Formatted(regr.LinearRegression.Intercept)),
 		"ridge ActivationFunction": regr.ActivationFunction,
+		"graphics":                 makeGraphicsForOtherMethod(dataPoints, regr.Coef, Ypred),
 	}
 
 	return res, nil
@@ -108,9 +133,7 @@ func lassoChecking(dataPoints []models.DataPoint) (map[string]interface{}, error
 
 	// Делаем предсказание
 	Ypred := mat.NewDense(numOfSamples, 1, nil)
-	regr.Predict(variables, Ypred)
 
-	fmt.Println("Predicted Y:\n", mat.Formatted(Ypred))
 	rss := &mat.VecDense{}
 	rss.SubVec(Ypred.ColView(0), observed.ColView(0))
 	rss.MulElemVec(rss, rss)
@@ -129,6 +152,7 @@ func lassoChecking(dataPoints []models.DataPoint) (map[string]interface{}, error
 		"lasso WarmStart":  regr.WarmStart,
 		"lasso Positive":   regr.Positive,
 		"lasso CDResult":   regr.CDResult,
+		"graphics":         makeGraphicsForOtherMethod(dataPoints, regr.Coef, Ypred),
 	}
 	return res, nil
 }
@@ -160,8 +184,6 @@ func elasticChecking(dataPoints []models.DataPoint, l1Ratio float64) (map[string
 	Ypred := mat.NewDense(numOfSamples, 1, nil)
 	enet.Predict(variables, Ypred)
 
-	fmt.Println("Predicted Y:\n", mat.Formatted(Ypred))
-
 	// Возвращаем результаты
 	res := map[string]interface{}{
 		"elastic Ypred":      fmt.Sprintf("%.5f\n", mat.Formatted(Ypred)),
@@ -177,6 +199,7 @@ func elasticChecking(dataPoints []models.DataPoint, l1Ratio float64) (map[string
 		"elastic WarmStart":  enet.WarmStart,
 		"elastic Positive":   enet.Positive,
 		"elastic CDResult":   enet.CDResult,
+		"graphics":           makeGraphicsForOtherMethod(dataPoints, enet.Coef, Ypred),
 	}
 
 	return res, nil
@@ -196,9 +219,6 @@ func logisticChecking(dataPoints []models.DataPoint) (map[string]interface{}, er
 		}
 		observed.Set(i, 0, dataPoints[i].Observed)
 	}
-
-	fmt.Println("X (variables):\n", mat.Formatted(variables))
-	fmt.Println("Y (observed):\n", mat.Formatted(observed))
 
 	// Создаем модель LogisticRegression
 	regr := linearmodel.NewLogisticRegression()
@@ -230,7 +250,6 @@ func logisticChecking(dataPoints []models.DataPoint) (map[string]interface{}, er
 	}
 	Ypred := mat.NewDense(numOfSamples, 1, nil)
 	regr.Predict(variables, Ypred)
-	fmt.Println("Predicted Y:\n", mat.Formatted(Ypred))
 
 	// Возвращаем результаты
 	res := map[string]interface{}{
@@ -239,6 +258,7 @@ func logisticChecking(dataPoints []models.DataPoint) (map[string]interface{}, er
 		"logistic Intercept": regr.Intercept,
 		"logistic Tol":       regr.Tol,
 		"logistic Alpha":     regr.Alpha,
+		// "logistic graphics":	makeGraphicsForOtherMethod(dataPoints,),
 	}
 
 	return res, nil
@@ -260,8 +280,6 @@ func svrChecking(dataPoints []models.DataPoint) (map[string]interface{}, error) 
 		observed.Set(i, 0, dataPoints[i].Observed)
 	}
 
-	fmt.Println("X (variables):\n", mat.Formatted(variables))
-	fmt.Println("Y (observed):\n", mat.Formatted(observed))
 	randomState := base.NewLockedSource(7)
 	xscaler := preprocessing.NewMinMaxScaler([]float64{-1, 1})
 	yscaler := preprocessing.NewMinMaxScaler([]float64{-1, 1})
@@ -293,7 +311,6 @@ func svrChecking(dataPoints []models.DataPoint) (map[string]interface{}, error) 
 		svr.Fit(Xsc, Ysc)
 		svr.Predict(Xsc, Ypred[opt.kernel])
 		Ypred[opt.kernel], _ = yscaler.InverseTransform(Ypred[opt.kernel], nil)
-		fmt.Println(base.MatStr(variables, observed, Ypred[opt.kernel]))
 		res = map[string]interface{}{
 			"svr YPred " + opt.kernel: fmt.Sprintf("%.2f\n", mat.Formatted(Ypred[opt.kernel])),
 			"svr Score " + opt.kernel: svr.Score(Xsc, Ysc),

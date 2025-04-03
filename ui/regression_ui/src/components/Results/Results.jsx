@@ -1,7 +1,8 @@
 import React from "react";
 import "./Results.css";
+import Graphics from "./../Graphics/Graphics";
 
-const Results = ({ title, data }) => {
+const Results = ({ title, data, datapoints = [], headers = []}) => {
   return (
     <div className="results-container">
       <h2>{title}</h2>
@@ -12,6 +13,12 @@ const Results = ({ title, data }) => {
           </div>
         ))}
       </div>
+
+      {data.graphics && (
+        <div className="result-graph">
+          <Graphics graphics={data.graphics} datapoints={datapoints} headers={headers}/>
+        </div>
+      )}
     </div>
   );
 };

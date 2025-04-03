@@ -119,12 +119,12 @@ function App() {
 />
 {responseMLRCSVData &&
   Object.keys(responseMLRCSVData.data || {}).map((method) => (
-    <Results key={method} title={`Анализ через ${method} регрессию`} data={responseMLRCSVData.data[method]} />
+    <Results key={method} title={`Анализ через ${method} регрессию`} data={responseMLRCSVData.data[method]} datapoints={responseMLRCSVData?.data?.datapoints} headers={responseMLRCSVData?.data?.names} />
   ))}
 
 {responseMLRData &&
   Object.keys(responseMLRData.data || {}).map((method) => (
-    <Results key={method} title={`Анализ через ${method} регрессию`} data={responseMLRData.data[method]} />
+    <Results key={method} title={`Анализ через ${method} регрессию`} data={responseMLRData.data[method]} datapoints={responseMLRData?.data?.datapoints} headers={responseMLRCSVData?.data?.names}/>
   ))}
 
 
