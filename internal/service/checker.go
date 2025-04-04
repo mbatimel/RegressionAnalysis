@@ -3,11 +3,9 @@ package service
 import (
 	"fmt"
 	"sync"
-	"time"
 
 	"math"
 
-	"github.com/gofiber/fiber/v2/log"
 	"github.com/mbatimel/RegressionAnalysis/internal/base"
 	linearmodel "github.com/mbatimel/RegressionAnalysis/internal/linear_model"
 	"github.com/mbatimel/RegressionAnalysis/internal/metrics"
@@ -21,7 +19,24 @@ import (
 	"gonum.org/v1/gonum/mat"
 	"gonum.org/v1/gonum/optimize"
 )
+func makeGraphicsForSVR(datapoints []models.DataPoint, Ypred *mat.Dense) map[int]map[string]float64 {
+	res := make(map[int]map[string]float64)
+	yPred := denseToSlice(Ypred)
 
+	for i := 0; i < len(datapoints[0].Variables); i++ {
+		xyPlot := make(map[string]float64)
+		for j := 0; j < len(datapoints); j++ {
+			if i >= len(datapoints[j].Variables) {
+				continue // избегаем выхода за границы
+			}
+			x := datapoints[j].Variables[i]
+			xyPlot[fmt.Sprintf("%f", yPred[j])] = x
+		}
+		res[i] = xyPlot
+	}
+
+	return res
+}
 func makeGraphics(r *linearmodel.Regression) map[int]map[string]float64 {
 	res := make(map[int]map[string]float64)
 
@@ -217,15 +232,18 @@ func lassoChecking(dataPoints []models.DataPoint) (map[string]interface{}, error
 
 	// Создаем модель Lasso
 	regr := linearmodel.NewLasso() // Предположим, что у вас есть Lasso модель
-	regr.Alpha = 1
-	regr.Tol = 0.01
+	regr.FitIntercept = true
 	regr.Normalize = true
+	regr.Alpha = 1e-5
+	regr.L1Ratio = 1
+	regr.MaxIter = 1e5
+	regr.Tol = 1e-4
 	// Обучаем модель
 	regr.Fit(variables, observed)
 
-	// Делаем предсказание
-	Ypred := mat.NewDense(numOfSamples, 1, nil)
 
+	Ypred := mat.NewDense(numOfSamples, 1, nil)
+	regr.Predict(variables, Ypred)
 	rss := &mat.VecDense{}
 	rss.SubVec(Ypred.ColView(0), observed.ColView(0))
 	rss.MulElemVec(rss, rss)
@@ -509,6 +527,7 @@ func svrChecking(dataPoints []models.DataPoint) (map[string]interface{}, error) 
 		res = map[string]interface{}{
 			"svr YPred " + opt.kernel: fmt.Sprintf("%.2f\n", mat.Formatted(Ypred[opt.kernel])),
 			"svr Score " + opt.kernel: svr.Score(Xsc, Ysc),
+			"graphics":                makeGraphicsForSVR(dataPoints, Ypred[opt.kernel]),
 		}
 
 	}
@@ -563,84 +582,30 @@ func polynomialChecking(dataPoints []models.DataPoint, degree int) (map[string]i
 		}
 		observed.Set(row.index, 0, row.obsValue)
 	}
-	// Добавляем полиномиальные признаки
-	poly := preprocessing.NewPolynomialFeatures(degree)
-	poly.IncludeBias = false
-	poly.Fit(variables, nil)
-	Xp, _ := poly.Transform(variables, nil)
 
-	_, nFeatures := Xp.Dims()
+	mlp := neuralnetwork.NewMLPClassifier([]int{}, "logistic", "lbfgs", 1)
+	mlp.WarmStart = false
+	mlp.MaxIter = 400
+	mlp.LearningRateInit = .11
+	mlp.BatchSize = 118 //1,2,59,118
+
+	variables, _ = preprocessing.NewStandardScaler().FitTransform(variables, nil)
+
+	poly := preprocessing.NewPolynomialFeatures(degree)
+	poly.IncludeBias = true
+
+	poly.Fit(variables, observed)
+
+	Xp, _ := poly.Transform(variables, observed)
 	_, nOutputs := observed.Dims()
 	Ypred := mat.NewDense(nSamples, nOutputs, nil)
-
-	best := make(map[string]string)
-	bestLoss := math.Inf(1)
-	bestTime := time.Second * 86400
-
-	var Optimizers = []string{
-		"sgd",
-		// "adagrad",
-		// "rmsprop",
-		// "adadelta",
-		"adam",
-		"lbfgs",
-	}
-
-	checkGradients := func(problem optimize.Problem, initX []float64) {
-		settings := &fd.Settings{Step: 1e-8}
-		gradFromModel := make([]float64, len(initX))
-		gradFromFD := make([]float64, len(initX))
-		problem.Func(initX)
-		problem.Grad(gradFromModel, initX)
-		fd.Gradient(gradFromFD, problem.Func, initX, settings)
-		for i := range initX {
-			if math.Abs(gradFromFD[i]-gradFromModel[i]) > 1e-4 {
-				panic(fmt.Errorf("bad gradient, expected:\n%.3f\ngot:\n%.3f", gradFromFD, gradFromModel))
-			}
-		}
-	}
-
-	for _, optimizer := range Optimizers {
-		testSetup := optimizer
-		mlp := neuralnetwork.NewMLPClassifier([]int{}, "logistic", optimizer, 1)
-		mlp.RandomState = base.NewLockedSource(1)
-		mlp.Initializer(observed.RawMatrix().Cols, []int{nFeatures, nOutputs}, true, false)
-		for i := range mlp.GetpackedParameters() {
-			mlp.SetpackedParameters(i, 0)
-		}
-		mlp.WarmStart = true
-		mlp.MaxIter = 400
-		mlp.LearningRateInit = .11
-		mlp.BatchSize = 118 //1,2,59,118
-		mlp.SetbeforeMinimize(checkGradients)
-
-		start := time.Now()
-		mlp.Fit(Xp, observed)
-		elapsed := time.Since(start)
-		J := mlp.Loss
-
-		if J < bestLoss {
-			bestLoss = J
-			best["best for loss"] = testSetup + fmt.Sprintf("(%g)", J)
-		}
-		if elapsed < bestTime {
-			bestTime = elapsed
-			best["best for time"] = testSetup + fmt.Sprintf("(%s)", elapsed)
-		}
-		mlp.Predict(Xp, Ypred)
-		accuracy := metrics.AccuracyScore(observed, Ypred, true, nil)
-		// accuracy should be over 0.83
-		expectedAccuracy := 0.8305
-		if accuracy < expectedAccuracy {
-			log.Errorf("%s accuracy=%.3g expected:%.3g", optimizer, accuracy, expectedAccuracy)
-		}
-	}
+	mlp.NLayers = len(dataPoints)
+	mlp.Predict(Xp, Ypred)
 
 	// Возвращаем результаты
 	res := map[string]interface{}{
-		"poly Ypred": fmt.Sprintf("%.2f\n", mat.Formatted(Ypred)),
-		"poly best":  best,
-		"poly acc":   metrics.AccuracyScore(observed, Ypred, true, nil),
+		"poly Ypred":    fmt.Sprintf("%.2f\n", mat.Formatted(Ypred)),
+		"poly accuracy": metrics.AccuracyScore(observed, Ypred, true, nil),
 	}
 
 	return res, nil

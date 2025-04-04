@@ -643,7 +643,6 @@ func (mlp *BaseMultilayerPerceptron64) Predict(X mat.Matrix, Y Mutable) {
 		yb.Copy(Y)
 	}
 	mlp.predict(xb.RawMatrix(), yb.RawMatrix())
-
 	FromDense64(Y, yb)
 }
 

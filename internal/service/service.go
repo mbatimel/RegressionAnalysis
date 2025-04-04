@@ -41,74 +41,56 @@ func (rs *regressionService) MlrRegression(ctx context.Context, observer string,
 		return nil, fmt.Errorf("failed to train model: %w", err)
 	}
 
-	// Создаем каналы для результатов и ошибок
-	type result struct {
-		name  string
-		value interface{}
-		err   error
+	rs.logger.Info().Msg("Starting checking on classifier ridge")
+	ridgeCheck, err := ridgeChecking(dataPoints)
+	if err != nil {
+		return nil, fmt.Errorf("Ridge checking is dead")
+	}
+	rs.logger.Info().Msg("Starting checking on classifier lasso")
+	lassoCheck, err := lassoChecking(dataPoints)
+	if err != nil {
+		return nil, fmt.Errorf("lasso checking is dead")
 	}
 
-	// checks := []string{"ridge", "lasso", "elastic", "logistic", "SRV", "Polynomial"}
-	checks := []string{"ridge", "lasso", "elastic", "logistic", "SRV"}
-	ch := make(chan result, len(checks))
+	rs.logger.Info().Msg("Starting checking on classifier elastic")
+	elasticCheck, err := elasticChecking(dataPoints, 1000)
+	if err != nil {
+		return nil, fmt.Errorf("elastic checking is dead")
+	}
 
-	// Запускаем все проверки асинхронно
-	go func() {
-		rs.logger.Info().Msg("Starting checking on classifier ridge")
-		val, err := ridgeChecking(dataPoints)
-		ch <- result{"Ridge", val, err}
-	}()
+	rs.logger.Info().Msg("Starting checking on classifier logistic")
+	logisticCheck, err := logisticChecking(dataPoints)
+	if err != nil {
+		return nil, fmt.Errorf("Ridge checking is dead")
+	}
 
-	go func() {
-		rs.logger.Info().Msg("Starting checking on classifier lasso")
-		val, err := lassoChecking(dataPoints)
-		ch <- result{"Lasso", val, err}
-	}()
+	rs.logger.Info().Msg("Starting checking on classifier SVR")
+	svrCheck, err := svrChecking(dataPoints)
+	if err != nil {
+		return nil, fmt.Errorf("SRV checking is dead")
+	}
 
-	go func() {
-		rs.logger.Info().Msg("Starting checking on classifier elastic")
-		val, err := elasticChecking(dataPoints, 1000)
-		ch <- result{"Elastic", val, err}
-	}()
+	// rs.logger.Info().Msg("Starting checking on classifier polynomial")
+	// polynomialCheck, err := polynomialChecking(dataPoints, 3)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("Polynomial checking is dead")
+	// }
 
-	go func() {
-		rs.logger.Info().Msg("Starting checking on classifier logistic")
-		val, err := logisticChecking(dataPoints)
-		ch <- result{"Logistic", val, err}
-	}()
-
-	go func() {
-		rs.logger.Info().Msg("Starting checking on classifier SVR")
-		val, err := svrChecking(dataPoints)
-		ch <- result{"SRV", val, err}
-	}()
-	// go func() {
-	// 	rs.logger.Info().Msg("Starting checking on classifier polynomial")
-	// 	polynomialCheck, err := polynomialChecking(dataPoints, 3)
-	// 	ch <- result{"Polynomial", polynomialCheck, err}
-	// }()
-
-	// Собираем результаты
 	res := map[string]interface{}{
-		"data":       r,
-		"names":      r.GetNames(),
-		"coeff":      r.GetCoeffs(),
-		"graphics":   makeGraphics(r),
-		"datapoints": r.GetDataPoints(),
-	}
+ 		"Ridge":      ridgeCheck,
+ 		"Lasso":      lassoCheck,
+ 		"Elastic":    elasticCheck,
+ 		"Logistic":   logisticCheck,
+ 		"SRV":        svrCheck,
+ 		// "Polynomial": polynomialCheck,
+ 		"data":       r,
+ 		"names":      r.GetNames(),
+ 		"coeff":      r.GetCoeffs(),
+ 		"graphics":   makeGraphics(r),
+ 		"datapoints": r.GetDataPoints(),
+ 	}
 
-	// Ожидаем завершения всех горутин
-	for i := 0; i < len(checks); i++ {
-		select {
-		case <-ctx.Done():
-			return nil, fmt.Errorf("operation cancelled")
-		case r := <-ch:
-			if r.err != nil {
-				return nil, fmt.Errorf("%s checking is dead: %w", r.name, r.err)
-			}
-			res[r.name] = r.value
-		}
-	}
+
 
 	return res, nil
 }
@@ -348,6 +330,7 @@ func (rs *regressionService) MlrRegressionExcel(ctx context.Context, file []byte
 	if err != nil {
 		return nil, fmt.Errorf("Ridge checking is dead")
 	}
+
 	// rs.logger.Info().Msg("Starting checking on classifier SVR")
 	// svrCheck, err := svrChecking(dataPoints)
 	// if err != nil {
