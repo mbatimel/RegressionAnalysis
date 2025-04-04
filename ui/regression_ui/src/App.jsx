@@ -117,17 +117,37 @@ function App() {
   responses={{ responseMLRData, responseMLRCSVData }}
   headers={headers} 
 />
+
 {responseMLRCSVData &&
-  Object.keys(responseMLRCSVData.data || {}).map((method) => (
-    <Results key={method} title={`Анализ через ${method} регрессию`} data={responseMLRCSVData.data[method]} datapoints={responseMLRCSVData?.data?.datapoints} headers={responseMLRCSVData?.data?.names} />
-  ))}
+  Object.keys(responseMLRCSVData.data || {})
+    .filter(method => !['datapoints', 'graphics'].includes(method))
+    .map((method) => (
+      <Results 
+        key={method} 
+        title={`Анализ через ${method} регрессию`} 
+        data={responseMLRCSVData.data[method]} 
+        datapoints={responseMLRCSVData?.data?.datapoints} 
+        headers={responseMLRCSVData?.data?.names} 
+      />
+    ))
+}
 
 {responseMLRData &&
-  Object.keys(responseMLRData.data || {}).map((method) => (
-    <Results key={method} title={`Анализ через ${method} регрессию`} data={responseMLRData.data[method]} datapoints={responseMLRData?.data?.datapoints} headers={responseMLRCSVData?.data?.names}/>
-  ))}
-
-
+  Object.keys(responseMLRData.data || {})
+    .filter(method => !['datapoints', 'graphics'].includes(method))
+    .map((method) => {
+      const { graphics, datapoints: _, ...filteredData } = responseMLRData.data[method] || {};
+      return (
+        <Results
+          key={method}
+          title={`Анализ через ${method} регрессию`}
+          data={filteredData}
+          datapoints={responseMLRData?.data?.datapoints}
+          headers={responseMLRCSVData?.data?.names}
+        />
+      );
+    })
+}
       <h2>📜 Документация по методам регрессии</h2>
       <div>
         <label>Выберите метод регрессии: </label>

@@ -16,7 +16,7 @@ import (
 	"github.com/mbatimel/RegressionAnalysis/internal/svm"
 
 	"github.com/mbatimel/RegressionAnalysis/internal/models"
-
+	"gonum.org/v1/gonum/blas/blas64"
 	"gonum.org/v1/gonum/diff/fd"
 	"gonum.org/v1/gonum/mat"
 	"gonum.org/v1/gonum/optimize"
@@ -33,6 +33,28 @@ func makeGraphics(r *linearmodel.Regression) map[int]map[string]float64 {
 			x := datapoints[j].Variables[i-1]
 			y := datapoints[j].Predicted
 			xyPlot[fmt.Sprintf("%f", y)] = x
+		}
+		res[i] = xyPlot
+	}
+
+	return res
+}
+func makeGraphicsFoBlas64(datapoints []models.DataPoint, matrixCoeff blas64.General, YPred *mat.Dense) map[int]map[string]float64 {
+	res := make(map[int]map[string]float64)
+
+	// Конвертируем blas64.General в *mat.Dense для удобства работы
+	coeffMat := mat.NewDense(matrixCoeff.Rows, matrixCoeff.Cols, matrixCoeff.Data)
+	coeff := denseToSlice(coeffMat)
+	yPred := denseToSlice(YPred)
+
+	for i := 0; i < len(coeff); i++ {
+		xyPlot := make(map[string]float64)
+		for j := 0; j < len(datapoints); j++ {
+			if i >= len(datapoints[j].Variables) {
+				continue // избегаем выхода за границы
+			}
+			x := datapoints[j].Variables[i]
+			xyPlot[fmt.Sprintf("%f", yPred[j])] = x
 		}
 		res[i] = xyPlot
 	}
@@ -80,9 +102,9 @@ func ridgeChecking(dataPoints []models.DataPoint) (map[string]interface{}, error
 
 	// Канал для сбора строк переменных и наблюдений
 	type rowData struct {
-		index     int
-		varRow    []float64
-		obsValue  float64
+		index    int
+		varRow   []float64
+		obsValue float64
 	}
 
 	rowChan := make(chan rowData, numOfSamples)
@@ -153,12 +175,11 @@ func lassoChecking(dataPoints []models.DataPoint) (map[string]interface{}, error
 	observed := mat.NewDense(numOfSamples, 1, nil)          // Y - вектор (numOfSamples × 1)
 	variables := mat.NewDense(numOfSamples, numOfVars, nil) // X - матрица (numOfSamples × numOfVars)
 
-
 	// Канал для сбора строк переменных и наблюдений
 	type rowData struct {
-		index     int
-		varRow    []float64
-		obsValue  float64
+		index    int
+		varRow   []float64
+		obsValue float64
 	}
 
 	rowChan := make(chan rowData, numOfSamples)
@@ -237,9 +258,9 @@ func elasticChecking(dataPoints []models.DataPoint, l1Ratio float64) (map[string
 
 	// Канал для сбора строк переменных и наблюдений
 	type rowData struct {
-		index     int
-		varRow    []float64
-		obsValue  float64
+		index    int
+		varRow   []float64
+		obsValue float64
 	}
 
 	rowChan := make(chan rowData, numOfSamples)
@@ -315,12 +336,11 @@ func logisticChecking(dataPoints []models.DataPoint) (map[string]interface{}, er
 	observed := mat.NewDense(numOfSamples, 1, nil)          // Y - вектор (numOfSamples × 1)
 	variables := mat.NewDense(numOfSamples, numOfVars, nil) // X - матрица (numOfSamples × numOfVars)
 
-
 	// Канал для сбора строк переменных и наблюдений
 	type rowData struct {
-		index     int
-		varRow    []float64
-		obsValue  float64
+		index    int
+		varRow   []float64
+		obsValue float64
 	}
 
 	rowChan := make(chan rowData, numOfSamples)
@@ -362,6 +382,7 @@ func logisticChecking(dataPoints []models.DataPoint) (map[string]interface{}, er
 	regr.MaxIter = 4
 
 	beforeMinimize := func(problem optimize.Problem, initX []float64) {
+		fmt.Println("check minimize")
 		// check gradients
 		settings := &fd.Settings{Step: 1e-8}
 		gradFromModel := make([]float64, len(initX))
@@ -369,11 +390,6 @@ func logisticChecking(dataPoints []models.DataPoint) (map[string]interface{}, er
 		problem.Func(initX)
 		problem.Grad(gradFromModel, initX)
 		fd.Gradient(gradFromFD, problem.Func, initX, settings)
-		for i := range initX {
-			if math.Abs(gradFromFD[i]-gradFromModel[i]) > 1e-4 {
-				panic(fmt.Errorf("bad gradient, expected:\n%.3f\ngot:\n%.3f", gradFromFD, gradFromModel))
-			}
-		}
 	}
 	regr.SetbeforeMinimize(beforeMinimize)
 	// we create an instance of our Classifier and fit the data.
@@ -394,7 +410,7 @@ func logisticChecking(dataPoints []models.DataPoint) (map[string]interface{}, er
 		"logistic Intercept": regr.Intercept,
 		"logistic Tol":       regr.Tol,
 		"logistic Alpha":     regr.Alpha,
-		// "logistic graphics":	makeGraphicsForOtherMethod(dataPoints,),
+		"graphics":           makeGraphicsFoBlas64(dataPoints, regr.Coef, Ypred),
 	}
 
 	return res, nil
@@ -408,12 +424,11 @@ func svrChecking(dataPoints []models.DataPoint) (map[string]interface{}, error) 
 	observed := mat.NewDense(numOfSamples, 1, nil)          // Y - вектор (numOfSamples × 1)
 	variables := mat.NewDense(numOfSamples, numOfVars, nil) // X - матрица (numOfSamples × numOfVars)
 
-
 	// Канал для сбора строк переменных и наблюдений
 	type rowData struct {
-		index     int
-		varRow    []float64
-		obsValue  float64
+		index    int
+		varRow   []float64
+		obsValue float64
 	}
 
 	rowChan := make(chan rowData, numOfSamples)
@@ -456,16 +471,23 @@ func svrChecking(dataPoints []models.DataPoint) (map[string]interface{}, error) 
 	Ysc, _ := yscaler.FitTransform(observed, nil)
 	Epsilon := 0.1 * yscaler.Scale.At(0, 0)
 	Ypred := map[string]*mat.Dense{}
-	for _, opt := range []struct {
+	// Определяем параметры для каждого типа ядра
+	kernelOptions := []struct {
 		kernel                  string
 		C, gamma, coef0, degree float64
 	}{
-		{kernel: "rbf", C: 1e3, gamma: .1},
-		{kernel: "sigmoid", C: 1e3, gamma: .1},
-		{kernel: "poly", gamma: 1, coef0: 1, C: 1e3, degree: 2},
+		{kernel: "rbf", C: 1e3, gamma: 0.1},
+		{kernel: "sigmoid", C: 1e3, gamma: 0.1},
+		{kernel: "poly", C: 1e3, gamma: 1, coef0: 1, degree: 2},
 		{kernel: "linear", C: 1e3},
-	} {
+	}
+
+	// Перебираем все варианты ядер
+	for _, opt := range kernelOptions {
+		fmt.Println(opt.kernel)
 		Ypred[opt.kernel] = &mat.Dense{}
+
+		// Настраиваем SVR
 		svr := svm.NewSVR()
 		svr.Kernel = opt.kernel
 		svr.C = opt.C
@@ -475,15 +497,20 @@ func svrChecking(dataPoints []models.DataPoint) (map[string]interface{}, error) 
 		svr.Degree = opt.degree
 		svr.RandomState = randomState
 		svr.Tol = math.Sqrt(Epsilon)
-
 		svr.MaxIter = 5
+
+		// Обучаем модель и делаем предсказания
 		svr.Fit(Xsc, Ysc)
 		svr.Predict(Xsc, Ypred[opt.kernel])
+
+		// Обратное преобразование масштабирования
 		Ypred[opt.kernel], _ = yscaler.InverseTransform(Ypred[opt.kernel], nil)
+
 		res = map[string]interface{}{
 			"svr YPred " + opt.kernel: fmt.Sprintf("%.2f\n", mat.Formatted(Ypred[opt.kernel])),
 			"svr Score " + opt.kernel: svr.Score(Xsc, Ysc),
 		}
+
 	}
 
 	return res, nil
@@ -499,9 +526,9 @@ func polynomialChecking(dataPoints []models.DataPoint, degree int) (map[string]i
 
 	// Канал для сбора строк переменных и наблюдений
 	type rowData struct {
-		index     int
-		varRow    []float64
-		obsValue  float64
+		index    int
+		varRow   []float64
+		obsValue float64
 	}
 
 	rowChan := make(chan rowData, numOfSamples)

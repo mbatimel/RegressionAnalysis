@@ -225,11 +225,11 @@ func (rs *regressionService) MlrRegressionCSV(ctx context.Context, file []byte) 
 	// 	return nil, fmt.Errorf("Polynomial checking is dead")
 	// }
 	res := map[string]interface{}{
-		"Ridge":      ridgeCheck,
-		"Lasso":      lassoCheck,
-		"Elastic":    elasticCheck,
-		"Logistic":   logisticCheck,
-		"SRV":        svrCheck,
+		"Ridge":    ridgeCheck,
+		"Lasso":    lassoCheck,
+		"Elastic":  elasticCheck,
+		"Logistic": logisticCheck,
+		"SRV":      svrCheck,
 		// "Polynomial": polynomialCheck,
 		"data":       r,
 		"names":      r.GetNames(),
@@ -359,10 +359,10 @@ func (rs *regressionService) MlrRegressionExcel(ctx context.Context, file []byte
 	// 	return nil, fmt.Errorf("Polynomial checking is dead")
 	// }
 	res := map[string]interface{}{
-		"Ridge":      ridgeCheck,
-		"Lasso":      lassoCheck,
-		"Elastic":    elasticCheck,
-		"Logistic":   logisticCheck,
+		"Ridge":    ridgeCheck,
+		"Lasso":    lassoCheck,
+		"Elastic":  elasticCheck,
+		"Logistic": logisticCheck,
 		// "SRV":        svrCheck,
 		// "Polynomial": polynomialCheck,
 		"data":       r,
