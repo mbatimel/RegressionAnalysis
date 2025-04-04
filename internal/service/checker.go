@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"sync"
 	"time"
 
 	"math"
@@ -43,10 +44,14 @@ func makeGraphicsForOtherMethod(datapoints []models.DataPoint, matrixCoeff *mat.
 
 	coeff := denseToSlice(matrixCoeff)
 	yPred := denseToSlice(YPred)
-	for i := 1; i < len(coeff); i++ {
+
+	for i := 0; i < len(coeff); i++ {
 		xyPlot := make(map[string]float64)
 		for j := 0; j < len(datapoints); j++ {
-			x := datapoints[j].Variables[i-1]
+			if i >= len(datapoints[j].Variables) {
+				continue // избегаем выхода за границы
+			}
+			x := datapoints[j].Variables[i]
 			xyPlot[fmt.Sprintf("%f", yPred[j])] = x
 		}
 		res[i] = xyPlot
@@ -54,6 +59,7 @@ func makeGraphicsForOtherMethod(datapoints []models.DataPoint, matrixCoeff *mat.
 
 	return res
 }
+
 func denseToSlice(d *mat.Dense) []float64 {
 	r, c := d.Dims()
 	data := make([]float64, r*c)
@@ -72,12 +78,44 @@ func ridgeChecking(dataPoints []models.DataPoint) (map[string]interface{}, error
 	observed := mat.NewDense(numOfSamples, 1, nil)          // Y - вектор (numOfSamples × 1)
 	variables := mat.NewDense(numOfSamples, numOfVars, nil) // X - матрица (numOfSamples × numOfVars)
 
-	// Заполняем матрицы
+	// Канал для сбора строк переменных и наблюдений
+	type rowData struct {
+		index     int
+		varRow    []float64
+		obsValue  float64
+	}
+
+	rowChan := make(chan rowData, numOfSamples)
+	var wg sync.WaitGroup
+
+	// Параллельно подготавливаем строки
 	for i := 0; i < numOfSamples; i++ {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			dp := dataPoints[i]
+			varRow := make([]float64, numOfVars)
+			copy(varRow, dp.Variables)
+			rowChan <- rowData{
+				index:    i,
+				varRow:   varRow,
+				obsValue: dp.Observed,
+			}
+		}(i)
+	}
+
+	// Закрытие канала после завершения всех горутин
+	go func() {
+		wg.Wait()
+		close(rowChan)
+	}()
+
+	// Последовательно записываем в матрицы
+	for row := range rowChan {
 		for j := 0; j < numOfVars; j++ {
-			variables.Set(i, j, dataPoints[i].Variables[j])
+			variables.Set(row.index, j, row.varRow[j])
 		}
-		observed.Set(i, 0, dataPoints[i].Observed)
+		observed.Set(row.index, 0, row.obsValue)
 	}
 
 	// Создаем модель Ridge Regression
@@ -115,12 +153,45 @@ func lassoChecking(dataPoints []models.DataPoint) (map[string]interface{}, error
 	observed := mat.NewDense(numOfSamples, 1, nil)          // Y - вектор (numOfSamples × 1)
 	variables := mat.NewDense(numOfSamples, numOfVars, nil) // X - матрица (numOfSamples × numOfVars)
 
-	// Заполняем матрицы
+
+	// Канал для сбора строк переменных и наблюдений
+	type rowData struct {
+		index     int
+		varRow    []float64
+		obsValue  float64
+	}
+
+	rowChan := make(chan rowData, numOfSamples)
+	var wg sync.WaitGroup
+
+	// Параллельно подготавливаем строки
 	for i := 0; i < numOfSamples; i++ {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			dp := dataPoints[i]
+			varRow := make([]float64, numOfVars)
+			copy(varRow, dp.Variables)
+			rowChan <- rowData{
+				index:    i,
+				varRow:   varRow,
+				obsValue: dp.Observed,
+			}
+		}(i)
+	}
+
+	// Закрытие канала после завершения всех горутин
+	go func() {
+		wg.Wait()
+		close(rowChan)
+	}()
+
+	// Последовательно записываем в матрицы
+	for row := range rowChan {
 		for j := 0; j < numOfVars; j++ {
-			variables.Set(i, j, dataPoints[i].Variables[j])
+			variables.Set(row.index, j, row.varRow[j])
 		}
-		observed.Set(i, 0, dataPoints[i].Observed)
+		observed.Set(row.index, 0, row.obsValue)
 	}
 
 	// Создаем модель Lasso
@@ -164,12 +235,44 @@ func elasticChecking(dataPoints []models.DataPoint, l1Ratio float64) (map[string
 	observed := mat.NewDense(numOfSamples, 1, nil)          // Y - вектор (numOfSamples × 1)
 	variables := mat.NewDense(numOfSamples, numOfVars, nil) // X - матрица (numOfSamples × numOfVars)
 
-	// Заполняем матрицы
+	// Канал для сбора строк переменных и наблюдений
+	type rowData struct {
+		index     int
+		varRow    []float64
+		obsValue  float64
+	}
+
+	rowChan := make(chan rowData, numOfSamples)
+	var wg sync.WaitGroup
+
+	// Параллельно подготавливаем строки
 	for i := 0; i < numOfSamples; i++ {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			dp := dataPoints[i]
+			varRow := make([]float64, numOfVars)
+			copy(varRow, dp.Variables)
+			rowChan <- rowData{
+				index:    i,
+				varRow:   varRow,
+				obsValue: dp.Observed,
+			}
+		}(i)
+	}
+
+	// Закрытие канала после завершения всех горутин
+	go func() {
+		wg.Wait()
+		close(rowChan)
+	}()
+
+	// Последовательно записываем в матрицы
+	for row := range rowChan {
 		for j := 0; j < numOfVars; j++ {
-			variables.Set(i, j, dataPoints[i].Variables[j])
+			variables.Set(row.index, j, row.varRow[j])
 		}
-		observed.Set(i, 0, dataPoints[i].Observed)
+		observed.Set(row.index, 0, row.obsValue)
 	}
 	// Создаем модель ElasticNet
 	enet := linearmodel.NewElasticNet()
@@ -212,12 +315,45 @@ func logisticChecking(dataPoints []models.DataPoint) (map[string]interface{}, er
 	observed := mat.NewDense(numOfSamples, 1, nil)          // Y - вектор (numOfSamples × 1)
 	variables := mat.NewDense(numOfSamples, numOfVars, nil) // X - матрица (numOfSamples × numOfVars)
 
-	// Заполняем матрицы
+
+	// Канал для сбора строк переменных и наблюдений
+	type rowData struct {
+		index     int
+		varRow    []float64
+		obsValue  float64
+	}
+
+	rowChan := make(chan rowData, numOfSamples)
+	var wg sync.WaitGroup
+
+	// Параллельно подготавливаем строки
 	for i := 0; i < numOfSamples; i++ {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			dp := dataPoints[i]
+			varRow := make([]float64, numOfVars)
+			copy(varRow, dp.Variables)
+			rowChan <- rowData{
+				index:    i,
+				varRow:   varRow,
+				obsValue: dp.Observed,
+			}
+		}(i)
+	}
+
+	// Закрытие канала после завершения всех горутин
+	go func() {
+		wg.Wait()
+		close(rowChan)
+	}()
+
+	// Последовательно записываем в матрицы
+	for row := range rowChan {
 		for j := 0; j < numOfVars; j++ {
-			variables.Set(i, j, dataPoints[i].Variables[j])
+			variables.Set(row.index, j, row.varRow[j])
 		}
-		observed.Set(i, 0, dataPoints[i].Observed)
+		observed.Set(row.index, 0, row.obsValue)
 	}
 
 	// Создаем модель LogisticRegression
@@ -272,12 +408,45 @@ func svrChecking(dataPoints []models.DataPoint) (map[string]interface{}, error) 
 	observed := mat.NewDense(numOfSamples, 1, nil)          // Y - вектор (numOfSamples × 1)
 	variables := mat.NewDense(numOfSamples, numOfVars, nil) // X - матрица (numOfSamples × numOfVars)
 
-	// Заполняем матрицы
+
+	// Канал для сбора строк переменных и наблюдений
+	type rowData struct {
+		index     int
+		varRow    []float64
+		obsValue  float64
+	}
+
+	rowChan := make(chan rowData, numOfSamples)
+	var wg sync.WaitGroup
+
+	// Параллельно подготавливаем строки
 	for i := 0; i < numOfSamples; i++ {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			dp := dataPoints[i]
+			varRow := make([]float64, numOfVars)
+			copy(varRow, dp.Variables)
+			rowChan <- rowData{
+				index:    i,
+				varRow:   varRow,
+				obsValue: dp.Observed,
+			}
+		}(i)
+	}
+
+	// Закрытие канала после завершения всех горутин
+	go func() {
+		wg.Wait()
+		close(rowChan)
+	}()
+
+	// Последовательно записываем в матрицы
+	for row := range rowChan {
 		for j := 0; j < numOfVars; j++ {
-			variables.Set(i, j, dataPoints[i].Variables[j])
+			variables.Set(row.index, j, row.varRow[j])
 		}
-		observed.Set(i, 0, dataPoints[i].Observed)
+		observed.Set(row.index, 0, row.obsValue)
 	}
 
 	randomState := base.NewLockedSource(7)
@@ -327,12 +496,45 @@ func polynomialChecking(dataPoints []models.DataPoint, degree int) (map[string]i
 	observed := mat.NewDense(numOfSamples, 1, nil)          // Y - вектор (numOfSamples × 1)
 	variables := mat.NewDense(numOfSamples, numOfVars, nil) // X - матрица (numOfSamples × numOfVars)
 	nSamples, _ := variables.Dims()
-	// Заполняем матрицы
+
+	// Канал для сбора строк переменных и наблюдений
+	type rowData struct {
+		index     int
+		varRow    []float64
+		obsValue  float64
+	}
+
+	rowChan := make(chan rowData, numOfSamples)
+	var wg sync.WaitGroup
+
+	// Параллельно подготавливаем строки
 	for i := 0; i < numOfSamples; i++ {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			dp := dataPoints[i]
+			varRow := make([]float64, numOfVars)
+			copy(varRow, dp.Variables)
+			rowChan <- rowData{
+				index:    i,
+				varRow:   varRow,
+				obsValue: dp.Observed,
+			}
+		}(i)
+	}
+
+	// Закрытие канала после завершения всех горутин
+	go func() {
+		wg.Wait()
+		close(rowChan)
+	}()
+
+	// Последовательно записываем в матрицы
+	for row := range rowChan {
 		for j := 0; j < numOfVars; j++ {
-			variables.Set(i, j, dataPoints[i].Variables[j])
+			variables.Set(row.index, j, row.varRow[j])
 		}
-		observed.Set(i, 0, dataPoints[i].Observed)
+		observed.Set(row.index, 0, row.obsValue)
 	}
 	// Добавляем полиномиальные признаки
 	poly := preprocessing.NewPolynomialFeatures(degree)

@@ -20,7 +20,7 @@ const Graphics = ({ tableData = [], headers = [], datapoints = [], graphics = {}
       initialVisibility[header] = false;
     });
     Object.keys(graphics).forEach((key) => {
-      initialVisibility[`График ${key}`] = false;
+      initialVisibility[`Резулитат регрессии ${key}`] = false;
     });
     setVisibleGraphs(initialVisibility);
   }, [headers, graphics]);
