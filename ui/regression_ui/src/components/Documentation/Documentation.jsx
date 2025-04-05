@@ -1,28 +1,17 @@
 import React from 'react';
+import regressionDocs from './regressionDocs';
 
 const Documentation = ({ selectedMethod }) => {
-  const documentation = {
-    MLR: `Метод множественной линейной регрессии (MLR) — это статистический метод, 
-    используемый для моделирования линейных зависимостей между зависимой переменной 
-    и двумя или более независимыми переменными. Цель - предсказать значение на основе нескольких факторов.`,
-    
-    Ridge: `Ridge регрессия (гребневая регрессия) — это метод линейной регрессии, 
-    который использует регуляризацию L2 для уменьшения переобучения модели. 
-    Это особенно полезно, когда данные имеют мультиколлинеарность.`,
-    
-    Lasso: `Lasso регрессия — это метод линейной регрессии с регуляризацией L1, 
-    который уменьшает коэффициенты некоторых признаков до нуля, что позволяет 
-    выполнять отбор признаков (feature selection).`,
-    
-    ElasticNet: `Elastic Net — это комбинация Ridge и Lasso регрессии, 
-    которая использует одновременно регуляризацию L1 и L2. Это помогает, 
-    когда есть много коррелированных переменных и нужно их упростить.`
-  };
+  const doc = regressionDocs[selectedMethod];
+
+  if (!doc) return <p>Документация для метода не найдена.</p>;
 
   return (
     <div className="documentation-box">
-      <h3>📖 Описание метода: {selectedMethod}</h3>
-      <p>{documentation[selectedMethod]}</p>
+      <h3>📖 {doc.title}</h3>
+      <pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit' }}>
+        {doc.content}
+      </pre>
     </div>
   );
 };
