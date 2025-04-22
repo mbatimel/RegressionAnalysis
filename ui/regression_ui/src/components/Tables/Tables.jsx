@@ -24,13 +24,13 @@ const Tables = ({
     <div>
       <div>
         <label>
-          Количество строк:
+          Количество наблюдений:
           <input type="number" value={rows} onChange={handleRowsChange} />
         </label>
       </div>
       <div>
         <label>
-          Количество столбцов:
+          Количество показателей:
           <input type="number" value={cols} onChange={handleColsChange} />
         </label>
       </div>

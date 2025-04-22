@@ -19,6 +19,7 @@ import (
 	"gonum.org/v1/gonum/mat"
 	"gonum.org/v1/gonum/optimize"
 )
+type float = float64
 func makeGraphicsForSVR(datapoints []models.DataPoint, Ypred *mat.Dense) map[int]map[string]float64 {
 	res := make(map[int]map[string]float64)
 	yPred := denseToSlice(Ypred)
@@ -59,10 +60,10 @@ func makeGraphicsFoBlas64(datapoints []models.DataPoint, matrixCoeff blas64.Gene
 
 	// Конвертируем blas64.General в *mat.Dense для удобства работы
 	coeffMat := mat.NewDense(matrixCoeff.Rows, matrixCoeff.Cols, matrixCoeff.Data)
-	coeff := denseToSlice(coeffMat)
+	_= denseToSlice(coeffMat)
 	yPred := denseToSlice(YPred)
 
-	for i := 0; i < len(coeff); i++ {
+	for i := 0; i < len(datapoints[0].Variables); i++ {
 		xyPlot := make(map[string]float64)
 		for j := 0; j < len(datapoints); j++ {
 			if i >= len(datapoints[j].Variables) {
@@ -73,7 +74,7 @@ func makeGraphicsFoBlas64(datapoints []models.DataPoint, matrixCoeff blas64.Gene
 		}
 		res[i] = xyPlot
 	}
-
+fmt.Println(len(res))
 	return res
 }
 func makeGraphicsForOtherMethod(datapoints []models.DataPoint, matrixCoeff *mat.Dense, YPred *mat.Dense) map[int]map[string]float64 {
@@ -169,6 +170,26 @@ func ridgeChecking(dataPoints []models.DataPoint) (map[string]interface{}, error
 	Ypred := mat.NewDense(numOfSamples, 1, nil)
 	regr.Predict(variables, Ypred)
 
+
+	bestErr := make(map[string]float)
+	r2score := metrics.R2Score(observed, Ypred, nil, "variance_weighted").At(0, 0)
+	tmpScore, ok := bestErr["R2"]
+	if !ok || r2score > tmpScore {
+		bestErr["R2"] = r2score
+	}
+	mse := metrics.MeanSquaredError(observed, Ypred, nil, "variance_weighted").At(0, 0)
+	tmpScore, ok = bestErr["MSE"]
+	if !ok || mse < tmpScore {
+		bestErr["MSE"] = mse
+	}
+	mae := metrics.MeanAbsoluteError(observed, Ypred, nil, "variance_weighted").At(0, 0)
+	tmpScore, ok = bestErr["MAE"]
+	if !ok || mae < tmpScore {
+		bestErr["MAE"] = mae
+	}
+	if math.Sqrt(mse) > regr.Tol {
+		fmt.Printf("Test %T normalize=%v r2score=%g (%v) mse=%g mae=%g \n", regr, true, r2score, metrics.R2Score(observed, Ypred, nil, "raw_values"), mse, mae)
+	}
 	// Возвращаем результаты
 	res := map[string]interface{}{
 		"ridge Ypred":              fmt.Sprintf("%.2f\n", mat.Formatted(Ypred)),
@@ -178,6 +199,7 @@ func ridgeChecking(dataPoints []models.DataPoint) (map[string]interface{}, error
 		"ridge Intercept":          fmt.Sprintf("%.2f\n", mat.Formatted(regr.LinearRegression.Intercept)),
 		"ridge ActivationFunction": regr.ActivationFunction,
 		"graphics":                 makeGraphicsForOtherMethod(dataPoints, regr.Coef, Ypred),
+		"bestErr":					bestErr,
 	}
 
 	return res, nil
@@ -231,7 +253,7 @@ func lassoChecking(dataPoints []models.DataPoint) (map[string]interface{}, error
 	}
 
 	// Создаем модель Lasso
-	regr := linearmodel.NewLasso() // Предположим, что у вас есть Lasso модель
+	regr := linearmodel.NewMultiTaskLasso() // Предположим, что у вас есть Lasso модель
 	regr.FitIntercept = true
 	regr.Normalize = true
 	regr.Alpha = 1e-5
@@ -240,13 +262,30 @@ func lassoChecking(dataPoints []models.DataPoint) (map[string]interface{}, error
 	regr.Tol = 1e-4
 	// Обучаем модель
 	regr.Fit(variables, observed)
-
-
+	
 	Ypred := mat.NewDense(numOfSamples, 1, nil)
 	regr.Predict(variables, Ypred)
 	rss := &mat.VecDense{}
 	rss.SubVec(Ypred.ColView(0), observed.ColView(0))
 	rss.MulElemVec(rss, rss)
+	
+	bestErr := make(map[string]float)
+	r2score := metrics.R2Score(observed, Ypred, nil, "").At(0, 0)
+	tmpScore, ok := bestErr["R2"]
+	if !ok || r2score > tmpScore {
+		bestErr["R2"] = r2score
+	}
+	mse := metrics.MeanSquaredError(observed, Ypred, nil, "").At(0, 0)
+	tmpScore, ok = bestErr["MSE"]
+	if !ok || mse < tmpScore {
+		bestErr["MSE"] = mse
+	}
+	mae := metrics.MeanAbsoluteError(observed, Ypred, nil, "").At(0, 0)
+	tmpScore, ok = bestErr["MAE"]
+	if !ok || mae < tmpScore {
+		bestErr["MAE"] = mae
+
+	}
 	res := map[string]interface{}{
 		"lasso Ypred":      fmt.Sprintf("%.5f\n", mat.Formatted(Ypred)),
 		"lasso Coef":       fmt.Sprintf("%.2f\n", mat.Formatted(regr.LinearRegression.Coef.T())),
@@ -263,6 +302,7 @@ func lassoChecking(dataPoints []models.DataPoint) (map[string]interface{}, error
 		"lasso Positive":   regr.Positive,
 		"lasso CDResult":   regr.CDResult,
 		"graphics":         makeGraphicsForOtherMethod(dataPoints, regr.Coef, Ypred),
+		"bestErr":					bestErr,
 	}
 	return res, nil
 }
@@ -314,7 +354,7 @@ func elasticChecking(dataPoints []models.DataPoint, l1Ratio float64) (map[string
 		observed.Set(row.index, 0, row.obsValue)
 	}
 	// Создаем модель ElasticNet
-	enet := linearmodel.NewElasticNet()
+	enet := linearmodel.NewMultiTaskElasticNet()
 	enet.Alpha = 1
 	enet.Tol = 0.01
 	enet.L1Ratio = l1Ratio
@@ -326,6 +366,23 @@ func elasticChecking(dataPoints []models.DataPoint, l1Ratio float64) (map[string
 	Ypred := mat.NewDense(numOfSamples, 1, nil)
 	enet.Predict(variables, Ypred)
 
+	bestErr := make(map[string]float)
+	r2score := metrics.R2Score(observed, Ypred, nil, "").At(0, 0)
+	tmpScore, ok := bestErr["R2"]
+	if !ok || r2score > tmpScore {
+		bestErr["R2"] = r2score
+	}
+	mse := metrics.MeanSquaredError(observed, Ypred, nil, "").At(0, 0)
+	tmpScore, ok = bestErr["MSE"]
+	if !ok || mse < tmpScore {
+		bestErr["MSE"] = mse
+	}
+	mae := metrics.MeanAbsoluteError(observed, Ypred, nil, "").At(0, 0)
+	tmpScore, ok = bestErr["MAE"]
+	if !ok || mae < tmpScore {
+		bestErr["MAE"] = mae
+
+	}
 	// Возвращаем результаты
 	res := map[string]interface{}{
 		"elastic Ypred":      fmt.Sprintf("%.5f\n", mat.Formatted(Ypred)),
@@ -342,6 +399,7 @@ func elasticChecking(dataPoints []models.DataPoint, l1Ratio float64) (map[string
 		"elastic Positive":   enet.Positive,
 		"elastic CDResult":   enet.CDResult,
 		"graphics":           makeGraphicsForOtherMethod(dataPoints, enet.Coef, Ypred),
+		"bestErr": bestErr,
 	}
 
 	return res, nil
@@ -421,6 +479,23 @@ func logisticChecking(dataPoints []models.DataPoint) (map[string]interface{}, er
 	Ypred := mat.NewDense(numOfSamples, 1, nil)
 	regr.Predict(variables, Ypred)
 
+	bestErr := make(map[string]float)
+	r2score := metrics.R2Score(observed, Ypred, nil, "").At(0, 0)
+	tmpScore, ok := bestErr["R2"]
+	if !ok || r2score > tmpScore {
+		bestErr["R2"] = r2score
+	}
+	mse := metrics.MeanSquaredError(observed, Ypred, nil, "").At(0, 0)
+	tmpScore, ok = bestErr["MSE"]
+	if !ok || mse < tmpScore {
+		bestErr["MSE"] = mse
+	}
+	mae := metrics.MeanAbsoluteError(observed, Ypred, nil, "").At(0, 0)
+	tmpScore, ok = bestErr["MAE"]
+	if !ok || mae < tmpScore {
+		bestErr["MAE"] = mae
+
+	}
 	// Возвращаем результаты
 	res := map[string]interface{}{
 		"logistic Ypred":     fmt.Sprintf("%.2f\n", mat.Formatted(Ypred)),
@@ -429,6 +504,7 @@ func logisticChecking(dataPoints []models.DataPoint) (map[string]interface{}, er
 		"logistic Tol":       regr.Tol,
 		"logistic Alpha":     regr.Alpha,
 		"graphics":           makeGraphicsFoBlas64(dataPoints, regr.Coef, Ypred),
+		"bestErr":bestErr,
 	}
 
 	return res, nil
@@ -523,11 +599,28 @@ func svrChecking(dataPoints []models.DataPoint) (map[string]interface{}, error) 
 
 		// Обратное преобразование масштабирования
 		Ypred[opt.kernel], _ = yscaler.InverseTransform(Ypred[opt.kernel], nil)
-
+		bestErr := make(map[string]float)
+		r2score := metrics.R2Score(observed, Ypred[opt.kernel], nil, "").At(0, 0)
+		tmpScore, ok := bestErr["R2"]
+		if !ok || r2score > tmpScore {
+			bestErr["R2"] = r2score
+		}
+		mse := metrics.MeanSquaredError(observed, Ypred[opt.kernel], nil, "").At(0, 0)
+		tmpScore, ok = bestErr["MSE"]
+		if !ok || mse < tmpScore {
+			bestErr["MSE"] = mse
+		}
+		mae := metrics.MeanAbsoluteError(observed, Ypred[opt.kernel], nil, "").At(0, 0)
+		tmpScore, ok = bestErr["MAE"]
+		if !ok || mae < tmpScore {
+			bestErr["MAE"] = mae
+	
+		}
 		res = map[string]interface{}{
 			"svr YPred " + opt.kernel: fmt.Sprintf("%.2f\n", mat.Formatted(Ypred[opt.kernel])),
 			"svr Score " + opt.kernel: svr.Score(Xsc, Ysc),
 			"graphics":                makeGraphicsForSVR(dataPoints, Ypred[opt.kernel]),
+			"bestErr":bestErr,
 		}
 
 	}
@@ -602,11 +695,54 @@ func polynomialChecking(dataPoints []models.DataPoint, degree int) (map[string]i
 	mlp.NLayers = len(dataPoints)
 	mlp.Predict(Xp, Ypred)
 
+	bestErr := make(map[string]float)
+	r2score := metrics.R2Score(observed, Ypred, nil, "").At(0, 0)
+	tmpScore, ok := bestErr["R2"]
+	if !ok || r2score > tmpScore {
+		bestErr["R2"] = r2score
+	}
+	mse := metrics.MeanSquaredError(observed, Ypred, nil, "").At(0, 0)
+	tmpScore, ok = bestErr["MSE"]
+	if !ok || mse < tmpScore {
+		bestErr["MSE"] = mse
+	}
+	mae := metrics.MeanAbsoluteError(observed, Ypred, nil, "").At(0, 0)
+	tmpScore, ok = bestErr["MAE"]
+	if !ok || mae < tmpScore {
+		bestErr["MAE"] = mae
+
+	}
+
 	// Возвращаем результаты
 	res := map[string]interface{}{
 		"poly Ypred":    fmt.Sprintf("%.2f\n", mat.Formatted(Ypred)),
 		"poly accuracy": metrics.AccuracyScore(observed, Ypred, true, nil),
+		"bestErr":bestErr,
 	}
 
 	return res, nil
 }
+
+// метрики которые надо вставить:
+// r2score := metrics.R2Score(p.Y, Ypred, nil, "").At(0, 0)
+// tmpScore, ok := bestErr["R2"]
+// if !ok || r2score > tmpScore {
+// 	bestErr["R2"] = r2score
+// 	bestSetup["R2"] = testSetup + fmt.Sprintf("(%g)", r2score)
+// }
+// mse := metrics.MeanSquaredError(p.Y, Ypred, nil, "").At(0, 0)
+// tmpScore, ok = bestErr["MSE"]
+// if !ok || mse < tmpScore {
+// 	bestErr["MSE"] = mse
+// 	bestSetup["MSE"] = testSetup + fmt.Sprintf("(%g)", mse)
+// }
+// mae := metrics.MeanAbsoluteError(p.Y, Ypred, nil, "").At(0, 0)
+// tmpScore, ok = bestErr["MAE"]
+// if !ok || mae < tmpScore {
+// 	bestErr["MAE"] = mae
+// 	bestSetup["MAE"] = testSetup + fmt.Sprintf("(%g)", mae)
+// }
+// if math.Sqrt(mse) > regr.Tol {
+// 	t.Errorf("Test %T %s normalize=%v r2score=%g (%v) mse=%g mae=%g \n", regr, solver, normalize, r2score, mat.Formatted(metrics.R2Score(p.Y, Ypred, nil, "raw_values")), mse, mae)
+// 	t.Fail()
+// }
