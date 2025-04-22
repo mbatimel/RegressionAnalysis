@@ -2,30 +2,39 @@ import React, { useState } from "react";
 import "./Results.css";
 import Graphics from "./../Graphics/Graphics";
 
-const Results = ({ title, data, datapoints = [], headers = [] }) => {
+const Results = ({ title, data, datapoints = [], headers = [], recommended = false }) => {
   const [expanded, setExpanded] = useState(false);
   const { bestErr, graphics, ...restData } = data;
 
-  const toggleExpand = () => setExpanded((prev) => !prev);
-
   return (
     <div className="results-container">
-      <h2>{title}</h2>
-
-      <div className="results-summary" onClick={toggleExpand} style={{ cursor: "pointer", backgroundColor: "#f3f3f3", padding: "10px", borderRadius: "8px" }}>
-        <strong>Ключевые метрики (нажмите, чтобы {expanded ? "скрыть" : "раскрыть"}):</strong>
-        <pre style={{ margin: 0 }}>{JSON.stringify(bestErr, null, 2)}</pre>
+      <div
+        className="result-summary"
+        onClick={() => setExpanded(!expanded)}
+        style={{ cursor: "pointer", backgroundColor: recommended ? "#e6f7ff" : "#f5f5f5", padding: "10px", borderRadius: "8px", border: "1px solid #ccc", marginBottom: "10px" }}
+      >
+        <h3 style={{ marginBottom: "5px" }}>{title}</h3>
+        <div>
+          <strong>MAE:</strong> {bestErr?.MAE?.toFixed(2)} | <strong>MSE:</strong> {bestErr?.MSE?.toFixed(2)} | <strong>R²:</strong> {bestErr?.R2?.toFixed(4)}
+        </div>
+        {recommended && (
+          <div style={{ color: "#1890ff", fontWeight: "bold", marginTop: "5px" }}>
+            ✅ Предлагаем к вашему рассмотрению этот метод регрессии
+          </div>
+        )}
+        <div style={{ color: "#888", fontSize: "0.9em" }}>
+          {expanded ? "Скрыть детали ⬆" : "Показать результаты ⬇"}
+        </div>
       </div>
 
       {expanded && (
-        <div className="results-content" style={{ marginTop: "10px" }}>
+        <div className="results-content">
           {Object.entries(restData).map(([key, value]) => (
             <div key={key} className="result-item">
               <strong>{key}:</strong>{" "}
-              {typeof value === "object" ? <pre>{JSON.stringify(value, null, 2)}</pre> : value}
+              {typeof value === "object" ? JSON.stringify(value, null, 2) : value}
             </div>
           ))}
-
           {graphics && (
             <div className="result-graph">
               <Graphics graphics={graphics} datapoints={datapoints} headers={headers} />

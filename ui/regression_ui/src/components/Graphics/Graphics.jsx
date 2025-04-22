@@ -8,6 +8,7 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
+  Brush,
 } from "recharts";
 import { schemeCategory10 } from "d3-scale-chromatic";
 
@@ -80,20 +81,42 @@ const Graphics = ({ tableData = [], headers = [], datapoints = [], graphics = {}
         ))}
       </div>
       <ResponsiveContainer width="100%" height={400}>
-        <LineChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-          <CartesianGrid strokeDasharray="4 4" />
-          <XAxis type="number" dataKey="x" name="X" />
-          <YAxis type="number" dataKey="y" name="Y" />
-          <Tooltip cursor={{ strokeDasharray: "3 3" }} />
-          <Legend />
-          {datasets.map(({ name, data, color }) =>
-            visibleGraphs[name] ? <Line key={name} dataKey="y" data={data} stroke={color} name={name} /> : null
-          )}
-          {graphicsData.map(({ name, data, color }) =>
-            visibleGraphs[name] ? <Line key={name} dataKey="y" data={data} stroke={color} name={name} /> : null
-          )}
-        </LineChart>
-      </ResponsiveContainer>
+  <LineChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+    <CartesianGrid strokeDasharray="4 4" />
+    <XAxis type="number" dataKey="x" name="X" />
+    <YAxis type="number" dataKey="y" name="Y" />
+    <Tooltip cursor={{ strokeDasharray: "3 3" }} />
+    <Legend />
+    <Brush dataKey="x" height={30} stroke="#8884d8" />
+    {datasets.map(({ name, data, color }) =>
+      visibleGraphs[name] ? (
+        <Line
+          key={name}
+          type="monotone"
+          dataKey="y"
+          data={data}
+          stroke={color}
+          name={name}
+          dot={false} // убрать точки для гладкости
+        />
+      ) : null
+    )}
+    {graphicsData.map(({ name, data, color }) =>
+      visibleGraphs[name] ? (
+        <Line
+          key={name}
+          type="monotone"
+          dataKey="y"
+          data={data}
+          stroke={color}
+          name={name}
+          dot={false}
+        />
+      ) : null
+    )}
+  </LineChart>
+</ResponsiveContainer>
+
     </div>
   );
 };

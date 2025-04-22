@@ -100,6 +100,42 @@ function App() {
       console.error("Error:", error);
     }
   };
+  const getRecommendedMethod = (data) => {
+    const metrics = Object.entries(data)
+      .filter(([method]) => !['datapoints', 'graphics'].includes(method))
+      .map(([method, values]) => ({
+        method,
+        R2: values.bestErr?.R2 ?? -Infinity,
+        MSE: values.bestErr?.MSE ?? Infinity,
+        MAE: values.bestErr?.MAE ?? Infinity,
+      }));
+  
+    if (!metrics.length) return null;
+  
+    // Нормализуем метрики
+    const bestR2 = Math.max(...metrics.map(m => m.R2));
+    const bestMSE = Math.min(...metrics.map(m => m.MSE));
+    const bestMAE = Math.min(...metrics.map(m => m.MAE));
+  
+    // Устанавливаем веса для расчёта близости к идеалу
+    const scored = metrics.map(m => {
+      const r2Score = m.R2 / bestR2;
+      const mseScore = bestMSE / m.MSE;
+      const maeScore = bestMAE / m.MAE;
+      const totalScore = r2Score + mseScore + maeScore;
+      return { ...m, score: totalScore };
+    });
+  
+    // Возвращаем метод с максимальным "totalScore"
+    return scored.sort((a, b) => b.score - a.score)[0].method;
+  };
+  const bestMethod =
+  responseMLRCSVData?.data
+    ? getRecommendedMethod(responseMLRCSVData.data)
+    : responseMLRData?.data
+    ? getRecommendedMethod(responseMLRData.data)
+    : null;
+
 
   return (
     <div className="App">
@@ -121,13 +157,15 @@ function App() {
 {responseMLRCSVData &&
   Object.keys(responseMLRCSVData.data || {})
     .filter(method => !['datapoints', 'graphics'].includes(method))
+    .filter(key => !['coeff', 'data', 'datapoints', 'graphics', 'names'].includes(key))
     .map((method) => (
-      <Results 
-        key={method} 
-        title={`Анализ через ${method} регрессию`} 
-        data={responseMLRCSVData.data[method]} 
-        datapoints={responseMLRCSVData?.data?.datapoints} 
-        headers={responseMLRCSVData?.data?.names} 
+      <Results
+        key={method}
+        title={`Анализ через ${method} регрессию`}
+        data={responseMLRCSVData.data[method]}
+        datapoints={responseMLRCSVData?.data?.datapoints}
+        headers={responseMLRCSVData?.data?.names}
+        recommended={bestMethod === method}
       />
     ))
 }
@@ -135,19 +173,22 @@ function App() {
 {responseMLRData &&
   Object.keys(responseMLRData.data || {})
     .filter(method => !['datapoints', 'graphics'].includes(method))
+    .filter(key => !['coeff', 'data', 'datapoints', 'graphics', 'names'].includes(key))
     .map((method) => {
       const { graphics, datapoints: _, ...filteredData } = responseMLRData.data[method] || {};
       return (
         <Results
           key={method}
           title={`Анализ через ${method} регрессию`}
-          data={filteredData}
+          data={{ ...filteredData, graphics }}
           datapoints={responseMLRData?.data?.datapoints}
           headers={responseMLRCSVData?.data?.names}
+          recommended={bestMethod === method}
         />
       );
     })
 }
+
       <h2>📜 Документация по методам регрессии</h2>
       <div>
         <label>Выберите метод регрессии: </label>

@@ -104,14 +104,14 @@ func R2Score(yTrue, yPred mat.Matrix, sampleWeight *mat.Dense, multioutput strin
 	if !ok {
 		yt = mat.DenseCopyOf(yTrue)
 	}
-	
+
 	yp, ok := yPred.(*mat.Dense)
 	if !ok {
 		yp = mat.DenseCopyOf(yPred)
 	}
-	
+
 	diff := mat.NewDense(nSamples, nOutputs, nil)
-	diff.Sub(yp, yt)	
+	diff.Sub(yp, yt)
 	diff2 := mat.NewDense(nSamples, nOutputs, nil)
 	diff2.MulElem(diff, diff)
 	numerator.Mul(sampleWeight.T(), diff2)

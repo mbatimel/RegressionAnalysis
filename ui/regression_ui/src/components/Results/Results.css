@@ -29,4 +29,12 @@
     background-color: #e8e8e8;
     transition: background-color 0.2s;
   }
+  .results-container {
+    margin-bottom: 20px;
+  }
   
+  .result-summary:hover {
+    background-color: #eaf7ff;
+    transition: 0.3s ease;
+  }
+    
