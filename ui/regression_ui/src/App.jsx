@@ -5,7 +5,7 @@ import { Header } from './components/Header/Header';
 import Documentation from './components/Documentation/Documentation';
 import Tables from './components/Tables/Tables';
 import Buttons from './components/Buttons/Buttons';
-import Graphics from "./components/Graphics/Graphics";
+// import Graphics from "./components/Graphics/Graphics";
 import Results from "./components/Results/Results";
 
 
@@ -144,7 +144,7 @@ function App() {
       </Header>
 
       <Tables tableData={tableData} setTableData={setTableData} headers={headers} setHeaders={setHeaders} rows={rows} setRows={setRows} cols={cols} setCols={setCols} />
-      <Graphics tableData={tableData} headers={responseMLRCSVData?.data?.names||headers} datapoints={responseMLRCSVData?.data?.datapoints || []} graphics={responseMLRCSVData?.data?.graphics || responseMLRData?.data?.graphics }/>
+      {/* <Graphics tableData={tableData} headers={responseMLRCSVData?.data?.names||headers} datapoints={responseMLRCSVData?.data?.datapoints || []} graphics={responseMLRCSVData?.data?.graphics || responseMLRData?.data?.graphics }/> */}
       <Buttons
   MLR={MLR}
   uploadFile={uploadFile}

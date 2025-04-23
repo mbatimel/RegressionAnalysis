@@ -15,9 +15,9 @@ import (
 
 	"github.com/mbatimel/RegressionAnalysis/internal/models"
 	"gonum.org/v1/gonum/blas/blas64"
-	"gonum.org/v1/gonum/diff/fd"
+	// "gonum.org/v1/gonum/diff/fd"
 	"gonum.org/v1/gonum/mat"
-	"gonum.org/v1/gonum/optimize"
+	// "gonum.org/v1/gonum/optimize"
 )
 
 type float = float64
@@ -40,23 +40,25 @@ func makeGraphicsForSVR(datapoints []models.DataPoint, Ypred *mat.Dense) map[int
 
 	return res
 }
-func makeGraphics(r *linearmodel.Regression) map[int]map[string]float64 {
-	res := make(map[int]map[string]float64)
 
-	_ = r.GetCoeffs()
-	datapoints := r.GetDataPoints()
-	for i := 1; i < len(datapoints[0].Variables); i++ {
-		xyPlot := make(map[string]float64)
-		for j := 0; j < len(datapoints); j++ {
-			x := datapoints[j].Variables[i-1]
-			y := datapoints[j].Predicted
-			xyPlot[fmt.Sprintf("%f", y)] = x
-		}
-		res[i] = xyPlot
-	}
+// func makeGraphics(r *linearmodel.Regression) map[int]map[string]float64 {
+// 	res := make(map[int]map[string]float64)
 
-	return res
-}
+// 	_ = r.GetCoeffs()
+// 	datapoints := r.GetDataPoints()
+// 	for i := 1; i < len(datapoints[0].Variables); i++ {
+// 		xyPlot := make(map[string]float64)
+// 		for j := 0; j < len(datapoints); j++ {
+// 			x := datapoints[j].Variables[i-1]
+// 			y := datapoints[j].Predicted
+// 			xyPlot[fmt.Sprintf("%f", y)] = x
+// 		}
+// 		res[i] = xyPlot
+// 	}
+
+// 	return res
+// }
+
 func makeGraphicsFoBlas64(datapoints []models.DataPoint, matrixCoeff blas64.General, YPred *mat.Dense) map[int]map[string]float64 {
 	res := make(map[int]map[string]float64)
 
@@ -76,24 +78,47 @@ func makeGraphicsFoBlas64(datapoints []models.DataPoint, matrixCoeff blas64.Gene
 		}
 		res[i] = xyPlot
 	}
-	fmt.Println(len(res))
 	return res
 }
 func makeGraphicsForOtherMethod(datapoints []models.DataPoint, matrixCoeff *mat.Dense, YPred *mat.Dense) map[int]map[string]float64 {
 	res := make(map[int]map[string]float64)
-
-	_ = denseToSlice(matrixCoeff)
 	yPred := denseToSlice(YPred)
 
 	for i := 0; i < len(datapoints[0].Variables); i++ {
-		xyPlot := make(map[string]float64)
+		var (
+			xMin, xMax float64
+			yMin, yMax float64
+			first      = true
+		)
+
 		for j := 0; j < len(datapoints); j++ {
 			if i >= len(datapoints[j].Variables) {
-				continue // избегаем выхода за границы
+				continue
 			}
 			x := datapoints[j].Variables[i]
-			xyPlot[fmt.Sprintf("%f", yPred[j])] = x
+			y := yPred[j]
+
+			if first {
+				xMin, xMax = x, x
+				yMin, yMax = y, y
+				first = false
+			} else {
+				if x < xMin {
+					xMin = x
+					yMin = y
+				}
+				if x > xMax {
+					xMax = x
+					yMax = y
+				}
+			}
 		}
+
+		// Сохраняем только две точки: начальную и конечную
+		xyPlot := make(map[string]float64)
+		xyPlot[fmt.Sprintf("%f", yMin)] = xMin
+		xyPlot[fmt.Sprintf("%f", yMax)] = xMax
+
 		res[i] = xyPlot
 	}
 
@@ -458,17 +483,17 @@ func logisticChecking(dataPoints []models.DataPoint) (map[string]interface{}, er
 	regr.Alpha = 1e-5
 	regr.MaxIter = 4
 
-	beforeMinimize := func(problem optimize.Problem, initX []float64) {
-		fmt.Println("check minimize")
-		// check gradients
-		settings := &fd.Settings{Step: 1e-8}
-		gradFromModel := make([]float64, len(initX))
-		gradFromFD := make([]float64, len(initX))
-		problem.Func(initX)
-		problem.Grad(gradFromModel, initX)
-		fd.Gradient(gradFromFD, problem.Func, initX, settings)
-	}
-	regr.SetbeforeMinimize(beforeMinimize)
+	// beforeMinimize := func(problem optimize.Problem, initX []float64) {
+	// 	fmt.Println("check minimize")
+	// 	// check gradients
+	// 	settings := &fd.Settings{Step: 1e-8}
+	// 	gradFromModel := make([]float64, len(initX))
+	// 	gradFromFD := make([]float64, len(initX))
+	// 	problem.Func(initX)
+	// 	problem.Grad(gradFromModel, initX)
+	// 	fd.Gradient(gradFromFD, problem.Func, initX, settings)
+	// }
+	// regr.SetbeforeMinimize(beforeMinimize)
 	// we create an instance of our Classifier and fit the data.
 	regr.Fit(variables, observed)
 	accuracy := regr.Score(variables, observed)
@@ -579,7 +604,7 @@ func svrChecking(dataPoints []models.DataPoint) (map[string]interface{}, error) 
 
 	// Перебираем все варианты ядер
 	for _, opt := range kernelOptions {
-		fmt.Println(opt.kernel)
+
 		Ypred[opt.kernel] = &mat.Dense{}
 
 		// Настраиваем SVR
@@ -619,7 +644,6 @@ func svrChecking(dataPoints []models.DataPoint) (map[string]interface{}, error) 
 		}
 		res = map[string]interface{}{
 			"svr YPred " + opt.kernel: fmt.Sprintf("%.2f\n", mat.Formatted(Ypred[opt.kernel])),
-			"svr Score " + opt.kernel: svr.Score(Xsc, Ysc),
 			"graphics":                makeGraphicsForSVR(dataPoints, Ypred[opt.kernel]),
 			"bestErr":                 bestErr,
 		}
@@ -676,11 +700,11 @@ func polynomialChecking(dataPoints []models.DataPoint, degree int) (map[string]i
 		observed.Set(row.index, 0, row.obsValue)
 	}
 
-	buf := []byte(`{"activation": "logistic", "alpha": 0.0001, "batch_size": "auto", "beta_1": 0.9, "beta_2": 0.999, "early_stopping": false, "epsilon": 1e-08, "hidden_layer_sizes": [], "learning_rate": "constant", "learning_rate_init": 0.001, "max_iter": 400, "momentum": 0.9, "n_iter_no_change": 10, "nesterovs_momentum": true, "power_t": 0.5, "random_state": 7, "shuffle": true, "solver": "adam", "tol": 0.0001, "validation_fraction": 0.1, "verbose": false, "warm_start": false, "out_activation_": "logistic", "intercepts_": [[0.5082271055138958]], "coefs_": [[[-0.18963335144967644], [0.2744326667319166], [-0.0068960058868800505], [-0.1870170339590578], [0.33640123639043934], [0.14343164310877599], [-0.2840940844068544], [-0.06035740527894848], [-0.015548157556294752], [-0.09766841821748058], [-0.13516966516561582], [0.01180873002271984], [-0.37004002347719184], [-0.3146740174229507], [-0.010236340304847167], [0.034725564039145625], [0.07596312959511524], [0.07031424991074327], [0.03226286238715042], [-0.11777688776136522], [-0.0862585580460505], [0.046039278168215306], [-0.32297687193126345], [0.004283074654547827], [0.013040383833634088], [-0.047491825368820184], [-0.12259098577236986]]]}`)
+	buf := []byte(`{"activation": "tanh", "alpha": 0.0001, "batch_size": "auto", "beta_1": 0.9, "beta_2": 0.999, "early_stopping": false, "epsilon": 1e-08, "hidden_layer_sizes": [], "learning_rate": "constant", "learning_rate_init": 0.001, "max_iter": 400, "momentum": 0.9, "n_iter_no_change": 10, "nesterovs_momentum": true, "power_t": 0.5, "random_state": 7, "shuffle": true, "solver": "adam", "tol": 0.0001, "validation_fraction": 0.1, "verbose": false, "warm_start": false, "out_activation_": "tanh", "intercepts_": [[0.5082271055138958]], "coefs_": [[[-0.18963335144967644], [0.2744326667319166], [-0.0068960058868800505], [-0.1870170339590578], [0.33640123639043934], [0.14343164310877599], [-0.2840940844068544], [-0.06035740527894848], [-0.015548157556294752], [-0.09766841821748058], [-0.13516966516561582], [0.01180873002271984], [-0.37004002347719184], [-0.3146740174229507], [-0.010236340304847167], [0.034725564039145625], [0.07596312959511524], [0.07031424991074327], [0.03226286238715042], [-0.11777688776136522], [-0.0862585580460505], [0.046039278168215306], [-0.32297687193126345], [0.004283074654547827], [0.013040383833634088], [-0.047491825368820184], [-0.12259098577236986]]]}`)
 	mlp := neuralnetwork.NewMLPClassifier([]int{}, "", "", 0)
 	err := mlp.Unmarshal(buf)
 	if err != nil {
-		fmt.Println("jopa")
+		return nil, fmt.Errorf("Error with unmarshal byte data")
 	}
 	mlp.WarmStart = false
 	mlp.MaxIter = 400
@@ -723,27 +747,3 @@ func polynomialChecking(dataPoints []models.DataPoint, degree int) (map[string]i
 
 	return res, nil
 }
-
-// метрики которые надо вставить:
-// r2score := metrics.R2Score(p.Y, Ypred, nil, "").At(0, 0)
-// tmpScore, ok := bestErr["R2"]
-// if !ok || r2score > tmpScore {
-// 	bestErr["R2"] = r2score
-// 	bestSetup["R2"] = testSetup + fmt.Sprintf("(%g)", r2score)
-// }
-// mse := metrics.MeanSquaredError(p.Y, Ypred, nil, "").At(0, 0)
-// tmpScore, ok = bestErr["MSE"]
-// if !ok || mse < tmpScore {
-// 	bestErr["MSE"] = mse
-// 	bestSetup["MSE"] = testSetup + fmt.Sprintf("(%g)", mse)
-// }
-// mae := metrics.MeanAbsoluteError(p.Y, Ypred, nil, "").At(0, 0)
-// tmpScore, ok = bestErr["MAE"]
-// if !ok || mae < tmpScore {
-// 	bestErr["MAE"] = mae
-// 	bestSetup["MAE"] = testSetup + fmt.Sprintf("(%g)", mae)
-// }
-// if math.Sqrt(mse) > regr.Tol {
-// 	t.Errorf("Test %T %s normalize=%v r2score=%g (%v) mse=%g mae=%g \n", regr, solver, normalize, r2score, mat.Formatted(metrics.R2Score(p.Y, Ypred, nil, "raw_values")), mse, mae)
-// 	t.Fail()
-// }

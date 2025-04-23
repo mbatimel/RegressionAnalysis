@@ -86,7 +86,7 @@ func (rs *regressionService) MlrRegression(ctx context.Context, observer string,
 		"data":       r,
 		"names":      r.GetNames(),
 		"coeff":      r.GetCoeffs(),
-		"graphics":   makeGraphics(r),
+		// "graphics":   makeGraphics(r), Убрал и не думаю что нам пока нужен MLR
 		"datapoints": r.GetDataPoints(),
 	}
 
@@ -214,7 +214,7 @@ func (rs *regressionService) MlrRegressionCSV(ctx context.Context, file []byte) 
 		"data":       r,
 		"names":      r.GetNames(),
 		"coeff":      r.GetCoeffs(),
-		"graphics":   makeGraphics(r),
+		// "graphics":   makeGraphics(r), Убрал и не думаю что нам пока нужен MLR
 		"datapoints": r.GetDataPoints(),
 	}
 	return res, nil
@@ -307,6 +307,7 @@ func (rs *regressionService) MlrRegressionExcel(ctx context.Context, file []byte
 	if err := r.Run(); err != nil {
 		return nil, fmt.Errorf("failed to train model: %w", err)
 	}
+
 	rs.logger.Info().Msg("Starting checking on classifier ridge")
 	ridgeCheck, err := ridgeChecking(dataPoints)
 	if err != nil {
@@ -319,7 +320,7 @@ func (rs *regressionService) MlrRegressionExcel(ctx context.Context, file []byte
 		return nil, fmt.Errorf("lasso checking is dead")
 	}
 	rs.logger.Info().Msg("Starting checking on classifier elastic")
-	elasticCheck, err := elasticChecking(dataPoints, 1000)
+	elasticCheck, err := elasticChecking(dataPoints, 10)
 	if err != nil {
 		return nil, fmt.Errorf("elastic checking is dead")
 	}
@@ -349,7 +350,7 @@ func (rs *regressionService) MlrRegressionExcel(ctx context.Context, file []byte
 		"data":       r,
 		"names":      r.GetNames(),
 		"coeff":      r.GetCoeffs(),
-		"graphics":   makeGraphics(r),
+		// "graphics":   makeGraphics(r), Убрал и не думаю что нам пока нужен MLR
 		"datapoints": r.GetDataPoints(),
 	}
 	return res, nil
