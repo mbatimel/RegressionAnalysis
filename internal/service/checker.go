@@ -598,8 +598,8 @@ func svrChecking(dataPoints []models.DataPoint) (map[string]interface{}, error) 
 	}{
 		{kernel: "rbf", C: 1e3, gamma: 0.1},
 		{kernel: "sigmoid", C: 1e3, gamma: 0.1},
-		{kernel: "poly", C: 1e3, gamma: 1, coef0: 1, degree: 2},
-		{kernel: "linear", C: 1e3},
+		{kernel: "poly", C: 1e3, gamma: 1, coef0: 200, degree: 2},
+		// {kernel: "linear", C: 1e3},
 	}
 
 	// Перебираем все варианты ядер

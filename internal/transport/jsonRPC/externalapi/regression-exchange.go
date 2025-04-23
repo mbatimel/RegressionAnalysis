@@ -28,35 +28,3 @@ type requestRegressionMlrRegressionExcel struct {
 type responseRegressionMlrRegressionExcel struct {
 	Formula map[string]interface{} `json:"formula,omitempty"`
 }
-
-type requestRegressionRidgeRegression struct {
-	XData     [][]float64 `json:"XData,omitempty"`
-	YData     [][]float64 `json:"YData,omitempty"`
-	Alpha     float64     `json:"alpha,omitempty"`
-	Tol       float64     `json:"tol,omitempty"`
-	Normalize bool        `json:"normalize,omitempty"`
-}
-
-type responseRegressionRidgeRegression struct {
-	Formula map[string]interface{} `json:"formula,omitempty"`
-}
-
-type requestRegressionLassoRegression struct {
-	XData     [][]float64 `json:"XData,omitempty"`
-	YData     [][]float64 `json:"YData,omitempty"`
-	Alpha     float64     `json:"alpha,omitempty"`
-	Tol       float64     `json:"tol,omitempty"`
-	Normalize bool        `json:"normalize,omitempty"`
-}
-
-type responseRegressionLassoRegression struct {
-	Formula map[string]interface{} `json:"formula,omitempty"`
-}
-
-type requestRegressionElasticNetRegression struct {
-	Params models.ElasticNetParams `json:"params,omitempty"`
-}
-
-type responseRegressionElasticNetRegression struct {
-	Formula map[string][]float64 `json:"formula,omitempty"`
-}

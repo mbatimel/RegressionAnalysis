@@ -10,15 +10,9 @@ import (
 type RegressionMlrRegression func(ctx context.Context, observer string, vars []string, dataPoints []models.DataPoint) (formula map[string]interface{}, err error)
 type RegressionMlrRegressionCSV func(ctx context.Context, file []byte) (formula map[string]interface{}, err error)
 type RegressionMlrRegressionExcel func(ctx context.Context, file []byte) (formula map[string]interface{}, err error)
-type RegressionRidgeRegression func(ctx context.Context, xData [][]float64, yData [][]float64, alpha float64, tol float64, normalize bool) (formula map[string]interface{}, err error)
-type RegressionLassoRegression func(ctx context.Context, xData [][]float64, yData [][]float64, alpha float64, tol float64, normalize bool) (formula map[string]interface{}, err error)
-type RegressionElasticNetRegression func(ctx context.Context, params models.ElasticNetParams) (formula map[string][]float64, err error)
 
 type MiddlewareRegression func(next interfaces.Regression) interfaces.Regression
 
 type MiddlewareRegressionMlrRegression func(next RegressionMlrRegression) RegressionMlrRegression
 type MiddlewareRegressionMlrRegressionCSV func(next RegressionMlrRegressionCSV) RegressionMlrRegressionCSV
 type MiddlewareRegressionMlrRegressionExcel func(next RegressionMlrRegressionExcel) RegressionMlrRegressionExcel
-type MiddlewareRegressionRidgeRegression func(next RegressionRidgeRegression) RegressionRidgeRegression
-type MiddlewareRegressionLassoRegression func(next RegressionLassoRegression) RegressionLassoRegression
-type MiddlewareRegressionElasticNetRegression func(next RegressionElasticNetRegression) RegressionElasticNetRegression

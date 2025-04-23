@@ -47,33 +47,4 @@ type Regression interface {
 	// @tg 400=github.com/mbatimel/RegressionAnalysis/swaggers/externalApi/models:Err400
 	// @tg 200=github.com/mbatimel/RegressionAnalysis/pkg/models:MlrRegressionRespExcel200
 	MlrRegressionExcel(ctx context.Context, file []byte) (formula map[string]interface{}, err error)
-	// RidgeRegression ...
-	// @tg http-method=POST
-	// @tg http-path=/ridge
-	// @tg summary=`Ручка по рассчету ridge регрессии`
-	// @tg http-response=github.com/mbatimel/RegressionAnalysis/internal/transport/jsonRPC/custom-handlers:RidgeRegression
-	// @tg desc=`Ручка возвращает формулу и параметры`
-	// @tg 400=github.com/mbatimel/RegressionAnalysis/swaggers/externalApi/models:Err400
-	// @tg 200=github.com/mbatimel/RegressionAnalysis/pkg/models:RidgeRegressionResp200
-	RidgeRegression(ctx context.Context, XData [][]float64, YData [][]float64, alpha float64, tol float64, normalize bool) (formula map[string]interface{}, err error)
-	//
-	// LassoRegression ...
-	// @tg http-method=POST
-	// @tg http-path=/lasso
-	// @tg summary=`Ручка по рассчету lasso регрессии`
-	// @tg http-response=github.com/mbatimel/RegressionAnalysis/internal/transport/jsonRPC/custom-handlers:LassoRegression
-	// @tg desc=`Ручка возвращает формулу и параметры`
-	// @tg 400=github.com/mbatimel/RegressionAnalysis/swaggers/externalApi/models:Err400
-	// @tg 200=github.com/mbatimel/RegressionAnalysis/pkg/models:LassoRegressionResp200
-	LassoRegression(ctx context.Context, XData [][]float64, YData [][]float64, alpha float64, tol float64, normalize bool) (formula map[string]interface{}, err error)
-	//
-	// ElasticNetRegression ...
-	// @tg http-method=POST
-	// @tg http-path=/elasticNet
-	// @tg summary=`Ручка по рассчету Elastic Net регрессии`
-	// @tg http-response=github.com/mbatimel/RegressionAnalysis/internal/transport/jsonRPC/custom-handlers:ElasticNetRegression
-	// @tg desc=`Ручка возвращает формулу и параметры`
-	// @tg 400=github.com/mbatimel/RegressionAnalysis/swaggers/externalApi/models:Err400
-	// @tg 200=github.com/mbatimel/RegressionAnalysis/pkg/models:ElasticNetRegressionResp200
-	ElasticNetRegression(ctx context.Context, params models.ElasticNetParams) (formula map[string][]float64, err error)
 }

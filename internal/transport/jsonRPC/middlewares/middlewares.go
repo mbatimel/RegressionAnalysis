@@ -21,18 +21,6 @@ func (m *middleware) MlrRegressionExcel(ctx context.Context, file []byte) (formu
 	return m.regression.MlrRegressionExcel(ctx, file)
 }
 
-func (m *middleware) RidgeRegression(ctx context.Context, XData [][]float64, YData [][]float64, alpha float64, tol float64, normalize bool) (formula map[string]interface{}, err error) {
-	return m.regression.RidgeRegression(ctx, XData, YData, alpha, tol, normalize)
-}
-
-func (m *middleware) LassoRegression(ctx context.Context, XData [][]float64, YData [][]float64, alpha float64, tol float64, normalize bool) (formula map[string]interface{}, err error) {
-	return m.regression.LassoRegression(ctx, XData, YData, alpha, tol, normalize)
-}
-
-func (m *middleware) ElasticNetRegression(ctx context.Context, params models.ElasticNetParams) (formula map[string][]float64, err error) {
-	return m.regression.ElasticNetRegression(ctx, params)
-}
-
 func Newmiddleware(regression external_service.Regression) external_service.Regression {
 	return &middleware{
 		regression: regression,

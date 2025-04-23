@@ -46,7 +46,4 @@ func (http *httpRegression) SetRoutes(route *fiber.App) {
 	route.Post("/api/v1/mlr", http.serveMlrRegression)
 	route.Post("/api/v1/mlrCSV", http.serveMlrRegressionCSV)
 	route.Post("/api/v1/mlrExcel", http.serveMlrRegressionExcel)
-	route.Post("/api/v1/ridge", http.serveRidgeRegression)
-	route.Post("/api/v1/lasso", http.serveLassoRegression)
-	route.Post("/api/v1/elasticNet", http.serveElasticNetRegression)
 }
