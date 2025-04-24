@@ -7,23 +7,23 @@ const Results = ({ title, data, datapoints = [], headers = [], recommended = fal
   const { bestErr, graphics, ...restData } = data;
 
   return (
-    <div className="results-container">
-      <div
-        className="result-summary"
-        onClick={() => setExpanded(!expanded)}
-        style={{ cursor: "pointer", backgroundColor: recommended ? "#e6f7ff" : "#f5f5f5", padding: "10px", borderRadius: "8px", border: "1px solid #ccc", marginBottom: "10px" }}
-      >
-        <h3 style={{ marginBottom: "5px" }}>{title}</h3>
-        <div>
-          <strong>MAE:</strong> {bestErr?.MAE?.toFixed(2)} | <strong>MSE:</strong> {bestErr?.MSE?.toFixed(2)} | <strong>R²:</strong> {bestErr?.R2?.toFixed(4)}
-        </div>
-        {recommended && (
-          <div style={{ color: "#1890ff", fontWeight: "bold", marginTop: "5px" }}>
-            ✅ Предлагаем к вашему рассмотрению этот метод регрессии
+    <div className={`results-container ${recommended ? "recommended" : ""}`}>
+      <div className="result-summary" onClick={() => setExpanded(!expanded)}>
+        <div className="summary-header">
+          <h3>{title}</h3>
+          <div className="metrics">
+            <span><strong>MAE:</strong> {bestErr?.MAE?.toFixed(2)}</span>
+            <span><strong>MSE:</strong> {bestErr?.MSE?.toFixed(2)}</span>
+            <span><strong>R²:</strong> {bestErr?.R2?.toFixed(4)}</span>
           </div>
-        )}
-        <div style={{ color: "#888", fontSize: "0.9em" }}>
-          {expanded ? "Скрыть детали ⬆" : "Показать результаты ⬇"}
+          {recommended && (
+            <div className="recommended-text">
+              ✅ Предлагаем к вашему рассмотрению этот метод регрессии
+            </div>
+          )}
+          <div className="toggle-details">
+            {expanded ? "Скрыть детали ⬆" : "Показать результаты ⬇"}
+          </div>
         </div>
       </div>
 

@@ -13,7 +13,19 @@ import {
 } from "chart.js";
 import zoomPlugin from "chartjs-plugin-zoom";
 import annotationPlugin from "chartjs-plugin-annotation";
-ChartJS.register(LineElement, PointElement, LinearScale, Title, Tooltip, Legend, Filler, CategoryScale, zoomPlugin,annotationPlugin);
+
+ChartJS.register(
+  LineElement,
+  PointElement,
+  LinearScale,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+  CategoryScale,
+  zoomPlugin,
+  annotationPlugin
+);
 
 const Graphics = ({ tableData = [], headers = [], datapoints = [], graphics = {} }) => {
   const [visibleGraphs, setVisibleGraphs] = useState({});
@@ -22,7 +34,7 @@ const Graphics = ({ tableData = [], headers = [], datapoints = [], graphics = {}
     const initial = {};
     headers.forEach((header) => (initial[header] = true));
     Object.keys(graphics).forEach((key) => {
-      initial[`Резулитат регрессии ${key}`] = true;
+      initial[`предсказание ${key}`] = true;
     });
     setVisibleGraphs(initial);
   }, [headers, graphics]);
@@ -53,17 +65,22 @@ const Graphics = ({ tableData = [], headers = [], datapoints = [], graphics = {}
         hidden: !visibleGraphs[header],
       }));
 
-  const graphicsData = Object.entries(graphics).map(([key, values], index) => ({
-    label: `Резулитат регрессии ${key}`,
-    data: Object.entries(values)
-      .map(([y, x]) => ({ x: parseFloat(x), y: parseFloat(y) }))
-      .filter((point) => !isNaN(point.x) && !isNaN(point.y))
-      .sort((a, b) => a.x - b.x),
-    borderColor: "red",
-    borderWidth: 2,
-    tension: 0,
-    hidden: !visibleGraphs[`Резулитат регрессии ${key}`],
-  }));
+      const graphicsData = Object.entries(graphics).map(([key, values], index) => {
+       
+        const header = headers[index] || headers[0] || key;
+        const label = `предсказание ${header}`;
+        return {
+          label,
+          data: Object.entries(values)
+            .map(([y, x]) => ({ x: parseFloat(x), y: parseFloat(y) }))
+            .filter((point) => !isNaN(point.x) && !isNaN(point.y))
+            .sort((a, b) => a.x - b.x),
+          borderColor: "blue",
+          borderWidth: 2,
+          tension: 0,
+          hidden: !visibleGraphs[label],
+        };
+      });
 
   const chartData = {
     datasets: [...datasets, ...graphicsData],
@@ -129,25 +146,21 @@ const Graphics = ({ tableData = [], headers = [], datapoints = [], graphics = {}
       },
     },
   };
-  
-  
 
-  const handleLegendClick = (key) => {
-    setVisibleGraphs((prev) => ({ ...prev, [key]: !prev[key] }));
-  };
-
-  const legendItems = Object.keys(visibleGraphs);
 
   return (
     <div>
-      <h2>📊 График зависимостей Y от X</h2>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "15px", marginBottom: "10px" }}>
-        {legendItems.map((key) => (
-          <label key={key}>
-            <input type="checkbox" checked={visibleGraphs[key]} onChange={() => handleLegendClick(key)} />
-            <span style={{ marginLeft: 8 }}>{key}</span>
-          </label>
-        ))}
+      <h2 style={{ color: "#fff", marginBottom: "10px" }}>Сравнение предсказанных значений от реальных</h2>
+      <div
+        style={{
+          display: "flex",
+          gap: "20px",
+          overflowX: "auto",
+          paddingBottom: "10px",
+          marginBottom: "10px",
+          whiteSpace: "nowrap",
+        }}
+      >
       </div>
       <Line data={chartData} options={options} />
     </div>

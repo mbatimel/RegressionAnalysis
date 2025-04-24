@@ -1,14 +1,12 @@
 import React from "react";
+import "./Buttons.css";
 
-const Buttons = ({ MLR, uploadFile, handleFileChange, file, responses, headers }) => {
+const Buttons = ({ MLR, uploadFile, handleFileChange, file }) => {
   return (
-    <div>
-      <h1>React cURL Buttons</h1>
-      <button className="MLRButton" onClick={MLR}>Приступить к анализу</button>
-
-      <h1>React File Upload</h1>
-      <input type="file" onChange={handleFileChange} />
-      <button className="UploadButton" onClick={uploadFile}>Приступить к анализу файла</button>
+    <div className="buttons-container">
+      <input type="file" onChange={handleFileChange} className="file-input" />
+      <button className="MLRButton" onClick={MLR}>Анализировать таблицу</button>
+      <button className="UploadButton" onClick={uploadFile}>Анализировать файл</button>
     </div>
   );
 };

@@ -1,40 +1,78 @@
 .results-container {
-    border: 1px solid #ddd;
-    padding: 15px;
-    margin: 15px 0;
-    border-radius: 8px;
-    background: #f9f9f9;
-  }
-  
-  .results-container h2 {
-    font-size: 20px;
-    margin-bottom: 10px;
-  }
-  
-  .results-content {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-  }
-  
-  .result-item {
-    padding: 5px;
-    border-bottom: 1px solid #ddd;
-  }
-  
-  .result-item:last-child {
-    border-bottom: none;
-  }
-  .results-summary:hover {
-    background-color: #e8e8e8;
-    transition: background-color 0.2s;
-  }
-  .results-container {
-    margin-bottom: 20px;
-  }
-  
-  .result-summary:hover {
-    background-color: #eaf7ff;
-    transition: 0.3s ease;
-  }
-    
+  background-color: #1e1e2f;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  margin-bottom: 20px;
+  color: #e0e0e0;
+  transition: background-color 0.3s ease;
+  border: 1px solid #2c2c3e;
+}
+
+.result-summary {
+  padding: 16px;
+  cursor: pointer;
+  border-bottom: 1px solid #2c2c3e;
+  transition: background-color 0.3s ease;
+}
+
+.result-summary:hover {
+  background-color: #2a2a40;
+}
+
+.results-container.recommended {
+  border: 1px solid #1890ff;
+  box-shadow: 0 0 10px rgba(24, 144, 255, 0.2);
+}
+
+.summary-header h3 {
+  font-size: 1.2rem;
+  margin: 0 0 10px;
+  color: #ffffff;
+}
+
+.metrics span {
+  margin-right: 10px;
+  font-size: 0.95rem;
+  color: #cccccc;
+}
+
+.recommended-text {
+  color: #40a9ff;
+  margin-top: 8px;
+  font-weight: 500;
+}
+
+.toggle-details {
+  color: #888;
+  font-size: 0.85rem;
+  margin-top: 5px;
+}
+
+.results-content {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background-color: #232336;
+  border-top: 1px solid #2c2c3e;
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+}
+
+.result-item {
+  padding: 8px 0;
+  border-bottom: 1px solid #33334d;
+  font-size: 0.95rem;
+  color: #dddddd;
+}
+
+.result-item:last-child {
+  border-bottom: none;
+}
+
+.result-graph {
+  margin-top: 16px;
+  background: #1c1c2b;
+  padding: 12px;
+  border-radius: 8px;
+}
