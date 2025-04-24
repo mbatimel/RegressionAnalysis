@@ -432,60 +432,24 @@ func elasticChecking(dataPoints []models.DataPoint, l1Ratio float64) (map[string
 }
 func logisticChecking(dataPoints []models.DataPoint) (map[string]interface{}, error) {
 	numOfSamples := len(dataPoints)
+	if numOfSamples == 0 {
+		return nil, fmt.Errorf("no data points provided")
+	}
+
 	numOfVars := len(dataPoints[0].Variables)
 
 	// Создаем матрицы X (variables) и Y (observed)
-	observed := mat.NewDense(numOfSamples, 1, nil)          // Y - вектор (numOfSamples × 1)
-	variables := mat.NewDense(numOfSamples, numOfVars, nil) // X - матрица (numOfSamples × numOfVars)
+	observed := mat.NewDense(numOfSamples, 1, nil)
+	variables := mat.NewDense(numOfSamples, numOfVars, nil)
 
-	// Канал для сбора строк переменных и наблюдений
-	type rowData struct {
-		index    int
-		varRow   []float64
-		obsValue float64
-	}
-
-	rowChan := make(chan rowData, numOfSamples)
-	var wg sync.WaitGroup
-
-	// Параллельно подготавливаем строки
-	for i := 0; i < numOfSamples; i++ {
-		wg.Add(1)
-		go func(i int) {
-			defer wg.Done()
-			dp := dataPoints[i]
-			varRow := make([]float64, numOfVars)
-			copy(varRow, dp.Variables)
-			rowChan <- rowData{
-				index:    i,
-				varRow:   varRow,
-				obsValue: dp.Observed,
-			}
-		}(i)
-	}
-
-	// Закрытие канала после завершения всех горутин
-	go func() {
-		wg.Wait()
-		close(rowChan)
-	}()
-
-	// Последовательно записываем в матрицы
-	for row := range rowChan {
-		for j := 0; j < numOfVars; j++ {
-			variables.Set(row.index, j, row.varRow[j])
+	for i, dp := range dataPoints {
+		for j, val := range dp.Variables {
+			variables.Set(i, j, val)
 		}
-		observed.Set(row.index, 0, row.obsValue)
+		observed.Set(i, 0, dp.Observed)
 	}
 
-	// Создаем модель LogisticRegression
-	regr := linearmodel.NewLogisticRegression()
-	regr.Alpha = 1e-5
-	regr.MaxIter = 4
-
-	regr.BeforeMinimize = func(problem optimize.Problem, initX []float64) {
-		fmt.Println("check minimize")
-		// check gradients
+	checkGradients := func(problem optimize.Problem, initX []float64) {
 		settings := &fd.Settings{Step: 1e-8}
 		gradFromModel := make([]float64, len(initX))
 		gradFromFD := make([]float64, len(initX))
@@ -493,6 +457,12 @@ func logisticChecking(dataPoints []models.DataPoint) (map[string]interface{}, er
 		problem.Grad(gradFromModel, initX)
 		fd.Gradient(gradFromFD, problem.Func, initX, settings)
 	}
+
+	// Создаем модель LogisticRegression
+	regr := linearmodel.NewLogisticRegression()
+	regr.Alpha = 1e-5
+	regr.MaxIter = 4
+	regr.BeforeMinimize =checkGradients
 	// we create an instance of our Classifier and fit the data.
 	regr.Fit(variables, observed)
 	Ypred := mat.NewDense(numOfSamples, 1, nil)
@@ -537,45 +507,14 @@ func svrChecking(dataPoints []models.DataPoint) (map[string]interface{}, error) 
 	observed := mat.NewDense(numOfSamples, 1, nil)          // Y - вектор (numOfSamples × 1)
 	variables := mat.NewDense(numOfSamples, numOfVars, nil) // X - матрица (numOfSamples × numOfVars)
 
-	// Канал для сбора строк переменных и наблюдений
-	type rowData struct {
-		index    int
-		varRow   []float64
-		obsValue float64
-	}
 
-	rowChan := make(chan rowData, numOfSamples)
-	var wg sync.WaitGroup
-
-	// Параллельно подготавливаем строки
-	for i := 0; i < numOfSamples; i++ {
-		wg.Add(1)
-		go func(i int) {
-			defer wg.Done()
-			dp := dataPoints[i]
-			varRow := make([]float64, numOfVars)
-			copy(varRow, dp.Variables)
-			rowChan <- rowData{
-				index:    i,
-				varRow:   varRow,
-				obsValue: dp.Observed,
-			}
-		}(i)
-	}
-
-	// Закрытие канала после завершения всех горутин
-	go func() {
-		wg.Wait()
-		close(rowChan)
-	}()
-
-	// Последовательно записываем в матрицы
-	for row := range rowChan {
-		for j := 0; j < numOfVars; j++ {
-			variables.Set(row.index, j, row.varRow[j])
+	for i, dp := range dataPoints {
+		for j, val := range dp.Variables {
+			variables.Set(i, j, val)
 		}
-		observed.Set(row.index, 0, row.obsValue)
+		observed.Set(i, 0, dp.Observed)
 	}
+
 
 	randomState := base.NewLockedSource(7)
 	xscaler := preprocessing.NewMinMaxScaler([]float64{-1, 1})
@@ -589,9 +528,9 @@ func svrChecking(dataPoints []models.DataPoint) (map[string]interface{}, error) 
 		kernel                  string
 		C, gamma, coef0, degree float64
 	}{
-		{kernel: "rbf", C: 1e3, gamma: 0.1},
+		// {kernel: "rbf", C: 1e3, gamma: 0.1,coef0: 200, degree: 2},
 		{kernel: "sigmoid", C: 1e3, gamma: 0.1},
-		{kernel: "poly", C: 1e3, gamma: 1, coef0: 200, degree: 2},
+		// {kernel: "poly", C: 1e3, gamma: 1, coef0: 200, degree: 2},
 		// {kernel: "linear", C: 1e3},
 	}
 
@@ -647,51 +586,23 @@ func svrChecking(dataPoints []models.DataPoint) (map[string]interface{}, error) 
 }
 func polynomialChecking(dataPoints []models.DataPoint, degree int) (map[string]interface{}, error) {
 	numOfSamples := len(dataPoints)
+	if numOfSamples == 0 {
+		return nil, fmt.Errorf("no data points provided")
+	}
+
 	numOfVars := len(dataPoints[0].Variables)
 
 	// Создаем матрицы X (variables) и Y (observed)
 	observed := mat.NewDense(numOfSamples, 1, nil)
 	variables := mat.NewDense(numOfSamples, numOfVars, nil)
 
-	// Канал для сбора строк переменных и наблюдений
-	type rowData struct {
-		index    int
-		varRow   []float64
-		obsValue float64
-	}
-
-	rowChan := make(chan rowData, numOfSamples)
-	var wg sync.WaitGroup
-
-	// Параллельно подготавливаем строки
-	for i := 0; i < numOfSamples; i++ {
-		wg.Add(1)
-		go func(i int) {
-			defer wg.Done()
-			dp := dataPoints[i]
-			varRow := make([]float64, numOfVars)
-			copy(varRow, dp.Variables)
-			rowChan <- rowData{
-				index:    i,
-				varRow:   varRow,
-				obsValue: dp.Observed,
-			}
-		}(i)
-	}
-
-	// Закрытие канала после завершения всех горутин
-	go func() {
-		wg.Wait()
-		close(rowChan)
-	}()
-
-	// Последовательно записываем в матрицы
-	for row := range rowChan {
-		for j := 0; j < numOfVars; j++ {
-			variables.Set(row.index, j, row.varRow[j])
+	for i, dp := range dataPoints {
+		for j, val := range dp.Variables {
+			variables.Set(i, j, val)
 		}
-		observed.Set(row.index, 0, row.obsValue)
+		observed.Set(i, 0, dp.Observed)
 	}
+
 	checkGradients := func(problem optimize.Problem, initX []float64) {
 		settings := &fd.Settings{Step: 1e-8}
 		gradFromModel := make([]float64, len(initX))
@@ -702,12 +613,13 @@ func polynomialChecking(dataPoints []models.DataPoint, degree int) (map[string]i
 	}
 	buf := []byte(`{"activation": "tanh", "alpha": 0.0001, "batch_size": "auto", "beta_1": 0.9, "beta_2": 0.999, "early_stopping": false, "epsilon": 1e-08, "hidden_layer_sizes": [], "learning_rate": "constant", "learning_rate_init": 0.001, "max_iter": 400, "momentum": 0.9, "n_iter_no_change": 10, "nesterovs_momentum": true, "power_t": 0.5, "random_state": 7, "shuffle": true, "solver": "adam", "tol": 0.0001, "validation_fraction": 0.1, "verbose": false, "warm_start": false, "out_activation_": "tanh", "intercepts_": [[0.5082271055138958]], "coefs_": [[[-0.18963335144967644], [0.2744326667319166], [-0.0068960058868800505], [-0.1870170339590578], [0.33640123639043934], [0.14343164310877599], [-0.2840940844068544], [-0.06035740527894848], [-0.015548157556294752], [-0.09766841821748058], [-0.13516966516561582], [0.01180873002271984], [-0.37004002347719184], [-0.3146740174229507], [-0.010236340304847167], [0.034725564039145625], [0.07596312959511524], [0.07031424991074327], [0.03226286238715042], [-0.11777688776136522], [-0.0862585580460505], [0.046039278168215306], [-0.32297687193126345], [0.004283074654547827], [0.013040383833634088], [-0.047491825368820184], [-0.12259098577236986]]]}`)
 	mlp := neuralnetwork.NewMLPClassifier([]int{}, "", "", 0)
+	mlp.RandomState = base.NewLockedSource(1)
 	err := mlp.Unmarshal(buf)
 	if err != nil {
 		return nil, fmt.Errorf("Error with unmarshal byte data")
 	}
-
 	mlp.WarmStart = false
+	mlp.Shuffle = false
 	mlp.MaxIter = 400
 	mlp.LearningRateInit = .11
 	mlp.BatchSize = 118 //1,2,59,118
