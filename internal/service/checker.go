@@ -15,9 +15,9 @@ import (
 
 	"github.com/mbatimel/RegressionAnalysis/internal/models"
 	"gonum.org/v1/gonum/blas/blas64"
-	// "gonum.org/v1/gonum/diff/fd"
+	"gonum.org/v1/gonum/diff/fd"
 	"gonum.org/v1/gonum/mat"
-	// "gonum.org/v1/gonum/optimize"
+	"gonum.org/v1/gonum/optimize"
 )
 
 type float = float64
@@ -483,25 +483,18 @@ func logisticChecking(dataPoints []models.DataPoint) (map[string]interface{}, er
 	regr.Alpha = 1e-5
 	regr.MaxIter = 4
 
-	// beforeMinimize := func(problem optimize.Problem, initX []float64) {
-	// 	fmt.Println("check minimize")
-	// 	// check gradients
-	// 	settings := &fd.Settings{Step: 1e-8}
-	// 	gradFromModel := make([]float64, len(initX))
-	// 	gradFromFD := make([]float64, len(initX))
-	// 	problem.Func(initX)
-	// 	problem.Grad(gradFromModel, initX)
-	// 	fd.Gradient(gradFromFD, problem.Func, initX, settings)
-	// }
-	// regr.SetbeforeMinimize(beforeMinimize)
+	regr.BeforeMinimize = func(problem optimize.Problem, initX []float64) {
+		fmt.Println("check minimize")
+		// check gradients
+		settings := &fd.Settings{Step: 1e-8}
+		gradFromModel := make([]float64, len(initX))
+		gradFromFD := make([]float64, len(initX))
+		problem.Func(initX)
+		problem.Grad(gradFromModel, initX)
+		fd.Gradient(gradFromFD, problem.Func, initX, settings)
+	}
 	// we create an instance of our Classifier and fit the data.
 	regr.Fit(variables, observed)
-	accuracy := regr.Score(variables, observed)
-	if accuracy >= 0.833 {
-		fmt.Println("ok")
-	} else {
-		fmt.Printf("Accuracy:%.3f\n", accuracy)
-	}
 	Ypred := mat.NewDense(numOfSamples, 1, nil)
 	regr.Predict(variables, Ypred)
 
@@ -699,18 +692,26 @@ func polynomialChecking(dataPoints []models.DataPoint, degree int) (map[string]i
 		}
 		observed.Set(row.index, 0, row.obsValue)
 	}
-
+	checkGradients := func(problem optimize.Problem, initX []float64) {
+		settings := &fd.Settings{Step: 1e-8}
+		gradFromModel := make([]float64, len(initX))
+		gradFromFD := make([]float64, len(initX))
+		problem.Func(initX)
+		problem.Grad(gradFromModel, initX)
+		fd.Gradient(gradFromFD, problem.Func, initX, settings)
+	}
 	buf := []byte(`{"activation": "tanh", "alpha": 0.0001, "batch_size": "auto", "beta_1": 0.9, "beta_2": 0.999, "early_stopping": false, "epsilon": 1e-08, "hidden_layer_sizes": [], "learning_rate": "constant", "learning_rate_init": 0.001, "max_iter": 400, "momentum": 0.9, "n_iter_no_change": 10, "nesterovs_momentum": true, "power_t": 0.5, "random_state": 7, "shuffle": true, "solver": "adam", "tol": 0.0001, "validation_fraction": 0.1, "verbose": false, "warm_start": false, "out_activation_": "tanh", "intercepts_": [[0.5082271055138958]], "coefs_": [[[-0.18963335144967644], [0.2744326667319166], [-0.0068960058868800505], [-0.1870170339590578], [0.33640123639043934], [0.14343164310877599], [-0.2840940844068544], [-0.06035740527894848], [-0.015548157556294752], [-0.09766841821748058], [-0.13516966516561582], [0.01180873002271984], [-0.37004002347719184], [-0.3146740174229507], [-0.010236340304847167], [0.034725564039145625], [0.07596312959511524], [0.07031424991074327], [0.03226286238715042], [-0.11777688776136522], [-0.0862585580460505], [0.046039278168215306], [-0.32297687193126345], [0.004283074654547827], [0.013040383833634088], [-0.047491825368820184], [-0.12259098577236986]]]}`)
 	mlp := neuralnetwork.NewMLPClassifier([]int{}, "", "", 0)
 	err := mlp.Unmarshal(buf)
 	if err != nil {
 		return nil, fmt.Errorf("Error with unmarshal byte data")
 	}
+
 	mlp.WarmStart = false
 	mlp.MaxIter = 400
 	mlp.LearningRateInit = .11
 	mlp.BatchSize = 118 //1,2,59,118
-
+	mlp.BeforeMinimize = checkGradients
 	poly := preprocessing.NewPolynomialFeatures(degree)
 	poly.IncludeBias = false
 	poly.Fit(variables, observed)

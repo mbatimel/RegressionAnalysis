@@ -71,8 +71,8 @@ type BaseMultilayerPerceptron64 struct {
 	bestParameters      []float64
 	batchNorm           [][]float64
 	lb                  *LabelBinarizer64
-	// beforeMinimize allow test to set weights
-	beforeMinimize func(optimize.Problem, []float64)
+	// BeforeMinimize allow test to set weights
+	BeforeMinimize func(optimize.Problem, []float64)
 }
 
 // Activations64 is a map containing the inplace_activation functions
@@ -291,7 +291,7 @@ func (mlp *BaseMultilayerPerceptron64) SetpackedParameters(i int, value float64)
 	mlp.packedParameters[i] = value
 }
 func (mlp *BaseMultilayerPerceptron64) SetbeforeMinimize(checkGradients func(optimize.Problem, []float64)) {
-	mlp.beforeMinimize = checkGradients
+	mlp.BeforeMinimize = checkGradients
 }
 
 // batchNormalize computes norms of activations and divides activations
@@ -738,8 +738,8 @@ func (mlp *BaseMultilayerPerceptron64) fitLbfgs(X, y blas64General, activations,
 	for i := range w {
 		w[i] = float64(mlp.packedParameters[i])
 	}
-	if mlp.beforeMinimize != nil {
-		mlp.beforeMinimize(problem, w)
+	if mlp.BeforeMinimize != nil {
+		mlp.BeforeMinimize(problem, w)
 	}
 	res, err := optimize.Minimize(problem, w, settings, method)
 	if err != nil {

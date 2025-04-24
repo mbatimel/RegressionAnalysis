@@ -36,7 +36,7 @@ func ExampleLogisticRegression() {
 
 	regr := NewLogisticRegression()
 	regr.Alpha = 1e-5
-	regr.beforeMinimize = func(problem optimize.Problem, initX []float64) {
+	regr.BeforeMinimize = func(problem optimize.Problem, initX []float64) {
 		// check gradients
 		settings := &fd.Settings{Step: 1e-8}
 		gradFromModel := make([]float64, len(initX))

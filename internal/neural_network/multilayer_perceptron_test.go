@@ -150,7 +150,7 @@ func TestMLPClassifierMicrochip(t *testing.T) {
 			mlp.MaxIter = 400
 			mlp.LearningRateInit = .11
 			mlp.BatchSize = 118 //1,2,59,118
-			mlp.beforeMinimize = checkGradients
+			mlp.BeforeMinimize = checkGradients
 
 			start := time.Now()
 			mlp.Fit(Xp, Ytrue)

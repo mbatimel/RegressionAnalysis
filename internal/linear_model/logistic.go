@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 
+	"gonum.org/v1/gonum/diff/fd"
 	"gonum.org/v1/gonum/floats"
 
 	"github.com/mbatimel/RegressionAnalysis/internal/metrics"
@@ -57,11 +58,20 @@ type LogisticRegression struct {
 	packedGrads        []float64
 	// bestParameters     []float64
 	lb             *preprocessing.LabelBinarizer
-	beforeMinimize func(optimize.Problem, []float64)
+	BeforeMinimize func(optimize.Problem, []float64)
 }
 
-func (log *LogisticRegression) SetbeforeMinimize(beforeMinimize func(optimize.Problem, []float64)) {
-	log.beforeMinimize = beforeMinimize
+func (log *LogisticRegression) SetbeforeMinimize() {
+	log.BeforeMinimize = func(problem optimize.Problem, initX []float64) {
+		// check gradients
+		settings := &fd.Settings{Step: 1e-8}
+		gradFromModel := make([]float64, len(initX))
+		gradFromFD := make([]float64, len(initX))
+		problem.Func(initX)
+		problem.Grad(gradFromModel, initX)
+		fd.Gradient(gradFromFD, problem.Func, initX, settings)
+
+	}
 }
 
 // logregActivation is a map containing the inplace_activation functions
@@ -440,8 +450,8 @@ func (m *LogisticRegression) fitLbfgs(X, y blas64.General, activations []blas64.
 	for i := range w {
 		w[i] = float64(m.packedParameters[i])
 	}
-	if m.beforeMinimize != nil {
-		m.beforeMinimize(problem, w)
+	if m.BeforeMinimize != nil {
+		m.BeforeMinimize(problem, w)
 	}
 	res, err := optimize.Minimize(problem, w, settings, method)
 	if err != nil {

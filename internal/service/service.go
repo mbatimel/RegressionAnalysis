@@ -59,11 +59,11 @@ func (rs *regressionService) MlrRegression(ctx context.Context, observer string,
 		return nil, fmt.Errorf("Ridge checking is dead")
 	}
 
-	// rs.logger.Info().Msg("Starting checking on classifier SVR")
-	// svrCheck, err := svrChecking(dataPoints)
-	// if err != nil {
-	// 	return nil, fmt.Errorf("SRV checking is dead")
-	// }
+	rs.logger.Info().Msg("Starting checking on classifier SVR")
+	svrCheck, err := svrChecking(dataPoints)
+	if err != nil {
+		return nil, fmt.Errorf("SRV checking is dead")
+	}
 
 	rs.logger.Info().Msg("Starting checking on classifier polynomial")
 	polynomialCheck, err := polynomialChecking(dataPoints, 3)
@@ -72,11 +72,11 @@ func (rs *regressionService) MlrRegression(ctx context.Context, observer string,
 	}
 
 	res := map[string]interface{}{
-		"Ridge":    ridgeCheck,
-		"Lasso":    lassoCheck,
-		"Elastic":  elasticCheck,
-		"Logistic": logisticCheck,
-		// "SRV":        svrCheck,
+		"Ridge":      ridgeCheck,
+		"Lasso":      lassoCheck,
+		"Elastic":    elasticCheck,
+		"Logistic":   logisticCheck,
+		"SRV":        svrCheck,
 		"Polynomial": polynomialCheck,
 		"data":       r,
 		"names":      r.GetNames(),
