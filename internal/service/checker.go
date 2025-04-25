@@ -462,7 +462,7 @@ func logisticChecking(dataPoints []models.DataPoint) (map[string]interface{}, er
 	regr := linearmodel.NewLogisticRegression()
 	regr.Alpha = 1e-5
 	regr.MaxIter = 4
-	regr.BeforeMinimize =checkGradients
+	regr.BeforeMinimize = checkGradients
 	// we create an instance of our Classifier and fit the data.
 	regr.Fit(variables, observed)
 	Ypred := mat.NewDense(numOfSamples, 1, nil)
@@ -507,14 +507,12 @@ func svrChecking(dataPoints []models.DataPoint) (map[string]interface{}, error) 
 	observed := mat.NewDense(numOfSamples, 1, nil)          // Y - вектор (numOfSamples × 1)
 	variables := mat.NewDense(numOfSamples, numOfVars, nil) // X - матрица (numOfSamples × numOfVars)
 
-
 	for i, dp := range dataPoints {
 		for j, val := range dp.Variables {
 			variables.Set(i, j, val)
 		}
 		observed.Set(i, 0, dp.Observed)
 	}
-
 
 	randomState := base.NewLockedSource(7)
 	xscaler := preprocessing.NewMinMaxScaler([]float64{-1, 1})

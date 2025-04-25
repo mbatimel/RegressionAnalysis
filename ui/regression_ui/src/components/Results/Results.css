@@ -7,6 +7,24 @@
   transition: background-color 0.3s ease;
   border: 1px solid #2c2c3e;
 }
+.results-container {
+  transition: all 0.3s ease;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  padding: 1rem;
+  background-color: #1e1e2f;
+  color: white;
+}
+
+/* Когда карточка развернута — растягивается на всю ширину */
+.results-container.expanded {
+  grid-column: 1 / -1;
+}
+
+/* Когда карточка свернута — остаётся внутри сетки */
+.results-container.collapsed {
+  /* Ничего не нужно — просто остаётся в сетке */
+}
 
 .result-summary {
   padding: 16px;

@@ -154,40 +154,43 @@ function App() {
   headers={headers} 
 />
 
-{responseMLRCSVData &&
-  Object.keys(responseMLRCSVData.data || {})
-    .filter(method => !['datapoints', 'graphics'].includes(method))
-    .filter(key => !['coeff', 'data', 'datapoints', 'graphics', 'names'].includes(key))
-    .map((method) => (
-      <Results
-        key={method}
-        title={`Анализ через ${method} регрессию`}
-        data={responseMLRCSVData.data[method]}
-        datapoints={responseMLRCSVData?.data?.datapoints}
-        headers={responseMLRCSVData?.data?.names}
-        recommended={bestMethod === method}
-      />
-    ))
-}
+{(responseMLRCSVData || responseMLRData) && (
+  <div className="results-grid">
+    {responseMLRCSVData &&
+      Object.keys(responseMLRCSVData.data || {})
+        .filter(method => !['datapoints', 'graphics', 'coeff', 'data', 'names'].includes(method))
+        .map((method) => (
+          <Results
+            key={method}
+            title={`Анализ через ${method} регрессию`}
+            data={responseMLRCSVData.data[method]}
+            datapoints={responseMLRCSVData?.data?.datapoints}
+            headers={responseMLRCSVData?.data?.names}
+            recommended={bestMethod === method}
+          />
+        ))
+    }
 
-{responseMLRData &&
-  Object.keys(responseMLRData.data || {})
-    .filter(method => !['datapoints', 'graphics'].includes(method))
-    .filter(key => !['coeff', 'data', 'datapoints', 'graphics', 'names'].includes(key))
-    .map((method) => {
-      const { graphics, datapoints: _, ...filteredData } = responseMLRData.data[method] || {};
-      return (
-        <Results
-          key={method}
-          title={`Анализ через ${method} регрессию`}
-          data={{ ...filteredData, graphics }}
-          datapoints={responseMLRData?.data?.datapoints}
-          headers={responseMLRCSVData?.data?.names}
-          recommended={bestMethod === method}
-        />
-      );
-    })
-}
+    {responseMLRData &&
+      Object.keys(responseMLRData.data || {})
+        .filter(method => !['datapoints', 'graphics', 'coeff', 'data', 'names'].includes(method))
+        .map((method) => {
+          const { graphics, datapoints: _, ...filteredData } = responseMLRData.data[method] || {};
+          return (
+            <Results
+              key={method}
+              title={`Анализ через ${method} регрессию`}
+              data={{ ...filteredData, graphics }}
+              datapoints={responseMLRData?.data?.datapoints}
+              headers={responseMLRCSVData?.data?.names}
+              recommended={bestMethod === method}
+            />
+          );
+        })
+    }
+  </div>
+)}
+
 
       <h2>📜 Документация по методам регрессии</h2>
       <div>

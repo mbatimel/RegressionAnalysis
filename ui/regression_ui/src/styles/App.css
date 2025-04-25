@@ -32,3 +32,9 @@ input[type="number"], input[type="text"] {
 label {
   margin-right: 10px;
 }
+.results-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 20px;
+  margin-top: 2rem;
+}

@@ -7,7 +7,7 @@ const Results = ({ title, data, datapoints = [], headers = [], recommended = fal
   const { bestErr, graphics, ...restData } = data;
 
   return (
-    <div className={`results-container ${recommended ? "recommended" : ""}`}>
+    <div className={`results-container ${expanded ? "expanded" : "collapsed"} ${recommended ? "recommended" : ""}`}>
       <div className="result-summary" onClick={() => setExpanded(!expanded)}>
         <div className="summary-header">
           <h3>{title}</h3>
