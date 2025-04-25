@@ -8,7 +8,7 @@ const Documentation = ({ selectedMethod }) => {
 
   return (
     <div className="documentation-box">
-      <h3>📖 {doc.title}</h3>
+      <h3>{doc.title}</h3>
       <pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit' }}>
         {doc.content}
       </pre>

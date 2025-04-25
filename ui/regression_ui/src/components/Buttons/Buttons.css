@@ -25,8 +25,39 @@
   .MLRButton:hover, .UploadButton:hover {
     transform: scale(1.05);
   }
+  .MLRButton:active,
+.UploadButton:active,
+.custom-file-label:active {
+    transform: scale(0.95);
+    box-shadow: 0 0 8px rgba(85, 217, 198, 0.3);
+}
+
   
-  .file-input {
+  .custom-file-label {
+    padding: 8px 16px;
+    background: linear-gradient(90deg, #55D9C6 0%, #331E15 100%);
     color: white;
+    font-weight: 500;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: 0px 0px 12px rgba(181, 217, 130, 0.2);
+    transition: all 0.3s ease;
+  }
+  
+  .custom-file-label:hover {
+    transform: scale(1.05);
+  }
+  
+  .file-input-hidden {
+    display: none;
+  }
+  
+  .file-name {
+    color: #ccc;
+    font-size: 0.9rem;
+    max-width: 200px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
   }
   

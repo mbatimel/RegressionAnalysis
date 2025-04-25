@@ -9,15 +9,18 @@ import Buttons from './components/Buttons/Buttons';
 import Results from "./components/Results/Results";
 
 
+
 function App() {
   const [responseMLRData, setMLRData] = useState(null);
   const [file, setFile] = useState(null);
   const [responseMLRCSVData, setMLRCSVData] = useState(null);
-  const [selectedMethod, setSelectedMethod] = useState("MLR");
+  const [selectedMethod, setSelectedMethod] = useState("Nil");
   const [tableData, setTableData] = useState([]);
   const [headers, setHeaders] = useState([]);
   const [rows, setRows] = useState(1);
   const [cols, setCols] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+
 
 
   const handleMethodChange = (e) => {
@@ -33,44 +36,47 @@ function App() {
       alert("Выберите файл перед отправкой");
       return;
     }
+  
+    setIsLoading(true);
     setTableData([]);
     setHeaders([]);
+  
     const formData = new FormData();
     formData.append("file", file);
-    
+  
     let url = "/api/v1/mlrCSV";
     if (file.name.endsWith(".xlsx") || file.name.endsWith(".xls")) {
       url = "/api/v1/mlrExcel";
     }
-
+  
     try {
       const response = await fetch(url, {
         method: "POST",
         body: formData,
       });
-
-      if (!response.ok) {
-        throw new Error("Ошибка загрузки файла");
-      }
-
+  
+      if (!response.ok) throw new Error("Ошибка загрузки файла");
+  
       const data = await response.json();
-      if (url.includes("mlrCSV")) {
-        setMLRCSVData(data);
-      } else {
-        setMLRCSVData(data);
-      }
+      setMLRCSVData(data);
       console.log(data);
     } catch (error) {
       console.error("Ошибка:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
+  
 
   const MLR = async () => {
     if (!headers.length || !tableData.length) {
       alert("Введите данные в таблицу перед отправкой запроса");
       return;
     }
+  
+    setIsLoading(true);
     setMLRCSVData(null);
+  
     const requestData = {
       observer: "Y",
       vars: Array.from({ length: cols - 1 }, (_, i) => `X${i + 1}`),
@@ -79,7 +85,7 @@ function App() {
         vares: row.slice(1).map(Number),
       })),
     };
-
+  
     try {
       const response = await fetch("/api/v1/mlr", {
         method: "POST",
@@ -88,18 +94,19 @@ function App() {
         },
         body: JSON.stringify(requestData),
       });
-
-      if (!response.ok) {
-        throw new Error("Request failed");
-      }
-
+  
+      if (!response.ok) throw new Error("Request failed");
+  
       const data = await response.json();
       setMLRData(data);
       console.log(data);
     } catch (error) {
       console.error("Error:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
+  
   const getRecommendedMethod = (data) => {
     const metrics = Object.entries(data)
       .filter(([method]) => !['datapoints', 'graphics'].includes(method))
@@ -146,13 +153,21 @@ function App() {
       <Tables tableData={tableData} setTableData={setTableData} headers={headers} setHeaders={setHeaders} rows={rows} setRows={setRows} cols={cols} setCols={setCols} />
       {/* <Graphics tableData={tableData} headers={responseMLRCSVData?.data?.names||headers} datapoints={responseMLRCSVData?.data?.datapoints || []} graphics={responseMLRCSVData?.data?.graphics || responseMLRData?.data?.graphics }/> */}
       <Buttons
-  MLR={MLR}
-  uploadFile={uploadFile}
-  handleFileChange={handleFileChange}
-  file={file}
-  responses={{ responseMLRData, responseMLRCSVData }}
-  headers={headers} 
-/>
+    MLR={MLR}
+    uploadFile={uploadFile}
+    handleFileChange={handleFileChange}
+    file={file}
+    responses={{ responseMLRData, responseMLRCSVData }}
+    headers={headers} 
+  />
+  {isLoading && (
+    <div className="loading-dots">
+      <span></span><span></span><span></span>
+      <p>Моделируем эксперименты и определяем метрики...</p>
+    </div>
+  )}
+
+
 
 {(responseMLRCSVData || responseMLRData) && (
   <div className="results-grid">
@@ -194,9 +209,9 @@ function App() {
 
       <h2>📜 Документация по методам регрессии</h2>
       <div>
-        <label>Выберите метод регрессии: </label>
-        <select value={selectedMethod} onChange={handleMethodChange}>
-          <option value="MLR">MLR (Multiple Linear Regression)</option>
+        <select className="select-method" value={selectedMethod} onChange={handleMethodChange}>
+          <option  value="nil">Выбор метода регрессии</option>
+          <option  value="MLR">MLR (Multiple Linear Regression)</option>
           <option value="Ridge">Ridge Regression</option>
           <option value="Lasso">Lasso Regression</option>
           <option value="ElasticNet">Elastic Net Regression</option>
