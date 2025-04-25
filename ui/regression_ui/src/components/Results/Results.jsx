@@ -6,6 +6,28 @@ const Results = ({ title, data, datapoints = [], headers = [], recommended = fal
   const [expanded, setExpanded] = useState(false);
   const { bestErr, graphics, ...restData } = data;
 
+  // Функция для преобразования данных графиков в табличный формат
+  const prepareGraphicsTables = (graphics) => {
+    if (!graphics) return [];
+    
+    return Object.entries(graphics).map(([index, graphData]) => {
+      // Преобразуем объект графика в массив точек {x, y}
+      const tableData = Object.entries(graphData).map(([y, x]) => ({
+        x: parseFloat(x),
+        y: parseFloat(y)
+      }));
+      
+      return {
+        id: `graph-${index}`,
+        tableData,
+        graphData, // сохраняем оригинальные данные для графика
+        title: `График ${parseInt(index) + 1}`
+      };
+    });
+  };
+
+  const graphicsTables = prepareGraphicsTables(graphics);
+
   return (
     <div className={`results-container ${expanded ? "expanded" : "collapsed"} ${recommended ? "recommended" : ""}`}>
       <div className="result-summary" onClick={() => setExpanded(!expanded)}>
@@ -35,9 +57,43 @@ const Results = ({ title, data, datapoints = [], headers = [], recommended = fal
               {typeof value === "object" ? JSON.stringify(value, null, 2) : value}
             </div>
           ))}
-          {graphics && (
-            <div className="result-graph">
-              <Graphics graphics={graphics} datapoints={datapoints} headers={headers} />
+          
+          {graphicsTables.length > 0 && (
+            <div className="graphics-section">
+              {graphicsTables.map((graph) => (
+                <div key={graph.id} className="graph-container">
+                  <h4>{graph.title}</h4>
+                  
+                  {/* Таблица данных X и Y */}
+                  <div className="data-table-container">
+                    <table className="data-table">
+                      <thead>
+                        <tr>
+                          <th>X (значение)</th>
+                          <th>Y (предсказание)</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {graph.tableData.map((point, idx) => (
+                          <tr key={idx}>
+                            <td>{point.x.toFixed(4)}</td>
+                            <td>{point.y.toFixed(4)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              ))}
+              {expanded && (
+                  <div className="results-content">
+                    {graphics && (
+                      <div className="result-graph">
+                        <Graphics graphics={graphics} datapoints={datapoints} headers={headers} />
+                      </div>
+                    )}
+                  </div>
+                )}
             </div>
           )}
         </div>
@@ -47,3 +103,4 @@ const Results = ({ title, data, datapoints = [], headers = [], recommended = fal
 };
 
 export default Results;
+

@@ -7,6 +7,7 @@
   transition: background-color 0.3s ease;
   border: 1px solid #2c2c3e;
 }
+
 .results-container {
   transition: all 0.3s ease;
   border-radius: 12px;
@@ -16,14 +17,8 @@
   color: white;
 }
 
-/* Когда карточка развернута — растягивается на всю ширину */
 .results-container.expanded {
   grid-column: 1 / -1;
-}
-
-/* Когда карточка свернута — остаётся внутри сетки */
-.results-container.collapsed {
-  /* Ничего не нужно — просто остаётся в сетке */
 }
 
 .result-summary {
@@ -86,6 +81,58 @@
 
 .result-item:last-child {
   border-bottom: none;
+}
+
+/* Стили для таблиц и графиков */
+.graphics-section {
+  margin-top: 20px;
+}
+
+.graph-container {
+  margin-bottom: 30px;
+  background: #232336;
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid #2c2c3e;
+}
+
+.graph-container h4 {
+  margin-top: 0;
+  color: #ffffff;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #2c2c3e;
+}
+
+.data-table-container {
+  margin-bottom: 15px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 10px;
+}
+
+.data-table th, .data-table td {
+  padding: 8px 12px;
+  text-align: left;
+  border: 1px solid #2c2c3e;
+}
+
+.data-table th {
+  background-color: #2a2a40;
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.data-table tr:nth-child(even) {
+  background-color: #252538;
+}
+
+.data-table tr:hover {
+  background-color: #2a2a40;
 }
 
 .result-graph {
