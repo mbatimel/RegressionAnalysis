@@ -141,3 +141,41 @@
   padding: 12px;
   border-radius: 8px;
 }
+.graphics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 таблицы в ряд */
+  gap: 20px; /* Отступ между таблицами */
+  margin-top: 20px;
+}
+
+.graph-container {
+  background: #1e1e1e;
+  padding: 15px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.data-table-container {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th, .data-table td {
+  border: 1px solid #555;
+  padding: 8px;
+  text-align: center;
+}
+
+.data-table th {
+  background-color: #333;
+  color: #fff;
+}
+
+.data-table td {
+  background-color: #222;
+  color: #ddd;
+}

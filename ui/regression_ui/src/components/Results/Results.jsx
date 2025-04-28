@@ -59,43 +59,44 @@ const Results = ({ title, data, datapoints = [], headers = [], recommended = fal
           ))}
           
           {graphicsTables.length > 0 && (
-            <div className="graphics-section">
-              {graphicsTables.map((graph) => (
-                <div key={graph.id} className="graph-container">
-                  <h4>{graph.title}</h4>
-                  
-                  {/* Таблица данных X и Y */}
-                  <div className="data-table-container">
-                    <table className="data-table">
-                      <thead>
-                        <tr>
-                          <th>X (значение)</th>
-                          <th>Y (предсказание)</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {graph.tableData.map((point, idx) => (
-                          <tr key={idx}>
-                            <td>{point.x.toFixed(4)}</td>
-                            <td>{point.y.toFixed(4)}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              ))}
-              {expanded && (
-                  <div className="results-content">
-                    {graphics && (
-                      <div className="result-graph">
-                        <Graphics graphics={graphics} datapoints={datapoints} headers={headers} />
-                      </div>
-                    )}
-                  </div>
-                )}
-            </div>
-          )}
+  <div className="graphics-section">
+    <div className="graphics-grid">
+      {graphicsTables.map((graph) => (
+        <div key={graph.id} className="graph-container">
+          <h4>{graph.title}</h4>
+
+          {/* Таблица данных X и Y */}
+          <div className="data-table-container">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>X (значение)</th>
+                  <th>Y (предсказание)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {graph.tableData.map((point, idx) => (
+                  <tr key={idx}>
+                    <td>{point.x.toFixed(4)}</td>
+                    <td>{point.y.toFixed(4)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    {/* Здесь график после таблиц */}
+    {expanded && graphics && (
+      <div className="result-graph">
+        <Graphics graphics={graphics} datapoints={datapoints} headers={headers} />
+      </div>
+    )}
+  </div>
+)}
+
         </div>
       )}
     </div>

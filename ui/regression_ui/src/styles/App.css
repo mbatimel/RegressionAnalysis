@@ -78,3 +78,19 @@ label {
   border-radius: 8px;
   overflow: hidden;
 }
+/* В App.css или Buttons.css */
+.highlight-best-button {
+  margin-bottom: 15px;
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  font-weight: bold;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.highlight-best-button:hover {
+  background-color: #0056b3;
+}

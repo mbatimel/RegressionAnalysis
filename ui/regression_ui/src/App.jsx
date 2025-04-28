@@ -20,6 +20,7 @@ function App() {
   const [rows, setRows] = useState(1);
   const [cols, setCols] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [highlightBestMethod, setHighlightBestMethod] = useState(false);
 
 
 
@@ -167,6 +168,20 @@ function App() {
     </div>
   )}
 
+{(responseMLRCSVData || responseMLRData) && (
+  <>
+    <h2>Выберите метод регрессии:</h2>
+    <button 
+      className="highlight-best-button" 
+      onClick={() => setHighlightBestMethod(true)}
+    >
+      Показать лучший метод
+    </button>
+    <div className="results-grid">
+      { /* Здесь твои результаты */ }
+    </div>
+  </>
+)}
 
 
 {(responseMLRCSVData || responseMLRData) && (
@@ -181,7 +196,7 @@ function App() {
             data={responseMLRCSVData.data[method]}
             datapoints={responseMLRCSVData?.data?.datapoints}
             headers={responseMLRCSVData?.data?.names}
-            recommended={bestMethod === method}
+            recommended={highlightBestMethod && bestMethod === method}
           />
         ))
     }
@@ -198,7 +213,7 @@ function App() {
               data={{ ...filteredData, graphics }}
               datapoints={responseMLRData?.data?.datapoints}
               headers={responseMLRCSVData?.data?.names}
-              recommended={bestMethod === method}
+              recommended={highlightBestMethod && bestMethod === method}
             />
           );
         })
