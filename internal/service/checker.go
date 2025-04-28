@@ -40,6 +40,27 @@ func makeGraphicsForSVR(datapoints []models.DataPoint, Ypred *mat.Dense) map[int
 
 	return res
 }
+func makeGraphicsForPoly(datapoints []models.DataPoint, CoeffMatrics []blas64.General, Ypred *mat.Dense) map[int]map[string]float64 {
+	res := make(map[int]map[string]float64)
+
+	_ = denseToSlice(Ypred)
+	coeffMat := mat.NewDense(CoeffMatrics[0].Rows, CoeffMatrics[0].Cols, CoeffMatrics[0].Data)
+	coeffs := denseToSlice(coeffMat)
+
+	for i := 0; i < len(datapoints[0].Variables); i++ {
+		xyPlot := make(map[string]float64)
+		for j := 0; j < len(datapoints); j++ {
+			if i >= len(datapoints[j].Variables) {
+				continue // избегаем выхода за границы
+			}
+			x := datapoints[j].Variables[i]
+			y := x * coeffs[i]
+			xyPlot[fmt.Sprintf("%f", y)] = x
+		}
+		res[i] = xyPlot
+	}
+	return res
+}
 
 // func makeGraphics(r *linearmodel.Regression) map[int]map[string]float64 {
 // 	res := make(map[int]map[string]float64)
@@ -62,10 +83,9 @@ func makeGraphicsForSVR(datapoints []models.DataPoint, Ypred *mat.Dense) map[int
 func makeGraphicsFoBlas64(datapoints []models.DataPoint, matrixCoeff blas64.General, YPred *mat.Dense) map[int]map[string]float64 {
 	res := make(map[int]map[string]float64)
 
-	// Конвертируем blas64.General в *mat.Dense для удобства работы
+	_ = denseToSlice(YPred)
 	coeffMat := mat.NewDense(matrixCoeff.Rows, matrixCoeff.Cols, matrixCoeff.Data)
-	_ = denseToSlice(coeffMat)
-	yPred := denseToSlice(YPred)
+	coeffs := denseToSlice(coeffMat)
 
 	for i := 0; i < len(datapoints[0].Variables); i++ {
 		xyPlot := make(map[string]float64)
@@ -74,7 +94,8 @@ func makeGraphicsFoBlas64(datapoints []models.DataPoint, matrixCoeff blas64.Gene
 				continue // избегаем выхода за границы
 			}
 			x := datapoints[j].Variables[i]
-			xyPlot[fmt.Sprintf("%f", yPred[j])] = x
+			y := x * coeffs[i]
+			xyPlot[fmt.Sprintf("%f", y)] = x
 		}
 		res[i] = xyPlot
 	}
@@ -82,45 +103,58 @@ func makeGraphicsFoBlas64(datapoints []models.DataPoint, matrixCoeff blas64.Gene
 }
 func makeGraphicsForOtherMethod(datapoints []models.DataPoint, matrixCoeff *mat.Dense, YPred *mat.Dense) map[int]map[string]float64 {
 	res := make(map[int]map[string]float64)
-	yPred := denseToSlice(YPred)
-
+	_ = denseToSlice(YPred)
+	coeffMat := mat.NewDense(matrixCoeff.RawMatrix().Rows, matrixCoeff.RawMatrix().Cols, matrixCoeff.RawMatrix().Data)
+	coeffs := denseToSlice(coeffMat)
 	for i := 0; i < len(datapoints[0].Variables); i++ {
-		var (
-			xMin, xMax float64
-			yMin, yMax float64
-			first      = true
-		)
-
+		xyPlot := make(map[string]float64)
 		for j := 0; j < len(datapoints); j++ {
 			if i >= len(datapoints[j].Variables) {
-				continue
+				continue // избегаем выхода за границы
 			}
 			x := datapoints[j].Variables[i]
-			y := yPred[j]
-
-			if first {
-				xMin, xMax = x, x
-				yMin, yMax = y, y
-				first = false
-			} else {
-				if x < xMin {
-					xMin = x
-					yMin = y
-				}
-				if x > xMax {
-					xMax = x
-					yMax = y
-				}
-			}
+			y := x * coeffs[i]
+			xyPlot[fmt.Sprintf("%f", y)] = x
 		}
-
-		// Сохраняем только две точки: начальную и конечную
-		xyPlot := make(map[string]float64)
-		xyPlot[fmt.Sprintf("%f", yMin)] = xMin
-		xyPlot[fmt.Sprintf("%f", yMax)] = xMax
-
 		res[i] = xyPlot
 	}
+	// for i := 0; i < len(datapoints[0].Variables); i++ {
+	// 	var (
+	// 		xMin, xMax float64
+	// 		yMin, yMax float64
+	// 		first      = true
+	// 	)
+
+	// 	for j := 0; j < len(datapoints); j++ {
+	// 		if i >= len(datapoints[j].Variables) {
+	// 			continue
+	// 		}
+	// 		x := datapoints[j].Variables[i]
+	// 		y := x * coeffs[i]
+
+	// 		if first {
+	// 			xMin, xMax = x, x
+	// 			yMin, yMax = y, y
+	// 			first = false
+	// 		} else {
+	// 			if x < xMin {
+	// 				xMin = x
+	// 				yMin = y
+	// 			}
+	// 			if x > xMax {
+	// 				xMax = x
+	// 				yMax = y
+	// 			}
+	// 		}
+	// 	}
+
+	// 	// Сохраняем только две точки: начальную и конечную
+	// 	xyPlot := make(map[string]float64)
+	// 	xyPlot[fmt.Sprintf("%f", yMin)] = xMin
+	// 	xyPlot[fmt.Sprintf("%f", yMax)] = xMax
+
+	// 	res[i] = xyPlot
+	// }
 
 	return res
 }
@@ -135,6 +169,7 @@ func denseToSlice(d *mat.Dense) []float64 {
 	}
 	return data
 }
+
 func ridgeChecking(dataPoints []models.DataPoint) (map[string]interface{}, error) {
 	numOfSamples := len(dataPoints)
 	numOfVars := len(dataPoints[0].Variables)
@@ -430,6 +465,7 @@ func elasticChecking(dataPoints []models.DataPoint, l1Ratio float64) (map[string
 
 	return res, nil
 }
+
 func logisticChecking(dataPoints []models.DataPoint) (map[string]interface{}, error) {
 	numOfSamples := len(dataPoints)
 	if numOfSamples == 0 {
@@ -498,14 +534,25 @@ func logisticChecking(dataPoints []models.DataPoint) (map[string]interface{}, er
 
 	return res, nil
 }
+
 func svrChecking(dataPoints []models.DataPoint) (map[string]interface{}, error) {
-	var res map[string]interface{}
+	var bestRes map[string]interface{}
+	bestScore := struct {
+		R2  float64
+		MSE float64
+		MAE float64
+	}{
+		R2:  math.Inf(-1), // Самое маленькое значение для начала
+		MSE: math.Inf(1),  // Самое большое значение для начала
+		MAE: math.Inf(1),
+	}
+
 	numOfSamples := len(dataPoints)
 	numOfVars := len(dataPoints[0].Variables)
 
 	// Создаем матрицы X (variables) и Y (observed)
-	observed := mat.NewDense(numOfSamples, 1, nil)          // Y - вектор (numOfSamples × 1)
-	variables := mat.NewDense(numOfSamples, numOfVars, nil) // X - матрица (numOfSamples × numOfVars)
+	observed := mat.NewDense(numOfSamples, 1, nil)
+	variables := mat.NewDense(numOfSamples, numOfVars, nil)
 
 	for i, dp := range dataPoints {
 		for j, val := range dp.Variables {
@@ -520,24 +567,19 @@ func svrChecking(dataPoints []models.DataPoint) (map[string]interface{}, error) 
 	Xsc, _ := xscaler.FitTransform(variables, nil)
 	Ysc, _ := yscaler.FitTransform(observed, nil)
 	Epsilon := 0.1 * yscaler.Scale.At(0, 0)
-	Ypred := map[string]*mat.Dense{}
-	// Определяем параметры для каждого типа ядра
+
 	kernelOptions := []struct {
 		kernel                  string
 		C, gamma, coef0, degree float64
 	}{
-		// {kernel: "rbf", C: 1e3, gamma: 0.1,coef0: 200, degree: 2},
-		{kernel: "sigmoid", C: 1e3, gamma: 0.1},
-		// {kernel: "poly", C: 1e3, gamma: 1, coef0: 200, degree: 2},
-		// {kernel: "linear", C: 1e3},
+		{kernel: "linear", C: 1e3},
+		{kernel: "rbf", C: 1e3, gamma: 0.1},
+		{kernel: "poly", C: 1e3, gamma: 1, coef0: 200, degree: 2},
 	}
 
-	// Перебираем все варианты ядер
 	for _, opt := range kernelOptions {
+		Ypred := &mat.Dense{}
 
-		Ypred[opt.kernel] = &mat.Dense{}
-
-		// Настраиваем SVR
 		svr := svm.NewSVR()
 		svr.Kernel = opt.kernel
 		svr.C = opt.C
@@ -549,39 +591,47 @@ func svrChecking(dataPoints []models.DataPoint) (map[string]interface{}, error) 
 		svr.Tol = math.Sqrt(Epsilon)
 		svr.MaxIter = 5
 
-		// Обучаем модель и делаем предсказания
 		svr.Fit(Xsc, Ysc)
-		svr.Predict(Xsc, Ypred[opt.kernel])
+		svr.Predict(Xsc, Ypred)
 
-		// Обратное преобразование масштабирования
-		Ypred[opt.kernel], _ = yscaler.InverseTransform(Ypred[opt.kernel], nil)
-		bestErr := make(map[string]float)
-		r2score := metrics.R2Score(observed, Ypred[opt.kernel], nil, "").At(0, 0)
-		tmpScore, ok := bestErr["R2"]
-		if !ok || r2score > tmpScore {
-			bestErr["R2"] = r2score
-		}
-		mse := metrics.MeanSquaredError(observed, Ypred[opt.kernel], nil, "").At(0, 0)
-		tmpScore, ok = bestErr["MSE"]
-		if !ok || mse < tmpScore {
-			bestErr["MSE"] = mse
-		}
-		mae := metrics.MeanAbsoluteError(observed, Ypred[opt.kernel], nil, "").At(0, 0)
-		tmpScore, ok = bestErr["MAE"]
-		if !ok || mae < tmpScore {
-			bestErr["MAE"] = mae
+		Ypred, _ = yscaler.InverseTransform(Ypred, nil)
 
-		}
-		res = map[string]interface{}{
-			"svr YPred " + opt.kernel: fmt.Sprintf("%.2f\n", mat.Formatted(Ypred[opt.kernel])),
-			"graphics":                makeGraphicsForSVR(dataPoints, Ypred[opt.kernel]),
-			"bestErr":                 bestErr,
+		// Метрики
+		r2score := metrics.R2Score(observed, Ypred, nil, "").At(0, 0)
+		mse := metrics.MeanSquaredError(observed, Ypred, nil, "").At(0, 0)
+		mae := metrics.MeanAbsoluteError(observed, Ypred, nil, "").At(0, 0)
+
+		// Сравниваем с текущими лучшими
+		isBetter := false
+		if r2score > bestScore.R2 { // максимизируем R2
+			isBetter = true
+		} else if math.Abs(r2score-bestScore.R2) < 1e-3 { // если R2 примерно одинаковый, то минимизируем ошибки
+			if mse < bestScore.MSE || mae < bestScore.MAE {
+				isBetter = true
+			}
 		}
 
+		if isBetter {
+			bestScore.R2 = r2score
+			bestScore.MSE = mse
+			bestScore.MAE = mae
+
+			bestRes = map[string]interface{}{
+				"svr YPred " + opt.kernel: fmt.Sprintf("%.2f\n", mat.Formatted(Ypred)),
+				"graphics":                makeGraphicsForSVR(dataPoints, Ypred),
+				"bestErr": map[string]float64{
+					"R2":  r2score,
+					"MSE": mse,
+					"MAE": mae,
+				},
+				"kernel": svr.Kernel,
+			}
+		}
 	}
 
-	return res, nil
+	return bestRes, nil
 }
+
 func polynomialChecking(dataPoints []models.DataPoint, degree int) (map[string]interface{}, error) {
 	numOfSamples := len(dataPoints)
 	if numOfSamples == 0 {
@@ -611,7 +661,7 @@ func polynomialChecking(dataPoints []models.DataPoint, degree int) (map[string]i
 	}
 	buf := []byte(`{"activation": "tanh", "alpha": 0.0001, "batch_size": "auto", "beta_1": 0.9, "beta_2": 0.999, "early_stopping": false, "epsilon": 1e-08, "hidden_layer_sizes": [], "learning_rate": "constant", "learning_rate_init": 0.001, "max_iter": 400, "momentum": 0.9, "n_iter_no_change": 10, "nesterovs_momentum": true, "power_t": 0.5, "random_state": 7, "shuffle": true, "solver": "adam", "tol": 0.0001, "validation_fraction": 0.1, "verbose": false, "warm_start": false, "out_activation_": "tanh", "intercepts_": [[0.5082271055138958]], "coefs_": [[[-0.18963335144967644], [0.2744326667319166], [-0.0068960058868800505], [-0.1870170339590578], [0.33640123639043934], [0.14343164310877599], [-0.2840940844068544], [-0.06035740527894848], [-0.015548157556294752], [-0.09766841821748058], [-0.13516966516561582], [0.01180873002271984], [-0.37004002347719184], [-0.3146740174229507], [-0.010236340304847167], [0.034725564039145625], [0.07596312959511524], [0.07031424991074327], [0.03226286238715042], [-0.11777688776136522], [-0.0862585580460505], [0.046039278168215306], [-0.32297687193126345], [0.004283074654547827], [0.013040383833634088], [-0.047491825368820184], [-0.12259098577236986]]]}`)
 	mlp := neuralnetwork.NewMLPClassifier([]int{}, "", "", 0)
-	mlp.RandomState = base.NewLockedSource(1)
+	mlp.RandomState = base.NewLockedSource(2)
 	err := mlp.Unmarshal(buf)
 	if err != nil {
 		return nil, fmt.Errorf("Error with unmarshal byte data")
@@ -622,7 +672,7 @@ func polynomialChecking(dataPoints []models.DataPoint, degree int) (map[string]i
 	mlp.LearningRateInit = .11
 	mlp.BatchSize = 118 //1,2,59,118
 	mlp.BeforeMinimize = checkGradients
-	poly := preprocessing.NewPolynomialFeatures(degree)
+	poly := preprocessing.NewPolynomialFeatures(3)
 	poly.IncludeBias = false
 	poly.Fit(variables, observed)
 	variables, _ = poly.FitTransform(variables, nil)
@@ -650,8 +700,9 @@ func polynomialChecking(dataPoints []models.DataPoint, degree int) (map[string]i
 
 	// Возвращаем результаты
 	res := map[string]interface{}{
-		"graphics":      makeGraphicsForSVR(dataPoints, Ypred),
+		"graphics":      makeGraphicsForPoly(dataPoints, mlp.Coefs,  Ypred),
 		"poly Ypred":    fmt.Sprintf("%.2f\n", mat.Formatted(Ypred)),
+		"Coeffs":    		mlp.Coefs,
 		"poly accuracy": metrics.AccuracyScore(observed, Ypred, true, nil),
 		"bestErr":       bestErr,
 	}

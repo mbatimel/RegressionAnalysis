@@ -73,9 +73,9 @@ func main() {
 		defer wg.Done()
 		serveErr := server.ListenAndServe(config.Values().ServiceBind)
 		if serveErr != nil {
-			log.Fatal().Err(serveErr).Msg("failed to listen and serve pay-api-internal server")
+			log.Fatal().Err(serveErr).Msg("failed to listen and serve regression server")
 		} else {
-			log.Error().Msg("external api pay-api-internal server stopped with no error")
+			log.Error().Msg("external api regression server stopped with no error")
 		}
 	}()
 

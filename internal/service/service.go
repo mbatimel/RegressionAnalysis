@@ -39,36 +39,42 @@ func (rs *regressionService) MlrRegression(ctx context.Context, observer string,
 	rs.logger.Info().Msg("Starting checking on classifier ridge")
 	ridgeCheck, err := ridgeChecking(dataPoints)
 	if err != nil {
-		return nil, fmt.Errorf("Ridge checking is dead")
+		ridgeCheck = nil
+		rs.logger.Error().Msg("Ridge checking is dead")
 	}
 	rs.logger.Info().Msg("Starting checking on classifier lasso")
 	lassoCheck, err := lassoChecking(dataPoints)
 	if err != nil {
-		return nil, fmt.Errorf("lasso checking is dead")
+		lassoCheck = nil
+		rs.logger.Error().Msg("lasso checking is dead")
 	}
 
 	rs.logger.Info().Msg("Starting checking on classifier elastic")
 	elasticCheck, err := elasticChecking(dataPoints, 1000)
 	if err != nil {
-		return nil, fmt.Errorf("elastic checking is dead")
+		elasticCheck = nil
+		rs.logger.Error().Msg("elastic checking is dead")
 	}
 
 	rs.logger.Info().Msg("Starting checking on classifier logistic")
 	logisticCheck, err := logisticChecking(dataPoints)
 	if err != nil {
-		return nil, fmt.Errorf("Ridge checking is dead")
+		logisticCheck = nil
+		rs.logger.Error().Msg("Ridge checking is dead")
 	}
 
 	rs.logger.Info().Msg("Starting checking on classifier SVR")
 	svrCheck, err := svrChecking(dataPoints)
 	if err != nil {
-		return nil, fmt.Errorf("SRV checking is dead")
+		svrCheck = nil
+		rs.logger.Error().Err(err).Msg("SRV checking is dead")
 	}
 
 	rs.logger.Info().Msg("Starting checking on classifier polynomial")
 	polynomialCheck, err := polynomialChecking(dataPoints, 3)
 	if err != nil {
-		return nil, fmt.Errorf("Polynomial checking is dead")
+		polynomialCheck = nil
+		rs.logger.Error().Msg("Polynomial checking is dead")
 	}
 
 	res := map[string]interface{}{

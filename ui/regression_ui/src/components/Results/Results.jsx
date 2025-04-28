@@ -87,8 +87,6 @@ const Results = ({ title, data, datapoints = [], headers = [], recommended = fal
         </div>
       ))}
     </div>
-
-    {/* Здесь график после таблиц */}
     {expanded && graphics && (
       <div className="result-graph">
         <Graphics graphics={graphics} datapoints={datapoints} headers={headers} />
