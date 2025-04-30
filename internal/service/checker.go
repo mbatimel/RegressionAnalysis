@@ -701,7 +701,7 @@ func polynomialChecking(dataPoints []models.DataPoint) (map[string]interface{}, 
 			fd.Gradient(gradFromFD, problem.Func, initX, settings)
 		}
 
-		buf := []byte(`{"activation": "tanh", "alpha": 0.0001, "batch_size": "auto", "beta_1": 0.9, "beta_2": 0.999, "early_stopping": false, "epsilon": 1e-08, "hidden_layer_sizes": [], "learning_rate": "constant", "learning_rate_init": 0.001, "max_iter": 400, "momentum": 0.9, "n_iter_no_change": 10, "nesterovs_momentum": true, "power_t": 0.5, "random_state": 7, "shuffle": true, "solver": "adam", "tol": 0.0001, "validation_fraction": 0.1, "verbose": false, "warm_start": false, "out_activation_": "tanh", "intercepts_": [[0.5082271055138958]], "coefs_": [[[-0.18963335144967644], [0.2744326667319166], [-0.0068960058868800505], [-0.1870170339590578], [0.33640123639043934], [0.14343164310877599], [-0.2840940844068544], [-0.06035740527894848], [-0.015548157556294752], [-0.09766841821748058], [-0.13516966516561582], [0.01180873002271984], [-0.37004002347719184], [-0.3146740174229507], [-0.010236340304847167], [0.034725564039145625], [0.07596312959511524], [0.07031424991074327], [0.03226286238715042], [-0.11777688776136522], [-0.0862585580460505], [0.046039278168215306], [-0.32297687193126345], [0.004283074654547827], [0.013040383833634088], [-0.047491825368820184], [-0.12259098577236986]]]}`)
+		buf := []byte(`{"activation": "logistic", "alpha": 0.0001, "batch_size": "auto", "beta_1": 0.9, "beta_2": 0.999, "early_stopping": false, "epsilon": 1e-08, "hidden_layer_sizes": [], "learning_rate": "constant", "learning_rate_init": 0.001, "max_iter": 400, "momentum": 0.9, "n_iter_no_change": 10, "nesterovs_momentum": true, "power_t": 0.5, "random_state": 7, "shuffle": true, "solver": "lbfgs", "tol": 0.0001, "validation_fraction": 0.1, "verbose": false, "warm_start": false, "out_activation_": "tanh", "intercepts_": [[0.5082271055138958]], "coefs_": [[[-0.18963335144967644], [0.2744326667319166], [-0.0068960058868800505], [-0.1870170339590578], [0.33640123639043934], [0.14343164310877599], [-0.2840940844068544], [-0.06035740527894848], [-0.015548157556294752], [-0.09766841821748058], [-0.13516966516561582], [0.01180873002271984], [-0.37004002347719184], [-0.3146740174229507], [-0.010236340304847167], [0.034725564039145625], [0.07596312959511524], [0.07031424991074327], [0.03226286238715042], [-0.11777688776136522], [-0.0862585580460505], [0.046039278168215306], [-0.32297687193126345], [0.004283074654547827], [0.013040383833634088], [-0.047491825368820184], [-0.12259098577236986]]]}`)
 		mlp := neuralnetwork.NewMLPClassifier([]int{}, "", "", 0)
 		mlp.RandomState = base.NewLockedSource(2)
 		err := mlp.Unmarshal(buf)
@@ -766,7 +766,6 @@ func logChecking(dataPoints []models.DataPoint) (map[string]interface{}, error) 
 	if numOfSamples == 0 {
 		return nil, fmt.Errorf("no data points provided")
 	}
-
 	numOfVars := len(dataPoints[0].Variables)
 	observed := mat.NewDense(numOfSamples, 1, nil)
 	rawVars := mat.NewDense(numOfSamples, numOfVars, nil)
@@ -801,39 +800,51 @@ func logChecking(dataPoints []models.DataPoint) (map[string]interface{}, error) 
 		}
 	}
 
-	buf := []byte(`{"activation": "tanh", "alpha": 0.0001, "batch_size": "auto", "beta_1": 0.9, "beta_2": 0.999, "early_stopping": false, "epsilon": 1e-08, "hidden_layer_sizes": [], "learning_rate": "constant", "learning_rate_init": 0.001, "max_iter": 400, "momentum": 0.9, "n_iter_no_change": 10, "nesterovs_momentum": true, "power_t": 0.5, "random_state": 7, "shuffle": true, "solver": "adam", "tol": 0.0001, "validation_fraction": 0.1, "verbose": false, "warm_start": false, "out_activation_": "tanh", "intercepts_": [[0.5082271055138958]], "coefs_": [[[-0.18963335144967644], [0.2744326667319166], [-0.0068960058868800505], [-0.1870170339590578], [0.33640123639043934], [0.14343164310877599], [-0.2840940844068544], [-0.06035740527894848], [-0.015548157556294752], [-0.09766841821748058], [-0.13516966516561582], [0.01180873002271984], [-0.37004002347719184], [-0.3146740174229507], [-0.010236340304847167], [0.034725564039145625], [0.07596312959511524], [0.07031424991074327], [0.03226286238715042], [-0.11777688776136522], [-0.0862585580460505], [0.046039278168215306], [-0.32297687193126345], [0.004283074654547827], [0.013040383833634088], [-0.047491825368820184], [-0.12259098577236986]]]}`)
-	mlp := neuralnetwork.NewMLPClassifier([]int{}, "", "", 0)
-	mlp.RandomState = base.NewLockedSource(2)
+	buf := []byte(`{"activation": "tanh", "alpha": 0.0001, "batch_size": "auto", "beta_1": 0.9, "beta_2": 0.999, "early_stopping": false, "epsilon": 1e-08, "hidden_layer_sizes": [], "learning_rate": "constant", "learning_rate_init": 0.001, "max_iter": 400, "momentum": 0.9, "n_iter_no_change": 10, "nesterovs_momentum": true, "power_t": 0.5, "random_state": 7, "shuffle": true, "solver": "sgd", "tol": 0.0001, "validation_fraction": 0.1, "verbose": false, "warm_start": false, "out_activation_": "tanh", "intercepts_": [[0.5082271055138958]], "coefs_": [[[-0.18963335144967644], [0.2744326667319166], [-0.0068960058868800505], [-0.1870170339590578], [0.33640123639043934], [0.14343164310877599], [-0.2840940844068544], [-0.06035740527894848], [-0.015548157556294752], [-0.09766841821748058], [-0.13516966516561582], [0.01180873002271984], [-0.37004002347719184], [-0.3146740174229507], [-0.010236340304847167], [0.034725564039145625], [0.07596312959511524], [0.07031424991074327], [0.03226286238715042], [-0.11777688776136522], [-0.0862585580460505], [0.046039278168215306], [-0.32297687193126345], [0.004283074654547827], [0.013040383833634088], [-0.047491825368820184], [-0.12259098577236986]]]}`)
+	mlp := neuralnetwork.NewMLPClassifier([]int{}, "", "", 0.)
+	// mlp.RandomState = base.NewLockedSource(1)
+	// mlp.Shuffle = true
+	// mlp.LearningRateInit = .02
+	// mlp.WeightDecay = .001
+	// mlp.MaxIter = 10000
+	// mlp.LossFuncName = "binary_log_loss"
 	err := mlp.Unmarshal(buf)
 	if err != nil {
 		return nil, fmt.Errorf("Error with unmarshal byte data")
 	}
-	mlp.RandomState = base.NewLockedSource(2)
-	mlp.WarmStart = false
-	mlp.Shuffle = false
-	mlp.MaxIter = 400
-	mlp.LearningRateInit = 0.11
-	mlp.BatchSize = 118
+	// mlp.RandomState = base.NewLockedSource(2)
+	// mlp.WarmStart = false
+	// mlp.LearningRateInit = 0.11
+	// mlp.BatchSize = numOfSamples + 1
 	mlp.BeforeMinimize = checkGradients
 
 	YpredLog := mat.NewDense(numOfSamples, 1, nil)
-	mlp.Fit(observed, logVars)
-
+	mlp.Fit(logVars, observed)
 	resultType := map[int]string{
 		1: "log",
 	}
 
 	mlp.Predict(logVars, YpredLog)
+
 	r2 := metrics.R2Score(observed, YpredLog, nil, "").At(0, 0)
 	mse := metrics.MeanSquaredError(observed, YpredLog, nil, "").At(0, 0)
 	mae := metrics.MeanAbsoluteError(observed, YpredLog, nil, "").At(0, 0)
-	accuracy := metrics.AccuracyScore(observed, YpredLog, true, nil)
+	// accuracy := metrics.AccuracyScore(observed, YpredLog, true, nil)
+	if math.IsInf(r2, 0) || math.IsNaN(r2) {
+		r2 = 0
+	}
+	if math.IsInf(mse, 0) || math.IsNaN(mse) {
+		mse = 0
+	}
+	if math.IsInf(mae, 0) || math.IsNaN(mae) {
+		mae = 0
+	}
 
 	res := map[string]interface{}{
-		"graphics":      makeGraphicsForPoly(dataPoints, mlp.Coefs, YpredLog),
-		"poly Ypred":    fmt.Sprintf("%.2f\n", mat.Formatted(YpredLog)),
-		"Coeffs":        mlp.Coefs,
-		"poly accuracy": accuracy,
+		"graphics":   makeGraphicsForPoly(dataPoints, mlp.Coefs, YpredLog),
+		"poly Ypred": fmt.Sprintf("%.2f\n", mat.Formatted(YpredLog)),
+		"Coeffs":     mlp.Coefs,
+		// "poly accuracy": accuracy,
 		"bestErr": map[string]float64{
 			"R2":  r2,
 			"MSE": mse,

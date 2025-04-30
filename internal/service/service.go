@@ -213,23 +213,24 @@ func (rs *regressionService) MlrRegressionCSV(ctx context.Context, file []byte) 
 		polynomialCheck = nil
 		rs.logger.Error().Msg("Polynomial checking is dead")
 	}
-	// rs.logger.Info().Msg("Starting checking on classifier logChecking")
-	// 	logChecking, err := logChecking(dataPoints)
-	// if err != nil {
-	// 	logChecking = nil
-	// 	rs.logger.Error().Msg("logChecking checking is dead")
-	// }
+	rs.logger.Info().Msg("Starting checking on classifier logChecking")
+	logChecking, err := logChecking(dataPoints)
+	if err != nil {
+		logChecking = nil
+		rs.logger.Error().Msg("logChecking checking is dead")
+	}
+	fmt.Println(logChecking)
 	res := map[string]interface{}{
-		"Ridge":      ridgeCheck,
-		"Lasso":      lassoCheck,
-		"Elastic":    elasticCheck,
-		"Logistic":   logisticCheck,
-		"SRV":        svrCheck,
-		"Polynomial": polynomialCheck,
-		// "LogChecking": logChecking,
-		"data":  r,
-		"names": r.GetNames(),
-		"coeff": r.GetCoeffs(),
+		"Ridge":       ridgeCheck,
+		"Lasso":       lassoCheck,
+		"Elastic":     elasticCheck,
+		"Logistic":    logisticCheck,
+		"SRV":         svrCheck,
+		"Polynomial":  polynomialCheck,
+		"LogChecking": logChecking,
+		"data":        r,
+		"names":       r.GetNames(),
+		"coeff":       r.GetCoeffs(),
 		// "graphics":   makeGraphics(r), Убрал и не думаю что нам пока нужен MLR
 		"datapoints": r.GetDataPoints(),
 	}
