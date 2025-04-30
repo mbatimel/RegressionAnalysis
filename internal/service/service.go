@@ -71,22 +71,29 @@ func (rs *regressionService) MlrRegression(ctx context.Context, observer string,
 	}
 
 	rs.logger.Info().Msg("Starting checking on classifier polynomial")
-	polynomialCheck, err := polynomialChecking(dataPoints, 3)
+	polynomialCheck, err := polynomialChecking(dataPoints)
 	if err != nil {
 		polynomialCheck = nil
 		rs.logger.Error().Msg("Polynomial checking is dead")
 	}
+	rs.logger.Info().Msg("Starting checking on classifier logChecking")
+	logChecking, err := logChecking(dataPoints)
+	if err != nil {
+		logChecking = nil
+		rs.logger.Error().Msg("logChecking checking is dead")
+	}
 
 	res := map[string]interface{}{
-		"Ridge":      ridgeCheck,
-		"Lasso":      lassoCheck,
-		"Elastic":    elasticCheck,
-		"Logistic":   logisticCheck,
-		"SRV":        svrCheck,
-		"Polynomial": polynomialCheck,
-		"data":       r,
-		"names":      r.GetNames(),
-		"coeff":      r.GetCoeffs(),
+		"Ridge":       ridgeCheck,
+		"Lasso":       lassoCheck,
+		"Elastic":     elasticCheck,
+		"Logistic":    logisticCheck,
+		"SRV":         svrCheck,
+		"Polynomial":  polynomialCheck,
+		"data":        r,
+		"names":       r.GetNames(),
+		"coeff":       r.GetCoeffs(),
+		"logChecking": logChecking,
 		// "graphics":   makeGraphics(r), Убрал и не думаю что нам пока нужен MLR
 		"datapoints": r.GetDataPoints(),
 	}
@@ -201,10 +208,17 @@ func (rs *regressionService) MlrRegressionCSV(ctx context.Context, file []byte) 
 		return nil, fmt.Errorf("SRV checking is dead")
 	}
 	rs.logger.Info().Msg("Starting checking on classifier polynomial")
-	polynomialCheck, err := polynomialChecking(dataPoints, 3)
+	polynomialCheck, err := polynomialChecking(dataPoints)
 	if err != nil {
-		return nil, fmt.Errorf("Polynomial checking is dead")
+		polynomialCheck = nil
+		rs.logger.Error().Msg("Polynomial checking is dead")
 	}
+	// rs.logger.Info().Msg("Starting checking on classifier logChecking")
+	// 	logChecking, err := logChecking(dataPoints)
+	// if err != nil {
+	// 	logChecking = nil
+	// 	rs.logger.Error().Msg("logChecking checking is dead")
+	// }
 	res := map[string]interface{}{
 		"Ridge":      ridgeCheck,
 		"Lasso":      lassoCheck,
@@ -212,9 +226,10 @@ func (rs *regressionService) MlrRegressionCSV(ctx context.Context, file []byte) 
 		"Logistic":   logisticCheck,
 		"SRV":        svrCheck,
 		"Polynomial": polynomialCheck,
-		"data":       r,
-		"names":      r.GetNames(),
-		"coeff":      r.GetCoeffs(),
+		// "LogChecking": logChecking,
+		"data":  r,
+		"names": r.GetNames(),
+		"coeff": r.GetCoeffs(),
 		// "graphics":   makeGraphics(r), Убрал и не думаю что нам пока нужен MLR
 		"datapoints": r.GetDataPoints(),
 	}
@@ -337,20 +352,28 @@ func (rs *regressionService) MlrRegressionExcel(ctx context.Context, file []byte
 		return nil, fmt.Errorf("SRV checking is dead")
 	}
 	rs.logger.Info().Msg("Starting checking on classifier polynomial")
-	polynomialCheck, err := polynomialChecking(dataPoints, 3)
+	polynomialCheck, err := polynomialChecking(dataPoints)
 	if err != nil {
-		return nil, fmt.Errorf("Polynomial checking is dead")
+		polynomialCheck = nil
+		rs.logger.Error().Msg("Polynomial checking is dead")
+	}
+	rs.logger.Info().Msg("Starting checking on classifier logChecking")
+	logChecking, err := logChecking(dataPoints)
+	if err != nil {
+		logChecking = nil
+		rs.logger.Error().Err(err).Msg("logChecking checking is dead")
 	}
 	res := map[string]interface{}{
-		"Ridge":      ridgeCheck,
-		"Lasso":      lassoCheck,
-		"Elastic":    elasticCheck,
-		"Logistic":   logisticCheck,
-		"SRV":        svrCheck,
-		"Polynomial": polynomialCheck,
-		"data":       r,
-		"names":      r.GetNames(),
-		"coeff":      r.GetCoeffs(),
+		"Ridge":       ridgeCheck,
+		"Lasso":       lassoCheck,
+		"Elastic":     elasticCheck,
+		"Logistic":    logisticCheck,
+		"SRV":         svrCheck,
+		"Polynomial":  polynomialCheck,
+		"data":        r,
+		"names":       r.GetNames(),
+		"coeff":       r.GetCoeffs(),
+		"logChecking": logChecking,
 		// "graphics":   makeGraphics(r), Убрал и не думаю что нам пока нужен MLR
 		"datapoints": r.GetDataPoints(),
 	}

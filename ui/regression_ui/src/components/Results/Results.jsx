@@ -17,11 +17,14 @@ const Results = ({ title, data, datapoints = [], headers = [], recommended = fal
         y: parseFloat(y)
       }));
       
+      // Получаем тип графика из data.resultType
+      const graphType = data.resultType?.[index] || `График ${parseInt(index) + 1}`;
+      
       return {
         id: `graph-${index}`,
         tableData,
-        graphData, // сохраняем оригинальные данные для графика
-        title: `График ${parseInt(index) + 1}`
+        graphData, 
+        title: graphType 
       };
     });
   };

@@ -251,6 +251,9 @@ func ridgeChecking(dataPoints []models.DataPoint) (map[string]interface{}, error
 	if math.Sqrt(mse) > regr.Tol {
 		fmt.Printf("Test %T normalize=%v r2score=%g (%v) mse=%g mae=%g \n", regr, true, r2score, metrics.R2Score(observed, Ypred, nil, "raw_values"), mse, mae)
 	}
+	resultType := map[int]string{
+		1: "linear",
+	}
 	// Возвращаем результаты
 	res := map[string]interface{}{
 		"ridge Ypred":              fmt.Sprintf("%.2f\n", mat.Formatted(Ypred)),
@@ -261,6 +264,7 @@ func ridgeChecking(dataPoints []models.DataPoint) (map[string]interface{}, error
 		"ridge ActivationFunction": regr.ActivationFunction,
 		"graphics":                 makeGraphicsForOtherMethod(dataPoints, regr.Coef, Ypred),
 		"bestErr":                  bestErr,
+		"resultType":               resultType,
 	}
 
 	return res, nil
@@ -347,6 +351,9 @@ func lassoChecking(dataPoints []models.DataPoint) (map[string]interface{}, error
 		bestErr["MAE"] = mae
 
 	}
+	resultType := map[int]string{
+		1: "linear",
+	}
 	res := map[string]interface{}{
 		"lasso Ypred":      fmt.Sprintf("%.5f\n", mat.Formatted(Ypred)),
 		"lasso Coef":       fmt.Sprintf("%.2f\n", mat.Formatted(regr.LinearRegression.Coef.T())),
@@ -364,6 +371,7 @@ func lassoChecking(dataPoints []models.DataPoint) (map[string]interface{}, error
 		"lasso CDResult":   regr.CDResult,
 		"graphics":         makeGraphicsForOtherMethod(dataPoints, regr.Coef, Ypred),
 		"bestErr":          bestErr,
+		"resultType":       resultType,
 	}
 	return res, nil
 }
@@ -444,6 +452,9 @@ func elasticChecking(dataPoints []models.DataPoint, l1Ratio float64) (map[string
 		bestErr["MAE"] = mae
 
 	}
+	resultType := map[int]string{
+		1: "linear",
+	}
 	// Возвращаем результаты
 	res := map[string]interface{}{
 		"elastic Ypred":      fmt.Sprintf("%.5f\n", mat.Formatted(Ypred)),
@@ -461,6 +472,7 @@ func elasticChecking(dataPoints []models.DataPoint, l1Ratio float64) (map[string
 		"elastic CDResult":   enet.CDResult,
 		"graphics":           makeGraphicsForOtherMethod(dataPoints, enet.Coef, Ypred),
 		"bestErr":            bestErr,
+		"resultType":         resultType,
 	}
 
 	return res, nil
@@ -521,6 +533,9 @@ func logisticChecking(dataPoints []models.DataPoint) (map[string]interface{}, er
 		bestErr["MAE"] = mae
 
 	}
+	resultType := map[int]string{
+		1: "linear",
+	}
 	// Возвращаем результаты
 	res := map[string]interface{}{
 		"logistic Ypred":     fmt.Sprintf("%.2f\n", mat.Formatted(Ypred)),
@@ -530,6 +545,7 @@ func logisticChecking(dataPoints []models.DataPoint) (map[string]interface{}, er
 		"logistic Alpha":     regr.Alpha,
 		"graphics":           makeGraphicsFoBlas64(dataPoints, regr.Coef, Ypred),
 		"bestErr":            bestErr,
+		"resultType":         resultType,
 	}
 
 	return res, nil
@@ -576,7 +592,9 @@ func svrChecking(dataPoints []models.DataPoint) (map[string]interface{}, error) 
 		{kernel: "rbf", C: 1e3, gamma: 0.1},
 		{kernel: "poly", C: 1e3, gamma: 1, coef0: 200, degree: 2},
 	}
-
+	resultType := map[int]string{
+		1: "linear",
+	}
 	for _, opt := range kernelOptions {
 		Ypred := &mat.Dense{}
 
@@ -624,7 +642,8 @@ func svrChecking(dataPoints []models.DataPoint) (map[string]interface{}, error) 
 					"MSE": mse,
 					"MAE": mae,
 				},
-				"kernel": svr.Kernel,
+				"kernel":     svr.Kernel,
+				"resultType": resultType,
 			}
 		}
 	}
@@ -632,23 +651,131 @@ func svrChecking(dataPoints []models.DataPoint) (map[string]interface{}, error) 
 	return bestRes, nil
 }
 
-func polynomialChecking(dataPoints []models.DataPoint, degree int) (map[string]interface{}, error) {
+func polynomialChecking(dataPoints []models.DataPoint) (map[string]interface{}, error) {
 	numOfSamples := len(dataPoints)
 	if numOfSamples == 0 {
 		return nil, fmt.Errorf("no data points provided")
 	}
 
 	numOfVars := len(dataPoints[0].Variables)
-
-	// Создаем матрицы X (variables) и Y (observed)
 	observed := mat.NewDense(numOfSamples, 1, nil)
-	variables := mat.NewDense(numOfSamples, numOfVars, nil)
+	rawVars := mat.NewDense(numOfSamples, numOfVars, nil)
 
 	for i, dp := range dataPoints {
 		for j, val := range dp.Variables {
-			variables.Set(i, j, val)
+			rawVars.Set(i, j, val)
 		}
 		observed.Set(i, 0, dp.Observed)
+	}
+
+	type polyResult struct {
+		degree   int
+		r2       float64
+		yPred    *mat.Dense
+		mlp      *neuralnetwork.MLPClassifier
+		graphics interface{}
+		bestErr  map[string]float64
+	}
+
+	var best polyResult
+	best.r2 = -math.MaxFloat64 // initialize to lowest possible
+
+	degreeToLabel := map[int]string{
+		1: "linear",
+		2: "quadratic",
+		3: "cubic",
+		4: "quartic",
+		5: "quintic",
+	}
+
+	for degree := 1; degree <= 3; degree++ {
+		// Reset variables each time
+		variables := rawVars
+
+		checkGradients := func(problem optimize.Problem, initX []float64) {
+			settings := &fd.Settings{Step: 1e-8}
+			gradFromModel := make([]float64, len(initX))
+			gradFromFD := make([]float64, len(initX))
+			problem.Func(initX)
+			problem.Grad(gradFromModel, initX)
+			fd.Gradient(gradFromFD, problem.Func, initX, settings)
+		}
+
+		buf := []byte(`{"activation": "tanh", "alpha": 0.0001, "batch_size": "auto", "beta_1": 0.9, "beta_2": 0.999, "early_stopping": false, "epsilon": 1e-08, "hidden_layer_sizes": [], "learning_rate": "constant", "learning_rate_init": 0.001, "max_iter": 400, "momentum": 0.9, "n_iter_no_change": 10, "nesterovs_momentum": true, "power_t": 0.5, "random_state": 7, "shuffle": true, "solver": "adam", "tol": 0.0001, "validation_fraction": 0.1, "verbose": false, "warm_start": false, "out_activation_": "tanh", "intercepts_": [[0.5082271055138958]], "coefs_": [[[-0.18963335144967644], [0.2744326667319166], [-0.0068960058868800505], [-0.1870170339590578], [0.33640123639043934], [0.14343164310877599], [-0.2840940844068544], [-0.06035740527894848], [-0.015548157556294752], [-0.09766841821748058], [-0.13516966516561582], [0.01180873002271984], [-0.37004002347719184], [-0.3146740174229507], [-0.010236340304847167], [0.034725564039145625], [0.07596312959511524], [0.07031424991074327], [0.03226286238715042], [-0.11777688776136522], [-0.0862585580460505], [0.046039278168215306], [-0.32297687193126345], [0.004283074654547827], [0.013040383833634088], [-0.047491825368820184], [-0.12259098577236986]]]}`)
+		mlp := neuralnetwork.NewMLPClassifier([]int{}, "", "", 0)
+		mlp.RandomState = base.NewLockedSource(2)
+		err := mlp.Unmarshal(buf)
+		if err != nil {
+			return nil, fmt.Errorf("Error with unmarshal byte data")
+		}
+		mlp.RandomState = base.NewLockedSource(2)
+		mlp.WarmStart = false
+		mlp.Shuffle = false
+		mlp.MaxIter = 400
+		mlp.LearningRateInit = 0.11
+		mlp.BatchSize = 118
+		mlp.BeforeMinimize = checkGradients
+
+		poly := preprocessing.NewPolynomialFeatures(degree)
+		poly.IncludeBias = false
+		poly.Fit(variables, observed)
+		variables, _ = poly.FitTransform(variables, nil)
+
+		Ypred := mat.NewDense(numOfSamples, 1, nil)
+		// mlp.Fit(variables, observed)
+		mlp.Predict(variables, Ypred)
+
+		r2 := metrics.R2Score(observed, Ypred, nil, "").At(0, 0)
+		if r2 > best.r2 {
+			// Calculate error metrics
+			bestErr := map[string]float64{
+				"R2":  r2,
+				"MSE": metrics.MeanSquaredError(observed, Ypred, nil, "").At(0, 0),
+				"MAE": metrics.MeanAbsoluteError(observed, Ypred, nil, "").At(0, 0),
+			}
+			best = polyResult{
+				degree:   degree,
+				r2:       r2,
+				yPred:    Ypred,
+				mlp:      mlp,
+				graphics: makeGraphicsForPoly(dataPoints, mlp.Coefs, Ypred),
+				bestErr:  bestErr,
+			}
+		}
+	}
+
+	// Final maps
+	resultType := map[int]string{
+		best.degree: degreeToLabel[best.degree],
+	}
+
+	detail := map[string]interface{}{
+		"graphics":      best.graphics,
+		"poly Ypred":    fmt.Sprintf("%.2f\n", mat.Formatted(best.yPred)),
+		"Coeffs":        best.mlp.Coefs,
+		"poly accuracy": metrics.AccuracyScore(observed, best.yPred, true, nil),
+		"bestErr":       best.bestErr,
+		"resultType":    resultType,
+	}
+
+	return detail, nil
+}
+
+func logChecking(dataPoints []models.DataPoint) (map[string]interface{}, error) {
+	numOfSamples := len(dataPoints)
+	if numOfSamples == 0 {
+		return nil, fmt.Errorf("no data points provided")
+	}
+
+	numOfVars := len(dataPoints[0].Variables)
+	observed := mat.NewDense(numOfSamples, 1, nil)
+	rawVars := mat.NewDense(numOfSamples, numOfVars, nil)
+	for i, dp := range dataPoints {
+		y := math.Log(dp.Observed)
+		observed.Set(i, 0, y)
+		for j, x := range dp.Variables {
+			rawVars.Set(i, j, x)
+		}
 	}
 
 	checkGradients := func(problem optimize.Problem, initX []float64) {
@@ -659,6 +786,21 @@ func polynomialChecking(dataPoints []models.DataPoint, degree int) (map[string]i
 		problem.Grad(gradFromModel, initX)
 		fd.Gradient(gradFromFD, problem.Func, initX, settings)
 	}
+	logVars := mat.NewDense(numOfSamples, numOfVars, nil)
+	for i := 0; i < numOfSamples; i++ {
+		for j := 0; j < numOfVars; j++ {
+			val := rawVars.At(i, j)
+			if math.IsInf(val, 0) || math.IsNaN(val) {
+				val = 1
+			}
+			if val <= 0 {
+				logVars.Set(i, j, 0)
+			} else {
+				logVars.Set(i, j, math.Log(val))
+			}
+		}
+	}
+
 	buf := []byte(`{"activation": "tanh", "alpha": 0.0001, "batch_size": "auto", "beta_1": 0.9, "beta_2": 0.999, "early_stopping": false, "epsilon": 1e-08, "hidden_layer_sizes": [], "learning_rate": "constant", "learning_rate_init": 0.001, "max_iter": 400, "momentum": 0.9, "n_iter_no_change": 10, "nesterovs_momentum": true, "power_t": 0.5, "random_state": 7, "shuffle": true, "solver": "adam", "tol": 0.0001, "validation_fraction": 0.1, "verbose": false, "warm_start": false, "out_activation_": "tanh", "intercepts_": [[0.5082271055138958]], "coefs_": [[[-0.18963335144967644], [0.2744326667319166], [-0.0068960058868800505], [-0.1870170339590578], [0.33640123639043934], [0.14343164310877599], [-0.2840940844068544], [-0.06035740527894848], [-0.015548157556294752], [-0.09766841821748058], [-0.13516966516561582], [0.01180873002271984], [-0.37004002347719184], [-0.3146740174229507], [-0.010236340304847167], [0.034725564039145625], [0.07596312959511524], [0.07031424991074327], [0.03226286238715042], [-0.11777688776136522], [-0.0862585580460505], [0.046039278168215306], [-0.32297687193126345], [0.004283074654547827], [0.013040383833634088], [-0.047491825368820184], [-0.12259098577236986]]]}`)
 	mlp := neuralnetwork.NewMLPClassifier([]int{}, "", "", 0)
 	mlp.RandomState = base.NewLockedSource(2)
@@ -666,46 +808,38 @@ func polynomialChecking(dataPoints []models.DataPoint, degree int) (map[string]i
 	if err != nil {
 		return nil, fmt.Errorf("Error with unmarshal byte data")
 	}
+	mlp.RandomState = base.NewLockedSource(2)
 	mlp.WarmStart = false
 	mlp.Shuffle = false
 	mlp.MaxIter = 400
-	mlp.LearningRateInit = .11
-	mlp.BatchSize = 118 //1,2,59,118
+	mlp.LearningRateInit = 0.11
+	mlp.BatchSize = 118
 	mlp.BeforeMinimize = checkGradients
-	poly := preprocessing.NewPolynomialFeatures(3)
-	poly.IncludeBias = false
-	poly.Fit(variables, observed)
-	variables, _ = poly.FitTransform(variables, nil)
 
-	Ypred := mat.NewDense(numOfSamples, 1, nil)
-	mlp.Predict(variables, Ypred)
+	YpredLog := mat.NewDense(numOfSamples, 1, nil)
+	mlp.Fit(observed, logVars)
 
-	bestErr := make(map[string]float)
-	r2score := metrics.R2Score(observed, Ypred, nil, "").At(0, 0)
-	tmpScore, ok := bestErr["R2"]
-	if !ok || r2score > tmpScore {
-		bestErr["R2"] = r2score
-	}
-	mse := metrics.MeanSquaredError(observed, Ypred, nil, "").At(0, 0)
-	tmpScore, ok = bestErr["MSE"]
-	if !ok || mse < tmpScore {
-		bestErr["MSE"] = mse
-	}
-	mae := metrics.MeanAbsoluteError(observed, Ypred, nil, "").At(0, 0)
-	tmpScore, ok = bestErr["MAE"]
-	if !ok || mae < tmpScore {
-		bestErr["MAE"] = mae
-
+	resultType := map[int]string{
+		1: "log",
 	}
 
-	// Возвращаем результаты
+	mlp.Predict(logVars, YpredLog)
+	r2 := metrics.R2Score(observed, YpredLog, nil, "").At(0, 0)
+	mse := metrics.MeanSquaredError(observed, YpredLog, nil, "").At(0, 0)
+	mae := metrics.MeanAbsoluteError(observed, YpredLog, nil, "").At(0, 0)
+	accuracy := metrics.AccuracyScore(observed, YpredLog, true, nil)
+
 	res := map[string]interface{}{
-		"graphics":      makeGraphicsForPoly(dataPoints, mlp.Coefs,  Ypred),
-		"poly Ypred":    fmt.Sprintf("%.2f\n", mat.Formatted(Ypred)),
-		"Coeffs":    		mlp.Coefs,
-		"poly accuracy": metrics.AccuracyScore(observed, Ypred, true, nil),
-		"bestErr":       bestErr,
+		"graphics":      makeGraphicsForPoly(dataPoints, mlp.Coefs, YpredLog),
+		"poly Ypred":    fmt.Sprintf("%.2f\n", mat.Formatted(YpredLog)),
+		"Coeffs":        mlp.Coefs,
+		"poly accuracy": accuracy,
+		"bestErr": map[string]float64{
+			"R2":  r2,
+			"MSE": mse,
+			"MAE": mae,
+		},
+		"resultType": resultType,
 	}
-
 	return res, nil
 }
