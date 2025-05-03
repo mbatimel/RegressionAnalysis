@@ -37,7 +37,7 @@ function App() {
       alert("Выберите файл перед отправкой");
       return;
     }
-  
+    setHighlightBestMethod(false);
     setIsLoading(true);
     setTableData([]);
     setHeaders([]);
@@ -74,7 +74,7 @@ function App() {
       alert("Введите данные в таблицу перед отправкой запроса");
       return;
     }
-  
+    setHighlightBestMethod(false);
     setIsLoading(true);
     setMLRCSVData(null);
   
