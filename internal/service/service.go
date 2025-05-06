@@ -32,9 +32,10 @@ func (rs *regressionService) MlrRegression(ctx context.Context, observer string,
 	for _, dp := range dataPoints {
 		r.Train(linearmodel.DataPoint(dp.Observed, dp.Variables))
 	}
-	if err := r.Run(); err != nil {
-		return nil, fmt.Errorf("failed to train model: %w", err)
-	}
+
+	// if err := r.Run(); err != nil {
+	// 	return nil, fmt.Errorf("failed to train model: %w", err)
+	// }
 
 	rs.logger.Info().Msg("Starting checking on classifier ridge")
 	ridgeCheck, err := ridgeChecking(dataPoints)
@@ -177,10 +178,11 @@ func (rs *regressionService) MlrRegressionCSV(ctx context.Context, file []byte) 
 	if err, ok := <-errChan; ok {
 		return nil, err
 	}
-	// Запускаем расчет модели
-	if err := r.Run(); err != nil {
-		return nil, fmt.Errorf("failed to train model: %w", err)
-	}
+	// // Запускаем расчет модели
+	// if err := r.Run(); err != nil {
+	// 	return nil, fmt.Errorf("failed to train model: %w", err)
+	// }
+
 	rs.logger.Info().Msg("Starting checking on classifier ridge")
 	ridgeCheck, err := ridgeChecking(dataPoints)
 	if err != nil {
@@ -219,7 +221,6 @@ func (rs *regressionService) MlrRegressionCSV(ctx context.Context, file []byte) 
 		logChecking = nil
 		rs.logger.Error().Msg("logChecking checking is dead")
 	}
-	fmt.Println(logChecking)
 	res := map[string]interface{}{
 		"Ridge":       ridgeCheck,
 		"Lasso":       lassoCheck,
@@ -320,10 +321,10 @@ func (rs *regressionService) MlrRegressionExcel(ctx context.Context, file []byte
 		return nil, err
 	}
 
-	// Запускаем расчет модели
-	if err := r.Run(); err != nil {
-		return nil, fmt.Errorf("failed to train model: %w", err)
-	}
+	// // Запускаем расчет модели
+	// if err := r.Run(); err != nil {
+	// 	return nil, fmt.Errorf("failed to train model: %w", err)
+	// }
 
 	rs.logger.Info().Msg("Starting checking on classifier ridge")
 	ridgeCheck, err := ridgeChecking(dataPoints)

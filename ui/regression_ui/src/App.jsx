@@ -110,33 +110,34 @@ function App() {
   
   const getRecommendedMethod = (data) => {
     const metrics = Object.entries(data)
-      .filter(([method]) => !['datapoints', 'graphics'].includes(method))
-      .map(([method, values]) => ({
-        method,
-        R2: values.bestErr?.R2 ?? -Infinity,
-        MSE: values.bestErr?.MSE ?? Infinity,
-        MAE: values.bestErr?.MAE ?? Infinity,
-      }));
+      .filter(([key, val]) => 
+        !['datapoints', 'graphics'].includes(key) &&
+        val?.bestErr
+      )
+      .map(([method, values]) => {
+        const { R2 = -Infinity, MSE = Infinity, MAE = Infinity } = values.bestErr;
+        return { method, R2, MSE, MAE };
+      });
   
     if (!metrics.length) return null;
   
-    // Нормализуем метрики
     const bestR2 = Math.max(...metrics.map(m => m.R2));
     const bestMSE = Math.min(...metrics.map(m => m.MSE));
     const bestMAE = Math.min(...metrics.map(m => m.MAE));
   
-    // Устанавливаем веса для расчёта близости к идеалу
     const scored = metrics.map(m => {
-      const r2Score = m.R2 / bestR2;
-      const mseScore = bestMSE / m.MSE;
-      const maeScore = bestMAE / m.MAE;
-      const totalScore = r2Score + mseScore + maeScore;
-      return { ...m, score: totalScore };
+      const r2Score = bestR2 ? m.R2 / bestR2 : 0;
+      const mseScore = m.MSE ? bestMSE / m.MSE : 0;
+      const maeScore = m.MAE ? bestMAE / m.MAE : 0;
+      return {
+        ...m,
+        score: r2Score + mseScore + maeScore
+      };
     });
   
-    // Возвращаем метод с максимальным "totalScore"
     return scored.sort((a, b) => b.score - a.score)[0].method;
   };
+  
   const bestMethod =
   responseMLRCSVData?.data
     ? getRecommendedMethod(responseMLRCSVData.data)

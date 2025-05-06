@@ -16,7 +16,9 @@ const FORMULAS = {
 
 const Results = ({ title, data, datapoints = [], headers = [], recommended = false }) => {
   const [expanded, setExpanded] = useState(false);
+  if (!data) return null;
   const { bestErr, graphics, ...restData } = data;
+
 
   const prepareGraphicsTables = (graphics) => {
     if (!graphics) return [];
