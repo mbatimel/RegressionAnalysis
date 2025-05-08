@@ -23,9 +23,17 @@ import (
 
 type float = float64
 
-func ridgeChecking(dataPoints []models.DataPoint) (map[string]interface{}, error) {
+func PrepareTrainTestMatrices(dataPoints []models.DataPoint, trainRatio float64) (
+	Xtrain, Ytrain, Xtest, Ytest *mat.Dense,
+	testPoints []models.DataPoint,
+	err error,
+) {
 	numOfSamples := len(dataPoints)
+	if numOfSamples == 0 {
+		return nil, nil, nil, nil, nil, fmt.Errorf("no data points provided")
+	}
 	numOfVars := len(dataPoints[0].Variables)
+
 	// Перемешиваем и делим на train/test
 	shuffled := make([]models.DataPoint, numOfSamples)
 	copy(shuffled, dataPoints)
@@ -33,16 +41,13 @@ func ridgeChecking(dataPoints []models.DataPoint) (map[string]interface{}, error
 	rand.Shuffle(numOfSamples, func(i, j int) {
 		shuffled[i], shuffled[j] = shuffled[j], shuffled[i]
 	})
-	splitIdx := int(0.7 * float64(numOfSamples))
+
+	splitIdx := int(trainRatio * float64(numOfSamples))
 	trainPoints := shuffled[:splitIdx]
-	testPoints := shuffled[splitIdx:]
+	testPoints = shuffled[splitIdx:]
 
-	numTrain := len(trainPoints)
-	numTest := len(testPoints)
-
-	// Создаем матрицы обучения
-	Xtrain := mat.NewDense(numTrain, numOfVars, nil)
-	Ytrain := mat.NewDense(numTrain, 1, nil)
+	Xtrain = mat.NewDense(len(trainPoints), numOfVars, nil)
+	Ytrain = mat.NewDense(len(trainPoints), 1, nil)
 	for i, dp := range trainPoints {
 		for j := 0; j < numOfVars; j++ {
 			Xtrain.Set(i, j, dp.Variables[j])
@@ -50,17 +55,18 @@ func ridgeChecking(dataPoints []models.DataPoint) (map[string]interface{}, error
 		Ytrain.Set(i, 0, dp.Observed)
 	}
 
-	// Создаем матрицы теста с параллельной загрузкой
-	Xtest := mat.NewDense(numTest, numOfVars, nil)
-	Ytest := mat.NewDense(numTest, 1, nil)
+	Xtest = mat.NewDense(len(testPoints), numOfVars, nil)
+	Ytest = mat.NewDense(len(testPoints), 1, nil)
+
+	var wg sync.WaitGroup
 	type rowData struct {
 		index    int
 		varRow   []float64
 		obsValue float64
 	}
-	rowChan := make(chan rowData, numTest)
-	var wg sync.WaitGroup
-	for i := 0; i < numTest; i++ {
+	rowChan := make(chan rowData, len(testPoints))
+
+	for i := 0; i < len(testPoints); i++ {
 		wg.Add(1)
 		go func(i int) {
 			defer wg.Done()
@@ -72,10 +78,12 @@ func ridgeChecking(dataPoints []models.DataPoint) (map[string]interface{}, error
 			}
 		}(i)
 	}
+
 	go func() {
 		wg.Wait()
 		close(rowChan)
 	}()
+
 	for row := range rowChan {
 		for j := 0; j < numOfVars; j++ {
 			Xtest.Set(row.index, j, row.varRow[j])
@@ -83,7 +91,10 @@ func ridgeChecking(dataPoints []models.DataPoint) (map[string]interface{}, error
 		Ytest.Set(row.index, 0, row.obsValue)
 	}
 
-	// Обучение модели
+	return Xtrain, Ytrain, Xtest, Ytest, testPoints, nil
+}
+
+func ridgeChecking(Xtrain, Ytrain, Xtest, Ytest *mat.Dense, testPoints []models.DataPoint) (map[string]interface{}, error) {
 	regr := linearmodel.NewRidge()
 	regr.Alpha = 1
 	regr.Tol = 0.01
@@ -91,35 +102,22 @@ func ridgeChecking(dataPoints []models.DataPoint) (map[string]interface{}, error
 	regr.L1Ratio = 10
 	regr.Fit(Xtrain, Ytrain)
 
-	// Предсказание
-	Ypred := mat.NewDense(numTest, 1, nil)
+	Ypred := mat.NewDense(Xtest.RawMatrix().Rows, 1, nil)
 	regr.Predict(Xtest, Ypred)
 
-	bestErr := make(map[string]float)
+	bestErr := map[string]float64{}
 	r2score := metrics.R2Score(Ytest, Ypred, nil, "variance_weighted").At(0, 0)
-	tmpScore, ok := bestErr["R2"]
-	if !ok || r2score > tmpScore {
-		bestErr["R2"] = r2score
-	}
+	bestErr["R2"] = r2score
 	mse := metrics.MeanSquaredError(Ytest, Ypred, nil, "variance_weighted").At(0, 0)
-	tmpScore, ok = bestErr["MSE"]
-	if !ok || mse < tmpScore {
-		bestErr["MSE"] = mse
-	}
+	bestErr["MSE"] = mse
 	mae := metrics.MeanAbsoluteError(Ytest, Ypred, nil, "variance_weighted").At(0, 0)
-	tmpScore, ok = bestErr["MAE"]
-	if !ok || mae < tmpScore {
-		bestErr["MAE"] = mae
-	}
+	bestErr["MAE"] = mae
+
 	if math.Sqrt(mse) > regr.Tol {
 		fmt.Printf("Test %T normalize=%v r2score=%g mse=%g mae=%g\n", regr, true, r2score, mse, mae)
 	}
 
-	resultType := map[int]string{
-		1: "linear",
-		0: "linear",
-		2: "linear",
-	}
+	resultType := map[int]string{0: "linear", 1: "linear", 2: "linear"}
 
 	res := map[string]interface{}{
 		"ridge Ypred":              fmt.Sprintf("%.2f\n", mat.Formatted(Ypred)),
@@ -134,73 +132,9 @@ func ridgeChecking(dataPoints []models.DataPoint) (map[string]interface{}, error
 	}
 
 	return res, nil
-
 }
-func lassoChecking(dataPoints []models.DataPoint) (map[string]interface{}, error) {
-	numOfSamples := len(dataPoints)
-	numOfVars := len(dataPoints[0].Variables)
-	// Перемешивание и разбиение на train/test
-	shuffled := make([]models.DataPoint, numOfSamples)
-	copy(shuffled, dataPoints)
-	rand.Seed(time.Now().UnixNano())
-	rand.Shuffle(numOfSamples, func(i, j int) {
-		shuffled[i], shuffled[j] = shuffled[j], shuffled[i]
-	})
 
-	splitIdx := int(0.7 * float64(numOfSamples))
-	trainPoints := shuffled[:splitIdx]
-	testPoints := shuffled[splitIdx:]
-
-	numTrain := len(trainPoints)
-	numTest := len(testPoints)
-
-	Xtrain := mat.NewDense(numTrain, numOfVars, nil)
-	Ytrain := mat.NewDense(numTrain, 1, nil)
-
-	for i, dp := range trainPoints {
-		for j, val := range dp.Variables {
-			Xtrain.Set(i, j, val)
-		}
-		Ytrain.Set(i, 0, dp.Observed)
-	}
-
-	Xtest := mat.NewDense(numTest, numOfVars, nil)
-	Ytest := mat.NewDense(numTest, 1, nil)
-
-	type rowData struct {
-		index    int
-		varRow   []float64
-		obsValue float64
-	}
-	rowChan := make(chan rowData, numTest)
-	var wg sync.WaitGroup
-
-	for i := 0; i < numTest; i++ {
-		wg.Add(1)
-		go func(i int) {
-			defer wg.Done()
-			dp := testPoints[i]
-			rowChan <- rowData{
-				index:    i,
-				varRow:   append([]float64(nil), dp.Variables...),
-				obsValue: dp.Observed,
-			}
-		}(i)
-	}
-
-	go func() {
-		wg.Wait()
-		close(rowChan)
-	}()
-
-	for row := range rowChan {
-		for j := 0; j < numOfVars; j++ {
-			Xtest.Set(row.index, j, row.varRow[j])
-		}
-		Ytest.Set(row.index, 0, row.obsValue)
-	}
-
-	// Обучение модели
+func lassoChecking(Xtrain, Ytrain, Xtest, Ytest *mat.Dense, testPoints []models.DataPoint) (map[string]interface{}, error) {
 	regr := linearmodel.NewMultiTaskLasso()
 	regr.FitIntercept = true
 	regr.Normalize = true
@@ -210,24 +144,20 @@ func lassoChecking(dataPoints []models.DataPoint) (map[string]interface{}, error
 	regr.Tol = 1e-4
 	regr.Fit(Xtrain, Ytrain)
 
-	Ypred := mat.NewDense(numTest, 1, nil)
+	Ypred := mat.NewDense(Xtest.RawMatrix().Rows, 1, nil)
 	regr.Predict(Xtest, Ypred)
 
 	rss := &mat.VecDense{}
 	rss.SubVec(Ypred.ColView(0), Ytest.ColView(0))
 	rss.MulElemVec(rss, rss)
 
-	bestErr := map[string]float{
+	bestErr := map[string]float64{
 		"R2":  metrics.R2Score(Ytest, Ypred, nil, "").At(0, 0),
 		"MSE": metrics.MeanSquaredError(Ytest, Ypred, nil, "").At(0, 0),
 		"MAE": metrics.MeanAbsoluteError(Ytest, Ypred, nil, "").At(0, 0),
 	}
 
-	resultType := map[int]string{
-		0: "linear",
-		1: "linear",
-		2: "linear",
-	}
+	resultType := map[int]string{0: "linear", 1: "linear", 2: "linear"}
 
 	res := map[string]interface{}{
 		"lasso Ypred":      fmt.Sprintf("%.5f\n", mat.Formatted(Ypred)),
@@ -250,71 +180,9 @@ func lassoChecking(dataPoints []models.DataPoint) (map[string]interface{}, error
 	}
 
 	return res, nil
-
 }
-func elasticChecking(dataPoints []models.DataPoint, l1Ratio float64) (map[string]interface{}, error) {
-	numOfSamples := len(dataPoints)
-	numOfVars := len(dataPoints[0].Variables)
-	// Перемешивание и разбиение на train/test
-	shuffled := make([]models.DataPoint, numOfSamples)
-	copy(shuffled, dataPoints)
-	rand.Seed(time.Now().UnixNano())
-	rand.Shuffle(numOfSamples, func(i, j int) { shuffled[i], shuffled[j] = shuffled[j], shuffled[i] })
 
-	splitIdx := int(0.7 * float64(numOfSamples))
-	trainPoints := shuffled[:splitIdx]
-	testPoints := shuffled[splitIdx:]
-
-	numTrain := len(trainPoints)
-	numTest := len(testPoints)
-
-	// Подготовка Xtrain и Ytrain
-	Xtrain := mat.NewDense(numTrain, numOfVars, nil)
-	Ytrain := mat.NewDense(numTrain, 1, nil)
-	for i, dp := range trainPoints {
-		for j, val := range dp.Variables {
-			Xtrain.Set(i, j, val)
-		}
-		Ytrain.Set(i, 0, dp.Observed)
-	}
-
-	// Подготовка Xtest и Ytest
-	Xtest := mat.NewDense(numTest, numOfVars, nil)
-	Ytest := mat.NewDense(numTest, 1, nil)
-
-	// Используем горутины для параллельной подготовки тестовой части
-	type rowData struct {
-		index    int
-		varRow   []float64
-		obsValue float64
-	}
-	rowChan := make(chan rowData, numTest)
-	var wg sync.WaitGroup
-
-	for i := 0; i < numTest; i++ {
-		wg.Add(1)
-		go func(i int) {
-			defer wg.Done()
-			dp := testPoints[i]
-			rowChan <- rowData{
-				index:    i,
-				varRow:   append([]float64(nil), dp.Variables...),
-				obsValue: dp.Observed,
-			}
-		}(i)
-	}
-
-	go func() {
-		wg.Wait()
-		close(rowChan)
-	}()
-
-	for row := range rowChan {
-		for j := 0; j < numOfVars; j++ {
-			Xtest.Set(row.index, j, row.varRow[j])
-		}
-		Ytest.Set(row.index, 0, row.obsValue)
-	}
+func elasticChecking(Xtrain, Ytrain, Xtest, Ytest *mat.Dense, testPoints []models.DataPoint, l1Ratio float64) (map[string]interface{}, error) {
 
 	// Создание и обучение модели
 	enet := linearmodel.NewMultiTaskElasticNet()
@@ -325,14 +193,16 @@ func elasticChecking(dataPoints []models.DataPoint, l1Ratio float64) (map[string
 	enet.Fit(Xtrain, Ytrain)
 
 	// Предсказание на тестовой выборке
+	numTest := Xtest.RawMatrix().Rows
 	Ypred := mat.NewDense(numTest, 1, nil)
 	enet.Predict(Xtest, Ypred)
 
 	// Вычисление метрик
-	bestErr := make(map[string]float)
-	bestErr["R2"] = metrics.R2Score(Ytest, Ypred, nil, "").At(0, 0)
-	bestErr["MSE"] = metrics.MeanSquaredError(Ytest, Ypred, nil, "").At(0, 0)
-	bestErr["MAE"] = metrics.MeanAbsoluteError(Ytest, Ypred, nil, "").At(0, 0)
+	bestErr := map[string]float{
+		"R2":  metrics.R2Score(Ytest, Ypred, nil, "").At(0, 0),
+		"MSE": metrics.MeanSquaredError(Ytest, Ypred, nil, "").At(0, 0),
+		"MAE": metrics.MeanAbsoluteError(Ytest, Ypred, nil, "").At(0, 0),
+	}
 
 	resultType := map[int]string{
 		0: "linear",
@@ -360,48 +230,9 @@ func elasticChecking(dataPoints []models.DataPoint, l1Ratio float64) (map[string
 	}
 
 	return res, nil
-
 }
 
-func logisticChecking(dataPoints []models.DataPoint) (map[string]interface{}, error) {
-	numOfSamples := len(dataPoints)
-	if numOfSamples == 0 {
-		return nil, fmt.Errorf("no data points provided")
-	}
-	// Перемешиваем и делим на обучающую/тестовую выборки
-	shuffled := make([]models.DataPoint, numOfSamples)
-	copy(shuffled, dataPoints)
-	rand.Seed(time.Now().UnixNano())
-	rand.Shuffle(numOfSamples, func(i, j int) { shuffled[i], shuffled[j] = shuffled[j], shuffled[i] })
-
-	splitIdx := int(0.7 * float64(numOfSamples))
-	trainPoints := shuffled[:splitIdx]
-	testPoints := shuffled[splitIdx:]
-
-	numOfVars := len(trainPoints[0].Variables)
-	numTrain := len(trainPoints)
-	numTest := len(testPoints)
-
-	// Формируем матрицы X и Y для обучения
-	Xtrain := mat.NewDense(numTrain, numOfVars, nil)
-	Ytrain := mat.NewDense(numTrain, 1, nil)
-	for i, dp := range trainPoints {
-		for j, val := range dp.Variables {
-			Xtrain.Set(i, j, val)
-		}
-		Ytrain.Set(i, 0, dp.Observed)
-	}
-
-	// Формируем матрицы X и Y для теста
-	Xtest := mat.NewDense(numTest, numOfVars, nil)
-	Ytest := mat.NewDense(numTest, 1, nil)
-	for i, dp := range testPoints {
-		for j, val := range dp.Variables {
-			Xtest.Set(i, j, val)
-		}
-		Ytest.Set(i, 0, dp.Observed)
-	}
-
+func logisticChecking(Xtrain, Ytrain, Xtest, Ytest *mat.Dense, testPoints []models.DataPoint) (map[string]interface{}, error) {
 	checkGradients := func(problem optimize.Problem, initX []float64) {
 		settings := &fd.Settings{Step: 1e-8}
 		gradFromModel := make([]float64, len(initX))
@@ -411,25 +242,24 @@ func logisticChecking(dataPoints []models.DataPoint) (map[string]interface{}, er
 		fd.Gradient(gradFromFD, problem.Func, initX, settings)
 	}
 
-	// Обучаем модель
+	// Обучение модели
 	regr := linearmodel.NewLogisticRegression()
 	regr.Alpha = 1e-5
 	regr.MaxIter = 4
 	regr.BeforeMinimize = checkGradients
 	regr.Fit(Xtrain, Ytrain)
 
-	// Предсказываем на тестовой выборке
+	// Предсказание
+	numTest := Xtest.RawMatrix().Rows
 	Ypred := mat.NewDense(numTest, 1, nil)
 	regr.Predict(Xtest, Ypred)
 
-	// Вычисляем метрики
-	bestErr := make(map[string]float)
-	r2score := metrics.R2Score(Ytest, Ypred, nil, "").At(0, 0)
-	bestErr["R2"] = r2score
-	mse := metrics.MeanSquaredError(Ytest, Ypred, nil, "").At(0, 0)
-	bestErr["MSE"] = mse
-	mae := metrics.MeanAbsoluteError(Ytest, Ypred, nil, "").At(0, 0)
-	bestErr["MAE"] = mae
+	// Метрики
+	bestErr := map[string]float{
+		"R2":  metrics.R2Score(Ytest, Ypred, nil, "").At(0, 0),
+		"MSE": metrics.MeanSquaredError(Ytest, Ypred, nil, "").At(0, 0),
+		"MAE": metrics.MeanAbsoluteError(Ytest, Ypred, nil, "").At(0, 0),
+	}
 
 	resultType := map[int]string{
 		0: "linear",
@@ -449,20 +279,9 @@ func logisticChecking(dataPoints []models.DataPoint) (map[string]interface{}, er
 	}
 
 	return res, nil
-
 }
 
-func svrChecking(dataPoints []models.DataPoint) (map[string]interface{}, error) {
-	// Перемешиваем копию dataPoints
-	shuffled := make([]models.DataPoint, len(dataPoints))
-	copy(shuffled, dataPoints)
-	rand.Seed(time.Now().UnixNano())
-	rand.Shuffle(len(shuffled), func(i, j int) { shuffled[i], shuffled[j] = shuffled[j], shuffled[i] })
-
-	// Разделение 70/30
-	splitIdx := int(float64(len(shuffled)) * 0.7)
-	trainPoints := shuffled[:splitIdx]
-	testPoints := shuffled[splitIdx:]
+func svrChecking(Xtrain, Ytrain, Xtest, Ytest *mat.Dense, testPoints []models.DataPoint) (map[string]interface{}, error) {
 
 	var bestRes map[string]interface{}
 	bestScore := struct {
@@ -470,33 +289,9 @@ func svrChecking(dataPoints []models.DataPoint) (map[string]interface{}, error) 
 		MSE float64
 		MAE float64
 	}{
-		R2:  math.Inf(-1), // Самое маленькое значение для начала
-		MSE: math.Inf(1),  // Самое большое значение для начала
+		R2:  math.Inf(-1),
+		MSE: math.Inf(1),
 		MAE: math.Inf(1),
-	}
-
-	numTrain := len(trainPoints)
-	numVars := len(trainPoints[0].Variables)
-
-	// Матрицы для обучения
-	Xtrain := mat.NewDense(numTrain, numVars, nil)
-	Ytrain := mat.NewDense(numTrain, 1, nil)
-	for i, dp := range trainPoints {
-		for j, val := range dp.Variables {
-			Xtrain.Set(i, j, val)
-		}
-		Ytrain.Set(i, 0, dp.Observed)
-	}
-
-	// Матрицы для теста
-	numTest := len(testPoints)
-	Xtest := mat.NewDense(numTest, numVars, nil)
-	Ytest := mat.NewDense(numTest, 1, nil)
-	for i, dp := range testPoints {
-		for j, val := range dp.Variables {
-			Xtest.Set(i, j, val)
-		}
-		Ytest.Set(i, 0, dp.Observed)
 	}
 
 	randomState := base.NewLockedSource(7)
@@ -515,11 +310,13 @@ func svrChecking(dataPoints []models.DataPoint) (map[string]interface{}, error) 
 		{kernel: "rbf", C: 1e3, gamma: 0.1},
 		{kernel: "poly", C: 1e3, gamma: 1, coef0: 200, degree: 2},
 	}
+
 	resultType := map[int]string{
 		0: "cubic",
 		1: "cubic",
 		2: "cubic",
 	}
+
 	for _, opt := range kernelOptions {
 		Ypred := &mat.Dense{}
 
@@ -539,7 +336,6 @@ func svrChecking(dataPoints []models.DataPoint) (map[string]interface{}, error) 
 
 		Ypred, _ = yscaler.InverseTransform(Ypred, nil)
 
-		// Метрики
 		r2score := metrics.R2Score(Ytest, Ypred, nil, "").At(0, 0)
 		mse := metrics.MeanSquaredError(Ytest, Ypred, nil, "").At(0, 0)
 		mae := metrics.MeanAbsoluteError(Ytest, Ypred, nil, "").At(0, 0)
@@ -561,7 +357,7 @@ func svrChecking(dataPoints []models.DataPoint) (map[string]interface{}, error) 
 			bestRes = map[string]interface{}{
 				"svr YPred " + opt.kernel: fmt.Sprintf("%.2f\n", mat.Formatted(Ypred)),
 				"graphics":                makeGraphicsForSVR(testPoints, Ypred),
-				"bestErr": map[string]float{
+				"bestErr": map[string]float64{
 					"R2":  r2score,
 					"MSE": mse,
 					"MAE": mae,
@@ -575,43 +371,9 @@ func svrChecking(dataPoints []models.DataPoint) (map[string]interface{}, error) 
 	return bestRes, nil
 }
 
-func polynomialChecking(dataPoints []models.DataPoint) (map[string]interface{}, error) {
-	numOfSamples := len(dataPoints)
-	if numOfSamples == 0 {
-		return nil, fmt.Errorf("no data points provided")
-	}
-
-	// Перемешиваем и разделяем выборку
-	rand.Seed(42) // фиксируем seed для воспроизводимости
-	rand.Shuffle(len(dataPoints), func(i, j int) {
-		dataPoints[i], dataPoints[j] = dataPoints[j], dataPoints[i]
-	})
-
-	trainSize := int(0.7 * float64(numOfSamples))
-	trainData := dataPoints[:trainSize]
-	testData := dataPoints[trainSize:]
-
-	numOfVars := len(dataPoints[0].Variables)
-
-	// Создание матриц обучения
-	observedTrain := mat.NewDense(len(trainData), 1, nil)
-	rawVarsTrain := mat.NewDense(len(trainData), numOfVars, nil)
-	for i, dp := range trainData {
-		for j, val := range dp.Variables {
-			rawVarsTrain.Set(i, j, val)
-		}
-		observedTrain.Set(i, 0, dp.Observed)
-	}
-
-	// Создание матриц теста
-	observedTest := mat.NewDense(len(testData), 1, nil)
-	rawVarsTest := mat.NewDense(len(testData), numOfVars, nil)
-	for i, dp := range testData {
-		for j, val := range dp.Variables {
-			rawVarsTest.Set(i, j, val)
-		}
-		observedTest.Set(i, 0, dp.Observed)
-	}
+func polynomialChecking(Xtrain, Ytrain, Xtest, Ytest *mat.Dense, testPoints []models.DataPoint) (map[string]interface{}, error) {
+	rawVarsTrain := mat.DenseCopyOf(Xtrain)
+	rawVarsTest := mat.DenseCopyOf(Xtest)
 
 	type polyResult struct {
 		degree   int
@@ -623,7 +385,7 @@ func polynomialChecking(dataPoints []models.DataPoint) (map[string]interface{}, 
 	}
 
 	var best polyResult
-	best.r2 = -math.MaxFloat64 // initialize to lowest possible
+	best.r2 = -math.MaxFloat64
 
 	degreeToLabel := map[int]string{
 		1: "linear",
@@ -636,6 +398,7 @@ func polynomialChecking(dataPoints []models.DataPoint) (map[string]interface{}, 
 	for degree := 1; degree <= 3; degree++ {
 		variablesTrain := rawVarsTrain
 		variablesTest := rawVarsTest
+
 		checkGradients := func(problem optimize.Problem, initX []float64) {
 			settings := &fd.Settings{Step: 1e-8}
 			gradFromModel := make([]float64, len(initX))
@@ -651,7 +414,7 @@ func polynomialChecking(dataPoints []models.DataPoint) (map[string]interface{}, 
 		mlp.RandomState = base.NewLockedSource(2)
 		err := mlp.Unmarshal(buf)
 		if err != nil {
-			return nil, fmt.Errorf("Error with unmarshal byte data")
+			return nil, fmt.Errorf("unmarshal error")
 		}
 		mlp.MaxIter = 400
 		mlp.LearningRateInit = 0.11
@@ -660,28 +423,27 @@ func polynomialChecking(dataPoints []models.DataPoint) (map[string]interface{}, 
 
 		poly := preprocessing.NewPolynomialFeatures(degree)
 		poly.IncludeBias = false
-		poly.Fit(variablesTrain, observedTrain)
+		poly.Fit(variablesTrain, Ytrain)
 		variablesTrain, _ = poly.FitTransform(variablesTrain, nil)
 		variablesTest, _ = poly.FitTransform(variablesTest, nil)
 
-		// Обучаем и предсказываем
-		mlp.Fit(variablesTrain, observedTrain)
-		Ypred := mat.NewDense(len(testData), 1, nil)
+		mlp.Fit(variablesTrain, Ytrain)
+		Ypred := mat.NewDense(len(testPoints), 1, nil)
 		mlp.Predict(variablesTest, Ypred)
 
-		r2 := metrics.R2Score(observedTest, Ypred, nil, "").At(0, 0)
+		r2 := metrics.R2Score(Ytest, Ypred, nil, "").At(0, 0)
 		if r2 > best.r2 {
-			bestErr := map[string]float{
+			bestErr := map[string]float64{
 				"R2":  r2,
-				"MSE": metrics.MeanSquaredError(observedTest, Ypred, nil, "").At(0, 0),
-				"MAE": metrics.MeanAbsoluteError(observedTest, Ypred, nil, "").At(0, 0),
+				"MSE": metrics.MeanSquaredError(Ytest, Ypred, nil, "").At(0, 0),
+				"MAE": metrics.MeanAbsoluteError(Ytest, Ypred, nil, "").At(0, 0),
 			}
 			best = polyResult{
 				degree:   degree,
 				r2:       r2,
 				yPred:    Ypred,
 				mlp:      mlp,
-				graphics: makeGraphicsForPoly(testData, mlp.Coefs, Ypred),
+				graphics: makeGraphicsForPoly(testPoints, mlp.Coefs, Ypred),
 				bestErr:  bestErr,
 			}
 		}
@@ -697,7 +459,7 @@ func polynomialChecking(dataPoints []models.DataPoint) (map[string]interface{}, 
 		"graphics":      best.graphics,
 		"poly Ypred":    fmt.Sprintf("%.2f\n", mat.Formatted(best.yPred)),
 		"Coeffs":        best.mlp.Coefs,
-		"poly accuracy": metrics.AccuracyScore(observedTest, best.yPred, true, nil),
+		"poly accuracy": metrics.AccuracyScore(Ytest, best.yPred, true, nil),
 		"bestErr":       best.bestErr,
 		"resultType":    resultType,
 	}
@@ -705,30 +467,16 @@ func polynomialChecking(dataPoints []models.DataPoint) (map[string]interface{}, 
 	return detail, nil
 }
 
-func logChecking(dataPoints []models.DataPoint) (map[string]interface{}, error) {
-	numOfSamples := len(dataPoints)
-	if numOfSamples == 0 {
-		return nil, fmt.Errorf("no data points provided")
-	}
+func logChecking(Xtrain, Ytrain, Xtest, Ytest *mat.Dense, testPoints []models.DataPoint) (map[string]interface{}, error) {
 
-	// Перемешиваем и разделяем выборку
-	rand.Seed(42)
-	rand.Shuffle(numOfSamples, func(i, j int) {
-		dataPoints[i], dataPoints[j] = dataPoints[j], dataPoints[i]
-	})
-	trainSize := int(0.7 * float64(numOfSamples))
-	trainData := dataPoints[:trainSize]
-	testData := dataPoints[trainSize:]
-
-	numOfVars := len(dataPoints[0].Variables)
-
-	// Подготовка обучающих данных
-	observedTrain := mat.NewDense(len(trainData), 1, nil)
-	logVarsTrain := mat.NewDense(len(trainData), numOfVars, nil)
-	for i, dp := range trainData {
-		y := math.Log(dp.Observed)
-		observedTrain.Set(i, 0, y)
-		for j, x := range dp.Variables {
+	// Перемешиваем и строим матрицы для логарифмического преобразования
+	numOfVars := Xtrain.RawMatrix().Cols
+	logVarsTrain := mat.NewDense(Xtrain.RawMatrix().Rows, numOfVars, nil)
+	observedTrain := mat.NewDense(Ytrain.RawMatrix().Rows, 1, nil)
+	for i := 0; i < Xtrain.RawMatrix().Rows; i++ {
+		observedTrain.Set(i, 0, math.Log(Ytrain.At(i, 0)))
+		for j := 0; j < numOfVars; j++ {
+			x := Xtrain.At(i, j)
 			if x <= 0 || math.IsInf(x, 0) || math.IsNaN(x) {
 				logVarsTrain.Set(i, j, 0)
 			} else {
@@ -737,13 +485,13 @@ func logChecking(dataPoints []models.DataPoint) (map[string]interface{}, error) 
 		}
 	}
 
-	// Подготовка тестовых данных
-	observedTest := mat.NewDense(len(testData), 1, nil)
-	logVarsTest := mat.NewDense(len(testData), numOfVars, nil)
-	for i, dp := range testData {
-		y := math.Log(dp.Observed)
-		observedTest.Set(i, 0, y)
-		for j, x := range dp.Variables {
+	// Для тестовой выборки
+	logVarsTest := mat.NewDense(Xtest.RawMatrix().Rows, numOfVars, nil)
+	observedTest := mat.NewDense(Ytest.RawMatrix().Rows, 1, nil)
+	for i := 0; i < Xtest.RawMatrix().Rows; i++ {
+		observedTest.Set(i, 0, math.Log(Ytest.At(i, 0)))
+		for j := 0; j < numOfVars; j++ {
+			x := Xtest.At(i, j)
 			if x <= 0 || math.IsInf(x, 0) || math.IsNaN(x) {
 				logVarsTest.Set(i, j, 0)
 			} else {
@@ -771,7 +519,7 @@ func logChecking(dataPoints []models.DataPoint) (map[string]interface{}, error) 
 	// mlp.LossFuncName = "binary_log_loss"
 	err := mlp.Unmarshal(buf)
 	if err != nil {
-		return nil, fmt.Errorf("Error with unmarshal byte data")
+		return nil, fmt.Errorf("Error with unmarshal byte data: %v", err)
 	}
 	// mlp.RandomState = base.NewLockedSource(2)
 	// mlp.WarmStart = false
@@ -782,7 +530,7 @@ func logChecking(dataPoints []models.DataPoint) (map[string]interface{}, error) 
 	// Обучение и предсказание
 	mlp.Fit(logVarsTrain, observedTrain)
 
-	YpredTest := mat.NewDense(len(testData), 1, nil)
+	YpredTest := mat.NewDense(len(testPoints), 1, nil)
 	mlp.Predict(logVarsTest, YpredTest)
 
 	// Метрики на тестовой выборке
@@ -790,6 +538,7 @@ func logChecking(dataPoints []models.DataPoint) (map[string]interface{}, error) 
 	mse := metrics.MeanSquaredError(observedTest, YpredTest, nil, "").At(0, 0)
 	mae := metrics.MeanAbsoluteError(observedTest, YpredTest, nil, "").At(0, 0)
 
+	// Обработка бесконечных и NaN значений
 	if math.IsInf(r2, 0) || math.IsNaN(r2) {
 		r2 = 0
 	}
@@ -800,8 +549,9 @@ func logChecking(dataPoints []models.DataPoint) (map[string]interface{}, error) 
 		mae = 0
 	}
 
+	// Результаты
 	res := map[string]interface{}{
-		"graphics":   makeGraphicsForPoly(testData, mlp.Coefs, YpredTest),
+		"graphics":   makeGraphicsForPoly(testPoints, mlp.Coefs, YpredTest),
 		"poly Ypred": fmt.Sprintf("%.2f\n", mat.Formatted(YpredTest)),
 		"Coeffs":     mlp.Coefs,
 		"bestErr": map[string]float{
