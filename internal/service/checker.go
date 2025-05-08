@@ -120,15 +120,11 @@ func ridgeChecking(Xtrain, Ytrain, Xtest, Ytest *mat.Dense, testPoints []models.
 	resultType := map[int]string{0: "linear", 1: "linear", 2: "linear"}
 
 	res := map[string]interface{}{
-		"ridge Ypred":              fmt.Sprintf("%.2f\n", mat.Formatted(Ypred)),
-		"ridge Coef":               fmt.Sprintf("%.2f\n", mat.Formatted(regr.LinearRegression.Coef)),
-		"ridge XOffsetoef":         fmt.Sprintf("%.2f\n", mat.Formatted(regr.LinearRegression.XOffset)),
-		"ridge XScale":             fmt.Sprintf("%.2f\n", mat.Formatted(regr.LinearRegression.XScale)),
-		"ridge Intercept":          fmt.Sprintf("%.2f\n", mat.Formatted(regr.LinearRegression.Intercept)),
-		"ridge ActivationFunction": regr.ActivationFunction,
-		"graphics":                 makeGraphicsForOtherMethod(testPoints, regr.Coef, Ypred),
-		"bestErr":                  bestErr,
-		"resultType":               resultType,
+		"ridge Ypred": fmt.Sprintf("%.2f\n", mat.Formatted(Ypred)),
+		"ridge Coef":  fmt.Sprintf("%.2f\n", mat.Formatted(regr.LinearRegression.Coef)),
+		"graphics":    makeGraphicsForOtherMethod(testPoints, regr.Coef, Ypred),
+		"bestErr":     bestErr,
+		"resultType":  resultType,
 	}
 
 	return res, nil
@@ -160,23 +156,11 @@ func lassoChecking(Xtrain, Ytrain, Xtest, Ytest *mat.Dense, testPoints []models.
 	resultType := map[int]string{0: "linear", 1: "linear", 2: "linear"}
 
 	res := map[string]interface{}{
-		"lasso Ypred":      fmt.Sprintf("%.5f\n", mat.Formatted(Ypred)),
-		"lasso Coef":       fmt.Sprintf("%.2f\n", mat.Formatted(regr.LinearRegression.Coef.T())),
-		"lasso XOffsetoef": fmt.Sprintf("%.2f\n", mat.Formatted(regr.LinearRegression.XOffset.T())),
-		"lasso XScale":     fmt.Sprintf("%.2f\n", mat.Formatted(regr.LinearRegression.XScale.T())),
-		"lasso Intercept":  fmt.Sprintf("%.2f\n", mat.Formatted(regr.LinearRegression.Intercept.T())),
-		"lasso RSS":        mat.Sum(rss),
-		"lasso MaxIter":    regr.MaxIter,
-		"lasso Tol":        regr.Tol,
-		"lasso Alpha":      regr.Alpha,
-		"lasso L1Ratio":    regr.L1Ratio,
-		"lasso Selection":  regr.Selection,
-		"lasso WarmStart":  regr.WarmStart,
-		"lasso Positive":   regr.Positive,
-		"lasso CDResult":   regr.CDResult,
-		"graphics":         makeGraphicsForOtherMethod(testPoints, regr.Coef, Ypred),
-		"bestErr":          bestErr,
-		"resultType":       resultType,
+		"lasso Ypred": fmt.Sprintf("%.5f\n", mat.Formatted(Ypred)),
+		"lasso Coef":  fmt.Sprintf("%.2f\n", mat.Formatted(regr.LinearRegression.Coef.T())),
+		"graphics":    makeGraphicsForOtherMethod(testPoints, regr.Coef, Ypred),
+		"bestErr":     bestErr,
+		"resultType":  resultType,
 	}
 
 	return res, nil
@@ -211,22 +195,11 @@ func elasticChecking(Xtrain, Ytrain, Xtest, Ytest *mat.Dense, testPoints []model
 	}
 
 	res := map[string]interface{}{
-		"elastic Ypred":      fmt.Sprintf("%.5f\n", mat.Formatted(Ypred)),
-		"elastic Coef":       fmt.Sprintf("%.7f\n", mat.Formatted(enet.LinearRegression.Coef)),
-		"elastic XOffsetoef": fmt.Sprintf("%.2f\n", mat.Formatted(enet.LinearRegression.XOffset)),
-		"elastic XScale":     fmt.Sprintf("%.2f\n", mat.Formatted(enet.LinearRegression.XScale)),
-		"elastic Intercept":  fmt.Sprintf("%.2f\n", mat.Formatted(enet.LinearRegression.Intercept)),
-		"elastic MaxIter":    enet.MaxIter,
-		"elastic Tol":        enet.Tol,
-		"elastic Alpha":      enet.Alpha,
-		"elastic L1Ratio":    enet.L1Ratio,
-		"elastic Selection":  enet.Selection,
-		"elastic WarmStart":  enet.WarmStart,
-		"elastic Positive":   enet.Positive,
-		"elastic CDResult":   enet.CDResult,
-		"graphics":           makeGraphicsForOtherMethod(testPoints, enet.Coef, Ypred),
-		"bestErr":            bestErr,
-		"resultType":         resultType,
+		"elastic Ypred": fmt.Sprintf("%.5f\n", mat.Formatted(Ypred)),
+		"elastic Coef":  fmt.Sprintf("%.7f\n", mat.Formatted(enet.LinearRegression.Coef)),
+		"graphics":      makeGraphicsForOtherMethod(testPoints, enet.Coef, Ypred),
+		"bestErr":       bestErr,
+		"resultType":    resultType,
 	}
 
 	return res, nil
@@ -268,14 +241,11 @@ func logisticChecking(Xtrain, Ytrain, Xtest, Ytest *mat.Dense, testPoints []mode
 	}
 
 	res := map[string]interface{}{
-		"logistic Ypred":     fmt.Sprintf("%.2f\n", mat.Formatted(Ypred)),
-		"logistic Coef":      regr.Coef,
-		"logistic Intercept": regr.Intercept,
-		"logistic Tol":       regr.Tol,
-		"logistic Alpha":     regr.Alpha,
-		"graphics":           makeGraphicsFoBlas64(testPoints, regr.Coef, Ypred),
-		"bestErr":            bestErr,
-		"resultType":         resultType,
+		"logistic Ypred": fmt.Sprintf("%.2f\n", mat.Formatted(Ypred)),
+		"logistic Coef":  regr.Coef,
+		"graphics":       makeGraphicsFoBlas64(testPoints, regr.Coef, Ypred),
+		"bestErr":        bestErr,
+		"resultType":     resultType,
 	}
 
 	return res, nil
@@ -459,6 +429,7 @@ func polynomialChecking(Xtrain, Ytrain, Xtest, Ytest *mat.Dense, testPoints []mo
 		"graphics":      best.graphics,
 		"poly Ypred":    fmt.Sprintf("%.2f\n", mat.Formatted(best.yPred)),
 		"Coeffs":        best.mlp.Coefs,
+		"OutActivation": best.mlp.OutActivation,
 		"poly accuracy": metrics.AccuracyScore(Ytest, best.yPred, true, nil),
 		"bestErr":       best.bestErr,
 		"resultType":    resultType,
@@ -548,12 +519,12 @@ func logChecking(Xtrain, Ytrain, Xtest, Ytest *mat.Dense, testPoints []models.Da
 	if math.IsInf(mae, 0) || math.IsNaN(mae) {
 		mae = 0
 	}
-
 	// Результаты
 	res := map[string]interface{}{
-		"graphics":   makeGraphicsForPoly(testPoints, mlp.Coefs, YpredTest),
-		"poly Ypred": fmt.Sprintf("%.2f\n", mat.Formatted(YpredTest)),
-		"Coeffs":     mlp.Coefs,
+		"graphics":      makeGraphicsForLog(testPoints, YpredTest),
+		"poly Ypred":    fmt.Sprintf("%.2f\n", mat.Formatted(YpredTest)),
+		"Coeffs":        mlp.Coefs,
+		"OutActivation": mlp.OutActivation,
 		"bestErr": map[string]float{
 			"R2":  r2,
 			"MSE": mse,

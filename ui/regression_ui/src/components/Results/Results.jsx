@@ -71,13 +71,13 @@ const Results = ({ title, data, datapoints = [], headers = [], recommended = fal
             </div>
           )}
 
-          {/* Остальные данные */}
+          {/* Остальные данные
           {Object.entries(restData).map(([key, value]) => (
             <div key={key} className="result-item">
               <strong>{key}:</strong>{" "}
               {typeof value === "object" ? JSON.stringify(value, null, 2) : value}
             </div>
-          ))}
+          ))}  */}
 
           {/* Графики и таблицы */}
           {graphicsTables.length > 0 && (

@@ -2,6 +2,8 @@ package service
 
 import (
 	"fmt"
+	"math"
+
 	"github.com/mbatimel/RegressionAnalysis/internal/models"
 	"gonum.org/v1/gonum/blas/blas64"
 	"gonum.org/v1/gonum/mat"
@@ -45,6 +47,33 @@ func makeGraphicsForPoly(datapoints []models.DataPoint, CoeffMatrics []blas64.Ge
 		res[i] = xyPlot
 	}
 	return res
+}
+func makeGraphicsForLog(testPoints []models.DataPoint, Ypred *mat.Dense) map[int]map[string]float64 {
+	numFeatures := len(testPoints[0].Variables)
+	numSamples := len(testPoints)
+
+	// Преобразуем Ypred из лог-пространства в обычное
+	YpredOriginal := make([]float64, numSamples)
+	for i := 0; i < numSamples; i++ {
+		YpredOriginal[i] = math.Exp(Ypred.At(i, 0))
+	}
+
+	result := make(map[int]map[string]float64)
+
+	// Каждая точка кодируется индексом: featureIndex*numSamples + sampleIndex
+	for j := 0; j < numFeatures; j++ {
+		xyPlot := make(map[string]float64)
+		for i := 0; i < numSamples; i++ {
+			if i >= len(testPoints[j].Variables) {
+				continue // избегаем выхода за границы
+			}
+			x := testPoints[i].Variables[j]
+			xyPlot[fmt.Sprintf("%f", YpredOriginal[i])] = x
+		}
+		result[j] = xyPlot
+	}
+
+	return result
 }
 
 // func makeGraphics(r *linearmodel.Regression) map[int]map[string]float64 {
