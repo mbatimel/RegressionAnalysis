@@ -22,14 +22,14 @@ const Tables = ({
 
   return (
     <div>
-      <div>
+      <div style={{margin: 10, marginTop:10}}>
         <label>
-          Количество наблюдений:
+          Количество наблюдений: 
           <input type="number" value={rows} onChange={handleRowsChange} />
         </label>
       </div>
       <div>
-        <label>
+       <label>
           Количество показателей:
           <input type="number" value={cols} onChange={handleColsChange} />
         </label>

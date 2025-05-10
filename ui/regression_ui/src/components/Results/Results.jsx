@@ -4,21 +4,52 @@ import Graphics from "./../Graphics/Graphics";
 import 'katex/dist/katex.min.css';
 import { BlockMath } from 'react-katex';
 
-const FORMULAS = {
-  "Анализ через Linear регрессию": "y = \\beta_0 + \\beta_1 x",
-  "Анализ через Polynomial регрессию": "y = \\beta_0 + \\beta_1 x + \\beta_2 x^2 + \\dots + \\beta_n x^n",
-  "Анализ через Ridge регрессию": "y = X \\beta + \\lambda ||\\beta||^2",
-  "Анализ через Lasso регрессию": "y = X \\beta + \\lambda \\sum |\\beta_i|",
-  "Анализ через Elastic регрессию": "y = X \\beta + \\lambda_1 ||\\beta||^2 + \\lambda_2 \\sum |\\beta_i|",
-  "Анализ через SRV регрессию": "\\hat{y} = \\frac{1}{T} \\sum_{t=1}^T h_t(x)",
-  "Анализ через Logistic регрессию": "\\hat{y} = \\sum_{m=1}^{M} \\gamma_m h_m(x)"
+// Формулы с генерацией на основе параметров
+const generateFormula = (title, params = {}) => {
+  const { Coef = [], intercept = 0, degree = 2, lambda, lambda1, lambda2 } = params;
+
+  switch (title) {
+    case "Анализ через Linear регрессию":
+      return `y = ${intercept} + ${Coef.map((c, i) => `${c} x_{${i + 1}}`).join(" + ")}`;
+
+    case "Анализ через Polynomial регрессию": {
+      let parts = [`${intercept}`];
+      let idx = 0;
+      for (let i = 0; i < Coef.length / degree; i++) {
+        for (let d = 1; d <= degree; d++) {
+          parts.push(`${Coef[idx++]} x_{${i + 1}}^{${d}}`);
+        }
+      }
+      return `y = ${parts.join(" + ")}`;
+    }
+
+    case "Анализ через Ridge регрессию":
+      return `y = X \\beta + ${lambda ?? '\\lambda'} \\|\\beta\\|^2`;
+
+    case "Анализ через Lasso регрессию":
+      return `y = X \\beta + ${lambda ?? '\\lambda'} \\sum |\\beta_i|`;
+
+    case "Анализ через Elastic регрессию":
+      return `y = X \\beta + ${lambda1 ?? '\\lambda_1'} \\|\\beta\\|^2 + ${lambda2 ?? '\\lambda_2'} \\sum |\\beta_i|`;
+
+    case "Анализ через SRV регрессию":
+      return "\\hat{y}(x) = \\sum_{i=1}^l (\\alpha_i - \\alpha_i^*) K(x_i, x) + b";
+
+    case "Анализ через Logistic регрессию":
+      return `P(y=1|x) = \\frac{1}{1 + e^{-(${intercept} + ${Coef.map((c, i) => `${c} x_{${i + 1}}`).join(" + ")})}}`;
+
+    case "Анализ через LogChecking регрессию":
+      return `y = ${intercept} + ${Coef[0]} \\ln(x)`;
+
+    default:
+      return null;
+  }
 };
 
 const Results = ({ title, data, datapoints = [], headers = [], recommended = false }) => {
   const [expanded, setExpanded] = useState(false);
   if (!data) return null;
-  const { bestErr, graphics, ...restData } = data;
-
+  const { bestErr, graphics, params } = data;
 
   const prepareGraphicsTables = (graphics) => {
     if (!graphics) return [];
@@ -38,7 +69,7 @@ const Results = ({ title, data, datapoints = [], headers = [], recommended = fal
   };
 
   const graphicsTables = prepareGraphicsTables(graphics);
-  const latexFormula = FORMULAS[title];
+  const latexFormula = generateFormula(title, params);
 
   return (
     <div className={`results-container ${expanded ? "expanded" : "collapsed"} ${recommended ? "recommended" : ""}`}>
@@ -70,14 +101,6 @@ const Results = ({ title, data, datapoints = [], headers = [], recommended = fal
               <BlockMath math={latexFormula} />
             </div>
           )}
-
-          {/* Остальные данные
-          {Object.entries(restData).map(([key, value]) => (
-            <div key={key} className="result-item">
-              <strong>{key}:</strong>{" "}
-              {typeof value === "object" ? JSON.stringify(value, null, 2) : value}
-            </div>
-          ))}  */}
 
           {/* Графики и таблицы */}
           {graphicsTables.length > 0 && (

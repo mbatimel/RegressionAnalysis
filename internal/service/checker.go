@@ -2,9 +2,6 @@ package service
 
 import (
 	"fmt"
-	"math/rand"
-	"sync"
-	"time"
 
 	"math"
 
@@ -20,79 +17,6 @@ import (
 	"gonum.org/v1/gonum/mat"
 	"gonum.org/v1/gonum/optimize"
 )
-
-type float = float64
-
-func PrepareTrainTestMatrices(dataPoints []models.DataPoint, trainRatio float64) (
-	Xtrain, Ytrain, Xtest, Ytest *mat.Dense,
-	testPoints []models.DataPoint,
-	err error,
-) {
-	numOfSamples := len(dataPoints)
-	if numOfSamples == 0 {
-		return nil, nil, nil, nil, nil, fmt.Errorf("no data points provided")
-	}
-	numOfVars := len(dataPoints[0].Variables)
-
-	// Перемешиваем и делим на train/test
-	shuffled := make([]models.DataPoint, numOfSamples)
-	copy(shuffled, dataPoints)
-	rand.Seed(time.Now().UnixNano())
-	rand.Shuffle(numOfSamples, func(i, j int) {
-		shuffled[i], shuffled[j] = shuffled[j], shuffled[i]
-	})
-
-	splitIdx := int(trainRatio * float64(numOfSamples))
-	trainPoints := shuffled[:splitIdx]
-	testPoints = shuffled[splitIdx:]
-
-	Xtrain = mat.NewDense(len(trainPoints), numOfVars, nil)
-	Ytrain = mat.NewDense(len(trainPoints), 1, nil)
-	for i, dp := range trainPoints {
-		for j := 0; j < numOfVars; j++ {
-			Xtrain.Set(i, j, dp.Variables[j])
-		}
-		Ytrain.Set(i, 0, dp.Observed)
-	}
-
-	Xtest = mat.NewDense(len(testPoints), numOfVars, nil)
-	Ytest = mat.NewDense(len(testPoints), 1, nil)
-
-	var wg sync.WaitGroup
-	type rowData struct {
-		index    int
-		varRow   []float64
-		obsValue float64
-	}
-	rowChan := make(chan rowData, len(testPoints))
-
-	for i := 0; i < len(testPoints); i++ {
-		wg.Add(1)
-		go func(i int) {
-			defer wg.Done()
-			dp := testPoints[i]
-			rowChan <- rowData{
-				index:    i,
-				varRow:   append([]float64(nil), dp.Variables...),
-				obsValue: dp.Observed,
-			}
-		}(i)
-	}
-
-	go func() {
-		wg.Wait()
-		close(rowChan)
-	}()
-
-	for row := range rowChan {
-		for j := 0; j < numOfVars; j++ {
-			Xtest.Set(row.index, j, row.varRow[j])
-		}
-		Ytest.Set(row.index, 0, row.obsValue)
-	}
-
-	return Xtrain, Ytrain, Xtest, Ytest, testPoints, nil
-}
 
 func ridgeChecking(Xtrain, Ytrain, Xtest, Ytest *mat.Dense, testPoints []models.DataPoint) (map[string]interface{}, error) {
 	regr := linearmodel.NewRidge()
@@ -117,14 +41,19 @@ func ridgeChecking(Xtrain, Ytrain, Xtest, Ytest *mat.Dense, testPoints []models.
 		fmt.Printf("Test %T normalize=%v r2score=%g mse=%g mae=%g\n", regr, true, r2score, mse, mae)
 	}
 
-	resultType := map[int]string{0: "linear", 1: "linear", 2: "linear"}
+	resultType := map[int]string{0: "Линейный", 1: "Линейный", 2: "Линейный"}
 
 	res := map[string]interface{}{
 		"ridge Ypred": fmt.Sprintf("%.2f\n", mat.Formatted(Ypred)),
-		"ridge Coef":  fmt.Sprintf("%.2f\n", mat.Formatted(regr.LinearRegression.Coef)),
-		"graphics":    makeGraphicsForOtherMethod(testPoints, regr.Coef, Ypred),
+		"Coef":        fmt.Sprintf("%.2f\n", mat.Formatted(regr.LinearRegression.Coef)),
+		"graphics":    makeGraphicsForRidge(testPoints, regr.Coef, Ypred),
 		"bestErr":     bestErr,
 		"resultType":  resultType,
+		"params": map[string]interface{}{
+			"coefficients": flattenMatrix(regr.Coef),
+			"intercept":    regr.Intercept,
+			"lambda":       regr.Alpha,
+		},
 	}
 
 	return res, nil
@@ -153,14 +82,19 @@ func lassoChecking(Xtrain, Ytrain, Xtest, Ytest *mat.Dense, testPoints []models.
 		"MAE": metrics.MeanAbsoluteError(Ytest, Ypred, nil, "").At(0, 0),
 	}
 
-	resultType := map[int]string{0: "linear", 1: "linear", 2: "linear"}
+	resultType := map[int]string{0: "Линейный", 1: "Линейный", 2: "Линейный"}
 
 	res := map[string]interface{}{
 		"lasso Ypred": fmt.Sprintf("%.5f\n", mat.Formatted(Ypred)),
-		"lasso Coef":  fmt.Sprintf("%.2f\n", mat.Formatted(regr.LinearRegression.Coef.T())),
-		"graphics":    makeGraphicsForOtherMethod(testPoints, regr.Coef, Ypred),
+		"Coef":        fmt.Sprintf("%.2f\n", mat.Formatted(regr.LinearRegression.Coef.T())),
+		"graphics":    makeGraphicsForLasso(testPoints, regr.Coef, Ypred),
 		"bestErr":     bestErr,
 		"resultType":  resultType,
+		"params": map[string]interface{}{
+			"coefficients": flattenMatrix(regr.Coef),
+			"intercept":    regr.Intercept,
+			"lambda":       regr.Alpha,
+		},
 	}
 
 	return res, nil
@@ -189,17 +123,23 @@ func elasticChecking(Xtrain, Ytrain, Xtest, Ytest *mat.Dense, testPoints []model
 	}
 
 	resultType := map[int]string{
-		0: "linear",
-		1: "linear",
-		2: "linear",
+		0: "Линейный",
+		1: "Линейный",
+		2: "Линейный",
 	}
 
 	res := map[string]interface{}{
 		"elastic Ypred": fmt.Sprintf("%.5f\n", mat.Formatted(Ypred)),
-		"elastic Coef":  fmt.Sprintf("%.7f\n", mat.Formatted(enet.LinearRegression.Coef)),
-		"graphics":      makeGraphicsForOtherMethod(testPoints, enet.Coef, Ypred),
+		"Coef":          fmt.Sprintf("%.7f\n", mat.Formatted(enet.LinearRegression.Coef)),
+		"graphics":      makeGraphicsForElastic(testPoints, enet.Coef, Ypred),
 		"bestErr":       bestErr,
 		"resultType":    resultType,
+		"params": map[string]interface{}{
+			"coefficients": flattenMatrix(enet.Coef),
+			"intercept":    enet.Intercept,
+			"lambda1":      enet.Alpha * (1 - enet.L1Ratio),
+			"lambda2":      enet.Alpha * enet.L1Ratio,
+		},
 	}
 
 	return res, nil
@@ -218,7 +158,7 @@ func logisticChecking(Xtrain, Ytrain, Xtest, Ytest *mat.Dense, testPoints []mode
 	// Обучение модели
 	regr := linearmodel.NewLogisticRegression()
 	regr.Alpha = 1e-5
-	regr.MaxIter = 4
+	regr.MaxIter = 400
 	regr.BeforeMinimize = checkGradients
 	regr.Fit(Xtrain, Ytrain)
 
@@ -235,17 +175,21 @@ func logisticChecking(Xtrain, Ytrain, Xtest, Ytest *mat.Dense, testPoints []mode
 	}
 
 	resultType := map[int]string{
-		0: "linear",
-		1: "linear",
-		2: "linear",
+		0: "Линейный",
+		1: "Линейный",
+		2: "Линейный",
 	}
 
 	res := map[string]interface{}{
 		"logistic Ypred": fmt.Sprintf("%.2f\n", mat.Formatted(Ypred)),
-		"logistic Coef":  regr.Coef,
-		"graphics":       makeGraphicsFoBlas64(testPoints, regr.Coef, Ypred),
+		"Coef":           regr.Coef,
+		"graphics":       makeGraphicsForLogistic(testPoints, regr.Coef, Ypred),
 		"bestErr":        bestErr,
 		"resultType":     resultType,
+		"params": map[string]interface{}{
+			"coefficients": flattenBlasMatrix(regr.Coef),
+			"intercept":    regr.Intercept,
+		},
 	}
 
 	return res, nil
@@ -282,9 +226,9 @@ func svrChecking(Xtrain, Ytrain, Xtest, Ytest *mat.Dense, testPoints []models.Da
 	}
 
 	resultType := map[int]string{
-		0: "cubic",
-		1: "cubic",
-		2: "cubic",
+		0: "Кубический",
+		1: "Кубический",
+		2: "Кубический",
 	}
 
 	for _, opt := range kernelOptions {
@@ -299,7 +243,7 @@ func svrChecking(Xtrain, Ytrain, Xtest, Ytest *mat.Dense, testPoints []models.Da
 		svr.Degree = opt.degree
 		svr.RandomState = randomState
 		svr.Tol = math.Sqrt(Epsilon)
-		svr.MaxIter = 5
+		svr.MaxIter = 400
 
 		svr.Fit(XtrainSc, YtrainSc)
 		svr.Predict(XtestSc, Ypred)
@@ -358,11 +302,10 @@ func polynomialChecking(Xtrain, Ytrain, Xtest, Ytest *mat.Dense, testPoints []mo
 	best.r2 = -math.MaxFloat64
 
 	degreeToLabel := map[int]string{
-		1: "linear",
-		2: "quadratic",
-		3: "cubic",
-		4: "quartic",
-		5: "quintic",
+		1: "Линейный",
+		2: "Квадратичный",
+		3: "Кубический",
+		4: "Четвертичная дробь",
 	}
 
 	for degree := 1; degree <= 3; degree++ {
@@ -413,7 +356,7 @@ func polynomialChecking(Xtrain, Ytrain, Xtest, Ytest *mat.Dense, testPoints []mo
 				r2:       r2,
 				yPred:    Ypred,
 				mlp:      mlp,
-				graphics: makeGraphicsForPoly(testPoints, mlp.Coefs, Ypred),
+				graphics: makeGraphicsForPoly(testPoints, mlp.Coefs, Ypred, degree),
 				bestErr:  bestErr,
 			}
 		}
@@ -428,7 +371,7 @@ func polynomialChecking(Xtrain, Ytrain, Xtest, Ytest *mat.Dense, testPoints []mo
 	detail := map[string]interface{}{
 		"graphics":      best.graphics,
 		"poly Ypred":    fmt.Sprintf("%.2f\n", mat.Formatted(best.yPred)),
-		"Coeffs":        best.mlp.Coefs,
+		"coefficients":  flattenNested(best.mlp.Coefs),
 		"OutActivation": best.mlp.OutActivation,
 		"poly accuracy": metrics.AccuracyScore(Ytest, best.yPred, true, nil),
 		"bestErr":       best.bestErr,
@@ -492,10 +435,10 @@ func logChecking(Xtrain, Ytrain, Xtest, Ytest *mat.Dense, testPoints []models.Da
 	if err != nil {
 		return nil, fmt.Errorf("Error with unmarshal byte data: %v", err)
 	}
-	// mlp.RandomState = base.NewLockedSource(2)
-	// mlp.WarmStart = false
-	// mlp.LearningRateInit = 0.11
-	// mlp.BatchSize = numOfSamples + 1
+	mlp.MaxIter = 400
+	mlp.LearningRateInit = 0.11
+	mlp.BatchSize = 118
+	mlp.BeforeMinimize = checkGradients
 	mlp.BeforeMinimize = checkGradients
 
 	// Обучение и предсказание
@@ -523,7 +466,7 @@ func logChecking(Xtrain, Ytrain, Xtest, Ytest *mat.Dense, testPoints []models.Da
 	res := map[string]interface{}{
 		"graphics":      makeGraphicsForLog(testPoints, YpredTest),
 		"poly Ypred":    fmt.Sprintf("%.2f\n", mat.Formatted(YpredTest)),
-		"Coeffs":        mlp.Coefs,
+		"coefficients":  flattenNested(mlp.Coefs),
 		"OutActivation": mlp.OutActivation,
 		"bestErr": map[string]float{
 			"R2":  r2,
@@ -531,9 +474,9 @@ func logChecking(Xtrain, Ytrain, Xtest, Ytest *mat.Dense, testPoints []models.Da
 			"MAE": mae,
 		},
 		"resultType": map[int]string{
-			0: "log",
-			1: "log",
-			2: "log",
+			0: "Логарифмический",
+			1: "Логарифмический",
+			2: "Логарифмический",
 		},
 	}
 
