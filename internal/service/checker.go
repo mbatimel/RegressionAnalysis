@@ -200,6 +200,11 @@ func logisticChecking(Xtrain, Ytrain, Xtest, Ytest *mat.Dense, testPoints []mode
 }
 
 func svrChecking(Xtrain, Ytrain, Xtest, Ytest *mat.Dense, testPoints []models.DataPoint) (map[string]interface{}, error) {
+	const maxTrainSize = 50
+
+	if Xtrain.RawMatrix().Rows > maxTrainSize {
+		Xtrain, Ytrain = getRandomSubset(Xtrain, Ytrain, maxTrainSize)
+	}
 
 	var bestRes map[string]interface{}
 	bestScore := struct {

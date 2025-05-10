@@ -119,3 +119,19 @@ func PrepareTrainTestMatrices(dataPoints []models.DataPoint, trainRatio float64)
 
 	return Xtrain, Ytrain, Xtest, Ytest, testPoints, nil
 }
+
+func getRandomSubset(X, Y *mat.Dense, n int) (*mat.Dense, *mat.Dense) {
+	rows := X.RawMatrix().Rows
+	if n > rows {
+		n = rows
+	}
+	idx := rand.Perm(rows)[:n]
+
+	Xsub := mat.NewDense(n, X.RawMatrix().Cols, nil)
+	Ysub := mat.NewDense(n, Y.RawMatrix().Cols, nil)
+	for i, rowIdx := range idx {
+		Xsub.SetRow(i, X.RawRowView(rowIdx))
+		Ysub.SetRow(i, Y.RawRowView(rowIdx))
+	}
+	return Xsub, Ysub
+}
