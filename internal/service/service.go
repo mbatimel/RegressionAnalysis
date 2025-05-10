@@ -1,6 +1,7 @@
 package service
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"encoding/csv"
@@ -101,7 +102,9 @@ func (rs *regressionService) MlrRegression(ctx context.Context, observer string,
 }
 func (rs *regressionService) MlrRegressionCSV(ctx context.Context, file []byte) (map[string]interface{}, error) {
 	r := new(linearmodel.Regression)
-	reader := csv.NewReader(bytes.NewReader(file))
+	buf := bufio.NewReaderSize(bytes.NewReader(file), 16*1024*1024) // 16 MB буфер
+	reader := csv.NewReader(buf)
+
 	reader.Comma = ';'
 	dataPoints := make([]models.DataPoint, 0)
 	// Читаем заголовки
@@ -189,29 +192,34 @@ func (rs *regressionService) MlrRegressionCSV(ctx context.Context, file []byte) 
 	rs.logger.Info().Msg("Starting checking on classifier ridge")
 	ridgeCheck, err := ridgeChecking(Xtrain, Ytrain, Xtest, Ytest, testPoints)
 	if err != nil {
-		return nil, fmt.Errorf("Ridge checking is dead")
+		ridgeCheck = nil
+		rs.logger.Error().Err(err).Msg("Ridge checking is dead")
 	}
 
 	rs.logger.Info().Msg("Starting checking on classifier lasso")
 	lassoCheck, err := lassoChecking(Xtrain, Ytrain, Xtest, Ytest, testPoints)
 	if err != nil {
-		return nil, fmt.Errorf("lasso checking is dead")
+		lassoCheck = nil
+		rs.logger.Error().Err(err).Msg("lasso checking is dead")
 	}
 	rs.logger.Info().Msg("Starting checking on classifier elastic")
 	elasticCheck, err := elasticChecking(Xtrain, Ytrain, Xtest, Ytest, testPoints, 10)
 	if err != nil {
-		return nil, fmt.Errorf("elastic checking is dead")
+		elasticCheck = nil
+		rs.logger.Error().Err(err).Msg("elastic checking is dead")
 	}
 	rs.logger.Info().Msg("Starting checking on classifier logistic")
 	logisticCheck, err := logisticChecking(Xtrain, Ytrain, Xtest, Ytest, testPoints)
 	if err != nil {
-		return nil, fmt.Errorf("Ridge checking is dead")
+		logisticCheck = nil
+		rs.logger.Error().Err(err).Msg("Ridge checking is dead")
 	}
 
 	rs.logger.Info().Msg("Starting checking on classifier SVR")
 	svrCheck, err := svrChecking(Xtrain, Ytrain, Xtest, Ytest, testPoints)
 	if err != nil {
-		return nil, fmt.Errorf("SRV checking is dead")
+		svrCheck = nil
+		rs.logger.Error().Err(err).Msg("SRV checking is dead")
 	}
 	rs.logger.Info().Msg("Starting checking on classifier polynomial")
 	polynomialCheck, err := polynomialChecking(Xtrain, Ytrain, Xtest, Ytest, testPoints)

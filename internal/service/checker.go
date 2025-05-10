@@ -77,9 +77,9 @@ func lassoChecking(Xtrain, Ytrain, Xtest, Ytest *mat.Dense, testPoints []models.
 	rss.MulElemVec(rss, rss)
 
 	bestErr := map[string]float64{
-		"R2":  metrics.R2Score(Ytest, Ypred, nil, "").At(0, 0),
-		"MSE": metrics.MeanSquaredError(Ytest, Ypred, nil, "").At(0, 0),
-		"MAE": metrics.MeanAbsoluteError(Ytest, Ypred, nil, "").At(0, 0),
+		"R2":  metrics.R2Score(Ytest, Ypred, nil, "variance_weighted").At(0, 0),
+		"MSE": metrics.MeanSquaredError(Ytest, Ypred, nil, "variance_weighted").At(0, 0),
+		"MAE": metrics.MeanAbsoluteError(Ytest, Ypred, nil, "variance_weighted").At(0, 0),
 	}
 
 	resultType := map[int]string{0: "Линейный", 1: "Линейный", 2: "Линейный"}
@@ -146,20 +146,24 @@ func elasticChecking(Xtrain, Ytrain, Xtest, Ytest *mat.Dense, testPoints []model
 }
 
 func logisticChecking(Xtrain, Ytrain, Xtest, Ytest *mat.Dense, testPoints []models.DataPoint) (map[string]interface{}, error) {
-	checkGradients := func(problem optimize.Problem, initX []float64) {
-		settings := &fd.Settings{Step: 1e-8}
-		gradFromModel := make([]float64, len(initX))
-		gradFromFD := make([]float64, len(initX))
-		problem.Func(initX)
-		problem.Grad(gradFromModel, initX)
-		fd.Gradient(gradFromFD, problem.Func, initX, settings)
-	}
+	// checkGradients := func(problem optimize.Problem, initX []float64) {
+	// 	settings := &fd.Settings{Step: 1e-8}
+	// 	gradFromModel := make([]float64, len(initX))
+	// 	gradFromFD := make([]float64, len(initX))
+	// 	problem.Func(initX)
+	// 	problem.Grad(gradFromModel, initX)
+	// 	fd.Gradient(gradFromFD, problem.Func, initX, settings)
+	// }
 
 	// Обучение модели
 	regr := linearmodel.NewLogisticRegression()
 	regr.Alpha = 1e-5
-	regr.MaxIter = 400
-	regr.BeforeMinimize = checkGradients
+	regr.MaxIter = 1000
+	regr.Alpha = 1
+	regr.Tol = 0.01
+
+	// regr.BeforeMinimize = checkGradients
+
 	regr.Fit(Xtrain, Ytrain)
 
 	// Предсказание
@@ -169,9 +173,9 @@ func logisticChecking(Xtrain, Ytrain, Xtest, Ytest *mat.Dense, testPoints []mode
 
 	// Метрики
 	bestErr := map[string]float{
-		"R2":  metrics.R2Score(Ytest, Ypred, nil, "").At(0, 0),
-		"MSE": metrics.MeanSquaredError(Ytest, Ypred, nil, "").At(0, 0),
-		"MAE": metrics.MeanAbsoluteError(Ytest, Ypred, nil, "").At(0, 0),
+		"R2":  metrics.R2Score(Ytest, Ypred, nil, "variance_weighted").At(0, 0),
+		"MSE": metrics.MeanSquaredError(Ytest, Ypred, nil, "variance_weighted").At(0, 0),
+		"MAE": metrics.MeanAbsoluteError(Ytest, Ypred, nil, "variance_weighted").At(0, 0),
 	}
 
 	resultType := map[int]string{
@@ -226,9 +230,9 @@ func svrChecking(Xtrain, Ytrain, Xtest, Ytest *mat.Dense, testPoints []models.Da
 	}
 
 	resultType := map[int]string{
-		0: "Кубический",
-		1: "Кубический",
-		2: "Кубический",
+		0: "Квадратичный",
+		1: "Квадратичный",
+		2: "Квадратичный",
 	}
 
 	for _, opt := range kernelOptions {
@@ -250,9 +254,9 @@ func svrChecking(Xtrain, Ytrain, Xtest, Ytest *mat.Dense, testPoints []models.Da
 
 		Ypred, _ = yscaler.InverseTransform(Ypred, nil)
 
-		r2score := metrics.R2Score(Ytest, Ypred, nil, "").At(0, 0)
-		mse := metrics.MeanSquaredError(Ytest, Ypred, nil, "").At(0, 0)
-		mae := metrics.MeanAbsoluteError(Ytest, Ypred, nil, "").At(0, 0)
+		r2score := metrics.R2Score(Ytest, Ypred, nil, "variance_weighted").At(0, 0)
+		mse := metrics.MeanSquaredError(Ytest, Ypred, nil, "variance_weighted").At(0, 0)
+		mae := metrics.MeanAbsoluteError(Ytest, Ypred, nil, "variance_weighted").At(0, 0)
 
 		isBetter := false
 		if r2score > bestScore.R2 {
@@ -267,7 +271,27 @@ func svrChecking(Xtrain, Ytrain, Xtest, Ytest *mat.Dense, testPoints []models.Da
 			bestScore.R2 = r2score
 			bestScore.MSE = mse
 			bestScore.MAE = mae
-
+			if opt.kernel == "linear" {
+				resultType = map[int]string{
+					0: "Линейный",
+					1: "Линейный",
+					2: "Линейный",
+				}
+			}
+			if opt.kernel == "rbf" {
+				resultType = map[int]string{
+					0: "Кубический",
+					1: "Кубический",
+					2: "Кубический",
+				}
+			}
+			if opt.kernel == "poly" {
+				resultType = map[int]string{
+					0: "Квадратичный",
+					1: "Квадратичный",
+					2: "Квадратичный",
+				}
+			}
 			bestRes = map[string]interface{}{
 				"svr YPred " + opt.kernel: fmt.Sprintf("%.2f\n", mat.Formatted(Ypred)),
 				"graphics":                makeGraphicsForSVR(testPoints, Ypred),
@@ -344,12 +368,12 @@ func polynomialChecking(Xtrain, Ytrain, Xtest, Ytest *mat.Dense, testPoints []mo
 		Ypred := mat.NewDense(len(testPoints), 1, nil)
 		mlp.Predict(variablesTest, Ypred)
 
-		r2 := metrics.R2Score(Ytest, Ypred, nil, "").At(0, 0)
+		r2 := metrics.R2Score(Ytest, Ypred, nil, "variance_weighted").At(0, 0)
 		if r2 > best.r2 {
 			bestErr := map[string]float64{
 				"R2":  r2,
-				"MSE": metrics.MeanSquaredError(Ytest, Ypred, nil, "").At(0, 0),
-				"MAE": metrics.MeanAbsoluteError(Ytest, Ypred, nil, "").At(0, 0),
+				"MSE": metrics.MeanSquaredError(Ytest, Ypred, nil, "variance_weighted").At(0, 0),
+				"MAE": metrics.MeanAbsoluteError(Ytest, Ypred, nil, "variance_weighted").At(0, 0),
 			}
 			best = polyResult{
 				degree:   degree,
@@ -376,6 +400,11 @@ func polynomialChecking(Xtrain, Ytrain, Xtest, Ytest *mat.Dense, testPoints []mo
 		"poly accuracy": metrics.AccuracyScore(Ytest, best.yPred, true, nil),
 		"bestErr":       best.bestErr,
 		"resultType":    resultType,
+		"params": map[string]interface{}{
+			"coefficients": flattenNested(best.mlp.Coefs),
+			"degree":       degreeToLabel[best.degree],
+			"intercept":    best.mlp.Intercepts,
+		},
 	}
 
 	return detail, nil
@@ -448,9 +477,9 @@ func logChecking(Xtrain, Ytrain, Xtest, Ytest *mat.Dense, testPoints []models.Da
 	mlp.Predict(logVarsTest, YpredTest)
 
 	// Метрики на тестовой выборке
-	r2 := metrics.R2Score(observedTest, YpredTest, nil, "").At(0, 0)
-	mse := metrics.MeanSquaredError(observedTest, YpredTest, nil, "").At(0, 0)
-	mae := metrics.MeanAbsoluteError(observedTest, YpredTest, nil, "").At(0, 0)
+	r2 := metrics.R2Score(observedTest, YpredTest, nil, "variance_weighted").At(0, 0)
+	mse := metrics.MeanSquaredError(observedTest, YpredTest, nil, "variance_weighted").At(0, 0)
+	mae := metrics.MeanAbsoluteError(observedTest, YpredTest, nil, "variance_weighted").At(0, 0)
 
 	// Обработка бесконечных и NaN значений
 	if math.IsInf(r2, 0) || math.IsNaN(r2) {
@@ -464,9 +493,12 @@ func logChecking(Xtrain, Ytrain, Xtest, Ytest *mat.Dense, testPoints []models.Da
 	}
 	// Результаты
 	res := map[string]interface{}{
-		"graphics":      makeGraphicsForLog(testPoints, YpredTest),
-		"poly Ypred":    fmt.Sprintf("%.2f\n", mat.Formatted(YpredTest)),
-		"coefficients":  flattenNested(mlp.Coefs),
+		"graphics":   makeGraphicsForLog(testPoints, YpredTest),
+		"poly Ypred": fmt.Sprintf("%.2f\n", mat.Formatted(YpredTest)),
+		"params": map[string]interface{}{
+			"coefficients": flattenNested(mlp.Coefs),
+			"intercept":    mlp.Intercepts,
+		},
 		"OutActivation": mlp.OutActivation,
 		"bestErr": map[string]float{
 			"R2":  r2,

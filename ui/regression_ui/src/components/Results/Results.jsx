@@ -6,18 +6,24 @@ import { BlockMath } from 'react-katex';
 
 // Формулы с генерацией на основе параметров
 const generateFormula = (title, params = {}) => {
-  const { Coef = [], intercept = 0, degree = 2, lambda, lambda1, lambda2 } = params;
+  const { coefficients = [], intercept = 0, degree = 0, lambda, lambda1, lambda2 } = params;
+  const limitedCoefs = coefficients.slice(0, 5);
 
   switch (title) {
     case "Анализ через Linear регрессию":
-      return `y = ${intercept} + ${Coef.map((c, i) => `${c} x_{${i + 1}}`).join(" + ")}`;
+      return `y = ${intercept} + ${limitedCoefs.map((c, i) => `${c} x_{${i + 1}}`).join(" + ")}`;
 
     case "Анализ через Polynomial регрессию": {
       let parts = [`${intercept}`];
       let idx = 0;
-      for (let i = 0; i < Coef.length / degree; i++) {
+      const maxTerms = Math.min(limitedCoefs.length, 5);
+      const maxFeatures = Math.floor(maxTerms / degree);
+
+      for (let i = 0; i < maxFeatures; i++) {
         for (let d = 1; d <= degree; d++) {
-          parts.push(`${Coef[idx++]} x_{${i + 1}}^{${d}}`);
+          if (idx < maxTerms) {
+            parts.push(`${limitedCoefs[idx++]} x_{${i + 1}}^{${d}}`);
+          }
         }
       }
       return `y = ${parts.join(" + ")}`;
@@ -36,15 +42,16 @@ const generateFormula = (title, params = {}) => {
       return "\\hat{y}(x) = \\sum_{i=1}^l (\\alpha_i - \\alpha_i^*) K(x_i, x) + b";
 
     case "Анализ через Logistic регрессию":
-      return `P(y=1|x) = \\frac{1}{1 + e^{-(${intercept} + ${Coef.map((c, i) => `${c} x_{${i + 1}}`).join(" + ")})}}`;
+      return `P(y=1|x) = \\frac{1}{1 + e^{-(${intercept} + ${limitedCoefs.map((c, i) => `${c} x_{${i + 1}}`).join(" + ")})}}`;
 
     case "Анализ через LogChecking регрессию":
-      return `y = ${intercept} + ${Coef[0]} \\ln(x)`;
+      return `y = ${intercept} + ${limitedCoefs[0]} \\ln(x)`;
 
     default:
       return null;
   }
 };
+
 
 const Results = ({ title, data, datapoints = [], headers = [], recommended = false }) => {
   const [expanded, setExpanded] = useState(false);
