@@ -8,10 +8,13 @@ import (
 )
 
 type serverRegression struct {
-	svc                interfaces.Regression
-	mlrRegression      RegressionMlrRegression
-	mlrRegressionCSV   RegressionMlrRegressionCSV
-	mlrRegressionExcel RegressionMlrRegressionExcel
+	svc                    interfaces.Regression
+	mlrRegression          RegressionMlrRegression
+	mlrRegressionCSV       RegressionMlrRegressionCSV
+	mlrRegressionExcel     RegressionMlrRegressionExcel
+	onlyMlrRegression      RegressionOnlyMlrRegression
+	onlyMlrRegressionCSV   RegressionOnlyMlrRegressionCSV
+	onlyMlrRegressionExcel RegressionOnlyMlrRegressionExcel
 }
 
 type MiddlewareSetRegression interface {
@@ -19,6 +22,9 @@ type MiddlewareSetRegression interface {
 	WrapMlrRegression(m MiddlewareRegressionMlrRegression)
 	WrapMlrRegressionCSV(m MiddlewareRegressionMlrRegressionCSV)
 	WrapMlrRegressionExcel(m MiddlewareRegressionMlrRegressionExcel)
+	WrapOnlyMlrRegression(m MiddlewareRegressionOnlyMlrRegression)
+	WrapOnlyMlrRegressionCSV(m MiddlewareRegressionOnlyMlrRegressionCSV)
+	WrapOnlyMlrRegressionExcel(m MiddlewareRegressionOnlyMlrRegressionExcel)
 
 	WithMetrics()
 	WithLog()
@@ -26,10 +32,13 @@ type MiddlewareSetRegression interface {
 
 func newServerRegression(svc interfaces.Regression) *serverRegression {
 	return &serverRegression{
-		mlrRegression:      svc.MlrRegression,
-		mlrRegressionCSV:   svc.MlrRegressionCSV,
-		mlrRegressionExcel: svc.MlrRegressionExcel,
-		svc:                svc,
+		mlrRegression:          svc.MlrRegression,
+		mlrRegressionCSV:       svc.MlrRegressionCSV,
+		mlrRegressionExcel:     svc.MlrRegressionExcel,
+		onlyMlrRegression:      svc.OnlyMlrRegression,
+		onlyMlrRegressionCSV:   svc.OnlyMlrRegressionCSV,
+		onlyMlrRegressionExcel: svc.OnlyMlrRegressionExcel,
+		svc:                    svc,
 	}
 }
 
@@ -38,6 +47,9 @@ func (srv *serverRegression) Wrap(m MiddlewareRegression) {
 	srv.mlrRegression = srv.svc.MlrRegression
 	srv.mlrRegressionCSV = srv.svc.MlrRegressionCSV
 	srv.mlrRegressionExcel = srv.svc.MlrRegressionExcel
+	srv.onlyMlrRegression = srv.svc.OnlyMlrRegression
+	srv.onlyMlrRegressionCSV = srv.svc.OnlyMlrRegressionCSV
+	srv.onlyMlrRegressionExcel = srv.svc.OnlyMlrRegressionExcel
 }
 
 func (srv *serverRegression) MlrRegression(ctx context.Context, observer string, vars []string, dataPoints []models.DataPoint) (formula map[string]interface{}, err error) {
@@ -52,6 +64,18 @@ func (srv *serverRegression) MlrRegressionExcel(ctx context.Context, file []byte
 	return srv.mlrRegressionExcel(ctx, file)
 }
 
+func (srv *serverRegression) OnlyMlrRegression(ctx context.Context, observer string, vars []string, dataPoints []models.DataPoint) (formula map[string]interface{}, err error) {
+	return srv.onlyMlrRegression(ctx, observer, vars, dataPoints)
+}
+
+func (srv *serverRegression) OnlyMlrRegressionCSV(ctx context.Context, file []byte) (formula map[string]interface{}, err error) {
+	return srv.onlyMlrRegressionCSV(ctx, file)
+}
+
+func (srv *serverRegression) OnlyMlrRegressionExcel(ctx context.Context, file []byte) (formula map[string]interface{}, err error) {
+	return srv.onlyMlrRegressionExcel(ctx, file)
+}
+
 func (srv *serverRegression) WrapMlrRegression(m MiddlewareRegressionMlrRegression) {
 	srv.mlrRegression = m(srv.mlrRegression)
 }
@@ -62,6 +86,18 @@ func (srv *serverRegression) WrapMlrRegressionCSV(m MiddlewareRegressionMlrRegre
 
 func (srv *serverRegression) WrapMlrRegressionExcel(m MiddlewareRegressionMlrRegressionExcel) {
 	srv.mlrRegressionExcel = m(srv.mlrRegressionExcel)
+}
+
+func (srv *serverRegression) WrapOnlyMlrRegression(m MiddlewareRegressionOnlyMlrRegression) {
+	srv.onlyMlrRegression = m(srv.onlyMlrRegression)
+}
+
+func (srv *serverRegression) WrapOnlyMlrRegressionCSV(m MiddlewareRegressionOnlyMlrRegressionCSV) {
+	srv.onlyMlrRegressionCSV = m(srv.onlyMlrRegressionCSV)
+}
+
+func (srv *serverRegression) WrapOnlyMlrRegressionExcel(m MiddlewareRegressionOnlyMlrRegressionExcel) {
+	srv.onlyMlrRegressionExcel = m(srv.onlyMlrRegressionExcel)
 }
 
 func (srv *serverRegression) WithMetrics() {

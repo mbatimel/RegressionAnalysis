@@ -84,3 +84,67 @@ func (m loggerRegression) MlrRegressionExcel(ctx context.Context, file []byte) (
 	}(time.Now())
 	return m.next.MlrRegressionExcel(ctx, file)
 }
+
+func (m loggerRegression) OnlyMlrRegression(ctx context.Context, observer string, vars []string, dataPoints []models.DataPoint) (formula map[string]interface{}, err error) {
+	logger := log.Ctx(ctx).With().Str("service", "Regression").Str("method", "onlyMlrRegression").Logger()
+	defer func(_begin time.Time) {
+		logHandle := func(ev *zerolog.Event) {
+			fields := map[string]interface{}{
+				"method": "regression.onlyMlrRegression",
+				"request": viewer.Sprintf("%+v", requestRegressionOnlyMlrRegression{
+					DataPoints: dataPoints,
+					Observer:   observer,
+					Vars:       vars,
+				}),
+				"response": viewer.Sprintf("%+v", responseRegressionOnlyMlrRegression{Formula: formula}),
+			}
+			ev.Fields(fields).Str("took", time.Since(_begin).String())
+		}
+		if err != nil {
+			logger.Error().Err(err).Func(logHandle).Msg("call onlyMlrRegression")
+			return
+		}
+		logger.Info().Func(logHandle).Msg("call onlyMlrRegression")
+	}(time.Now())
+	return m.next.OnlyMlrRegression(ctx, observer, vars, dataPoints)
+}
+
+func (m loggerRegression) OnlyMlrRegressionCSV(ctx context.Context, file []byte) (formula map[string]interface{}, err error) {
+	logger := log.Ctx(ctx).With().Str("service", "Regression").Str("method", "onlyMlrRegressionCSV").Logger()
+	defer func(_begin time.Time) {
+		logHandle := func(ev *zerolog.Event) {
+			fields := map[string]interface{}{
+				"method":   "regression.onlyMlrRegressionCSV",
+				"request":  viewer.Sprintf("%+v", requestRegressionOnlyMlrRegressionCSV{File: file}),
+				"response": viewer.Sprintf("%+v", responseRegressionOnlyMlrRegressionCSV{Formula: formula}),
+			}
+			ev.Fields(fields).Str("took", time.Since(_begin).String())
+		}
+		if err != nil {
+			logger.Error().Err(err).Func(logHandle).Msg("call onlyMlrRegressionCSV")
+			return
+		}
+		logger.Info().Func(logHandle).Msg("call onlyMlrRegressionCSV")
+	}(time.Now())
+	return m.next.OnlyMlrRegressionCSV(ctx, file)
+}
+
+func (m loggerRegression) OnlyMlrRegressionExcel(ctx context.Context, file []byte) (formula map[string]interface{}, err error) {
+	logger := log.Ctx(ctx).With().Str("service", "Regression").Str("method", "onlyMlrRegressionExcel").Logger()
+	defer func(_begin time.Time) {
+		logHandle := func(ev *zerolog.Event) {
+			fields := map[string]interface{}{
+				"method":   "regression.onlyMlrRegressionExcel",
+				"request":  viewer.Sprintf("%+v", requestRegressionOnlyMlrRegressionExcel{File: file}),
+				"response": viewer.Sprintf("%+v", responseRegressionOnlyMlrRegressionExcel{Formula: formula}),
+			}
+			ev.Fields(fields).Str("took", time.Since(_begin).String())
+		}
+		if err != nil {
+			logger.Error().Err(err).Func(logHandle).Msg("call onlyMlrRegressionExcel")
+			return
+		}
+		logger.Info().Func(logHandle).Msg("call onlyMlrRegressionExcel")
+	}(time.Now())
+	return m.next.OnlyMlrRegressionExcel(ctx, file)
+}

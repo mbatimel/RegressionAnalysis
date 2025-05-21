@@ -21,8 +21,18 @@ function App() {
   const [cols, setCols] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [highlightBestMethod, setHighlightBestMethod] = useState(false);
+  const [analysisStep, setAnalysisStep] = useState("initial");
 
-
+  React.useEffect(() => {
+    if (analysisStep === "extended") {
+      if (file) {
+        uploadFile();
+      } else {
+        MLR();
+      }
+    }
+  }, [analysisStep]);
+  
 
   const handleMethodChange = (e) => {
     setSelectedMethod(e.target.value);
@@ -37,6 +47,7 @@ function App() {
       alert("Выберите файл перед отправкой");
       return;
     }
+  
     setHighlightBestMethod(false);
     setIsLoading(true);
     setTableData([]);
@@ -45,9 +56,14 @@ function App() {
     const formData = new FormData();
     formData.append("file", file);
   
-    let url = "/api/v1/mlrCSV";
+    let url = analysisStep === "initial"
+      ? "/api/v1/onlymlrCSV"
+      : "/api/v1/mlrCSV";
+  
     if (file.name.endsWith(".xlsx") || file.name.endsWith(".xls")) {
-      url = "/api/v1/mlrExcel";
+      url = analysisStep === "initial"
+        ? "/api/v1/onlymlrExcel"
+        : "/api/v1/mlrExcel";
     }
   
     try {
@@ -66,7 +82,7 @@ function App() {
     } finally {
       setIsLoading(false);
     }
-  };
+  };  
   
 
   const MLR = async () => {
@@ -74,6 +90,7 @@ function App() {
       alert("Введите данные в таблицу перед отправкой запроса");
       return;
     }
+  
     setHighlightBestMethod(false);
     setIsLoading(true);
     setMLRCSVData(null);
@@ -87,8 +104,12 @@ function App() {
       })),
     };
   
+    const url = analysisStep === "initial"
+      ? "/api/v1/onlymlr"
+      : "/api/v1/mlr";
+  
     try {
-      const response = await fetch("/api/v1/mlr", {
+      const response = await fetch(url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -107,6 +128,7 @@ function App() {
       setIsLoading(false);
     }
   };
+  
   
   const getRecommendedMethod = (data) => {
     const metrics = Object.entries(data)
@@ -219,6 +241,19 @@ function App() {
           );
         })
     }
+  </div>
+)}
+
+{(responseMLRCSVData || responseMLRData) && analysisStep === "initial" && (
+  
+  <div className="continue-analysis">
+  <h2>Можем продолжить анализ данных при помощи других методов</h2>
+    <button 
+    className="continue-button" 
+    onClick={() => setAnalysisStep("extended")}
+  >
+    Продолжить анализ
+  </button>
   </div>
 )}
 

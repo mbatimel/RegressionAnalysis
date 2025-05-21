@@ -58,6 +58,41 @@ func ridgeChecking(Xtrain, Ytrain, Xtest, Ytest *mat.Dense, testPoints []models.
 
 	return res, nil
 }
+func MLRChecking(Xtrain, Ytrain, Xtest, Ytest *mat.Dense, testPoints []models.DataPoint) (map[string]interface{}, error) {
+	mlr := linearmodel.NewLinearRegression()
+	
+	
+	mlr.Normalize = true
+
+	mlr.Fit(Xtrain, Ytrain)
+
+	Ypred := mat.NewDense(Xtest.RawMatrix().Rows, 1, nil)
+	mlr.Predict(Xtest, Ypred)
+
+	bestErr := map[string]float64{}
+	r2score := metrics.R2Score(Ytest, Ypred, nil, "variance_weighted").At(0, 0)
+	bestErr["R2"] = r2score
+	mse := metrics.MeanSquaredError(Ytest, Ypred, nil, "variance_weighted").At(0, 0)
+	bestErr["MSE"] = mse
+	mae := metrics.MeanAbsoluteError(Ytest, Ypred, nil, "variance_weighted").At(0, 0)
+	bestErr["MAE"] = mae
+
+	resultType := map[int]string{0: "Линейный", 1: "Линейный", 2: "Линейный"}
+
+	res := map[string]interface{}{
+		"ridge Ypred": fmt.Sprintf("%.2f\n", mat.Formatted(Ypred)),
+		"Coef":        fmt.Sprintf("%.2f\n", mat.Formatted(mlr.Coef)),
+		"graphics":    makeGraphicsForRidge(testPoints, mlr.Coef, Ypred),
+		"bestErr":     bestErr,
+		"resultType":  resultType,
+		"params": map[string]interface{}{
+			"coefficients": flattenMatrix(mlr.Coef),
+			"intercept":    mlr.Intercept,
+		},
+	}
+
+	return res, nil
+}
 
 func lassoChecking(Xtrain, Ytrain, Xtest, Ytest *mat.Dense, testPoints []models.DataPoint) (map[string]interface{}, error) {
 	regr := linearmodel.NewMultiTaskLasso()

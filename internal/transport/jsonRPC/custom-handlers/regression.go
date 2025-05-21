@@ -162,3 +162,151 @@ func MlrRegressionExcel(ctx *fiber.Ctx, svc regression.Regression, file []byte) 
 	sendResponse(ctx, log.Logger, formula, nil)
 	return err
 }
+func OnlyMlrRegression(ctx *fiber.Ctx, svc regression.Regression, observer string, vars []string, dataPoints []models.DataPoint) error {
+	var (
+		methodName = "OnlyMlrRegression"
+		err        error
+	)
+
+	metrics := config.Metrics()
+	defer func(begin time.Time) {
+		fields := map[string]interface{}{
+			"method":     "post",
+			"path":       "/onlymlr",
+			"observer":   observer,
+			"vars":       vars,
+			"dataPoints": dataPoints,
+			"service":    serviceName,
+			"took":       time.Since(begin).String(),
+		}
+		l := log.Info()
+		if err != nil {
+			if errors.Is(err, errors.ForbiddenError()) {
+				l = log.Warn().Err(err)
+			} else {
+				l = log.Error().Err(err)
+			}
+		}
+		l.Fields(fields).Msg("call")
+
+		metrics.RequestLatency.WithLabelValues(
+			serviceName,
+			methodName,
+			fmt.Sprint(err == nil),
+		).Observe(time.Since(begin).Seconds())
+	}(time.Now())
+
+	defer func() {
+		metrics.HttpCollector.WithLabelValues(
+			serviceName,
+			methodName,
+			fmt.Sprint(err == nil),
+		).Add(1)
+	}()
+
+	formula, err := svc.OnlyMlrRegression(ctx.Context(), observer, vars, dataPoints)
+	if err != nil {
+		sendResponse(ctx, log.Logger, nil, err)
+		return nil
+	}
+
+	sendResponse(ctx, log.Logger, formula, nil)
+	return err
+}
+func OnlyMlrRegressionCSV(ctx *fiber.Ctx, svc regression.Regression, file []byte) error {
+	var (
+		methodName = "OnlyMlrRegressionCSV"
+		err        error
+	)
+
+	metrics := config.Metrics()
+	defer func(begin time.Time) {
+		fields := map[string]interface{}{
+			"method":  "post",
+			"path":    "/onlymlrCSV",
+			"file":    file,
+			"service": serviceName,
+			"took":    time.Since(begin).String(),
+		}
+		l := log.Info()
+		if err != nil {
+			if errors.Is(err, errors.ForbiddenError()) {
+				l = log.Warn().Err(err)
+			} else {
+				l = log.Error().Err(err)
+			}
+		}
+		l.Fields(fields).Msg("call")
+
+		metrics.RequestLatency.WithLabelValues(
+			serviceName,
+			methodName,
+			fmt.Sprint(err == nil),
+		).Observe(time.Since(begin).Seconds())
+	}(time.Now())
+
+	defer func() {
+		metrics.HttpCollector.WithLabelValues(
+			serviceName,
+			methodName,
+			fmt.Sprint(err == nil),
+		).Add(1)
+	}()
+	formula, err := svc.OnlyMlrRegressionCSV(ctx.Context(), file)
+	if err != nil {
+		sendResponse(ctx, log.Logger, nil, err)
+		return nil
+	}
+
+	sendResponse(ctx, log.Logger, formula, nil)
+	return err
+}
+
+func OnlyMlrRegressionExcel(ctx *fiber.Ctx, svc regression.Regression, file []byte) error {
+	var (
+		methodName = "OnlyMlrRegressionExcel"
+		err        error
+	)
+
+	metrics := config.Metrics()
+	defer func(begin time.Time) {
+		fields := map[string]interface{}{
+			"method":  "post",
+			"path":    "/onlymlrExecl",
+			"file":    file,
+			"service": serviceName,
+			"took":    time.Since(begin).String(),
+		}
+		l := log.Info()
+		if err != nil {
+			if errors.Is(err, errors.ForbiddenError()) {
+				l = log.Warn().Err(err)
+			} else {
+				l = log.Error().Err(err)
+			}
+		}
+		l.Fields(fields).Msg("call")
+
+		metrics.RequestLatency.WithLabelValues(
+			serviceName,
+			methodName,
+			fmt.Sprint(err == nil),
+		).Observe(time.Since(begin).Seconds())
+	}(time.Now())
+
+	defer func() {
+		metrics.HttpCollector.WithLabelValues(
+			serviceName,
+			methodName,
+			fmt.Sprint(err == nil),
+		).Add(1)
+	}()
+	formula, err := svc.OnlyMlrRegressionExcel(ctx.Context(), file)
+	if err != nil {
+		sendResponse(ctx, log.Logger, nil, err)
+		return nil
+	}
+
+	sendResponse(ctx, log.Logger, formula, nil)
+	return err
+}

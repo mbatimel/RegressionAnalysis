@@ -39,7 +39,8 @@ func (http *httpRegression) mlrRegressionCSV(ctx context.Context, request reques
 	}
 	return
 }
-func (http *httpRegression) serveMlrRegressionCSV(ctx *fiber.Ctx) error {
+func (http *httpRegression) serveMlrRegressionCSV(ctx *fiber.Ctx) (err error) {
+
 	// кастомная реализация, не убирать и возвращать
 	// Получаем файл из формы
 	fileHeader, err := ctx.FormFile("file")
@@ -64,9 +65,22 @@ func (http *httpRegression) serveMlrRegressionCSV(ctx *fiber.Ctx) error {
 	}
 
 	// Передаём файл в обработчик
+
 	return customhandlers.MlrRegressionCSV(ctx, http.svc, fileBytes)
 }
-func (http *httpRegression) serveMlrRegressionExcel(ctx *fiber.Ctx) error {
+func (http *httpRegression) mlrRegressionExcel(ctx context.Context, request requestRegressionMlrRegressionExcel) (response responseRegressionMlrRegressionExcel, err error) {
+
+	response.Formula, err = http.svc.MlrRegressionExcel(ctx, request.File)
+	if err != nil {
+		if http.errorHandler != nil {
+			err = http.errorHandler(err)
+		}
+	}
+	return
+}
+func (http *httpRegression) serveMlrRegressionExcel(ctx *fiber.Ctx) (err error) {
+
+
 	// кастомная реализация, не убирать и возвращать
 	// Получаем файл из формы
 	fileHeader, err := ctx.FormFile("file")
@@ -91,5 +105,106 @@ func (http *httpRegression) serveMlrRegressionExcel(ctx *fiber.Ctx) error {
 	}
 
 	// Передаём файл в обработчик
+
 	return customhandlers.MlrRegressionExcel(ctx, http.svc, fileBytes)
+}
+func (http *httpRegression) onlyMlrRegression(ctx context.Context, request requestRegressionOnlyMlrRegression) (response responseRegressionOnlyMlrRegression, err error) {
+
+	response.Formula, err = http.svc.OnlyMlrRegression(ctx, request.Observer, request.Vars, request.DataPoints)
+	if err != nil {
+		if http.errorHandler != nil {
+			err = http.errorHandler(err)
+		}
+	}
+	return
+}
+func (http *httpRegression) serveOnlyMlrRegression(ctx *fiber.Ctx) (err error) {
+
+	var request requestRegressionOnlyMlrRegression
+	if err = ctx.BodyParser(&request); err != nil {
+		ctx.Response().SetStatusCode(fiber.StatusBadRequest)
+		_, err = ctx.WriteString("request body could not be decoded: " + err.Error())
+		return
+	}
+
+	return customhandlers.OnlyMlrRegression(ctx, http.svc, request.Observer, request.Vars, request.DataPoints)
+}
+func (http *httpRegression) onlyMlrRegressionCSV(ctx context.Context, request requestRegressionOnlyMlrRegressionCSV) (response responseRegressionOnlyMlrRegressionCSV, err error) {
+
+	response.Formula, err = http.svc.OnlyMlrRegressionCSV(ctx, request.File)
+	if err != nil {
+		if http.errorHandler != nil {
+			err = http.errorHandler(err)
+		}
+	}
+	return
+}
+
+func (http *httpRegression) serveOnlyMlrRegressionCSV(ctx *fiber.Ctx) (err error) {
+
+	// кастомная реализация, не убирать и возвращать
+	// Получаем файл из формы
+	fileHeader, err := ctx.FormFile("file")
+	if err != nil {
+		ctx.Status(fiber.StatusBadRequest).SendString("failed to get file: " + err.Error())
+		return err
+	}
+
+	// Открываем файл
+	file, err := fileHeader.Open()
+	if err != nil {
+		ctx.Status(fiber.StatusInternalServerError).SendString("failed to open file: " + err.Error())
+		return err
+	}
+	defer file.Close()
+
+	// Читаем файл в []byte
+	fileBytes, err := io.ReadAll(file)
+	if err != nil {
+		ctx.Status(fiber.StatusInternalServerError).SendString("failed to read file: " + err.Error())
+		return err
+	}
+
+	// Передаём файл в обработчик
+
+	return customhandlers.OnlyMlrRegressionCSV(ctx, http.svc, fileBytes)
+}
+func (http *httpRegression) onlyMlrRegressionExcel(ctx context.Context, request requestRegressionOnlyMlrRegressionExcel) (response responseRegressionOnlyMlrRegressionExcel, err error) {
+
+	response.Formula, err = http.svc.OnlyMlrRegressionExcel(ctx, request.File)
+	if err != nil {
+		if http.errorHandler != nil {
+			err = http.errorHandler(err)
+		}
+	}
+	return
+}
+func (http *httpRegression) serveOnlyMlrRegressionExcel(ctx *fiber.Ctx) (err error) {
+
+	// кастомная реализация, не убирать и возвращать
+	// Получаем файл из формы
+	fileHeader, err := ctx.FormFile("file")
+	if err != nil {
+		ctx.Status(fiber.StatusBadRequest).SendString("failed to get file: " + err.Error())
+		return err
+	}
+
+	// Открываем файл
+	file, err := fileHeader.Open()
+	if err != nil {
+		ctx.Status(fiber.StatusInternalServerError).SendString("failed to open file: " + err.Error())
+		return err
+	}
+	defer file.Close()
+
+	// Читаем файл в []byte
+	fileBytes, err := io.ReadAll(file)
+	if err != nil {
+		ctx.Status(fiber.StatusInternalServerError).SendString("failed to read file: " + err.Error())
+		return err
+	}
+
+	// Передаём файл в обработчик
+
+	return customhandlers.OnlyMlrRegressionExcel(ctx, http.svc, fileBytes)
 }

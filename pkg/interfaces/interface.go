@@ -47,4 +47,31 @@ type Regression interface {
 	// @tg 400=github.com/mbatimel/RegressionAnalysis/swaggers/externalApi/models:Err400
 	// @tg 200=github.com/mbatimel/RegressionAnalysis/pkg/models:MlrRegressionRespExcel200
 	MlrRegressionExcel(ctx context.Context, file []byte) (formula map[string]interface{}, err error)
+	// MlrRegression ...
+	// @tg http-method=POST
+	// @tg http-path=/onlymlr
+	// @tg summary=`Ручка по рассчету MLR регрессии`
+	// @tg http-response=github.com/mbatimel/RegressionAnalysis/internal/transport/jsonRPC/custom-handlers:OnlyMlrRegression
+	// @tg desc=`Ручка возвращает формулу и параметры`
+	// @tg 400=github.com/mbatimel/RegressionAnalysis/swaggers/externalApi/models:Err400
+	// @tg 200=github.com/mbatimel/RegressionAnalysis/pkg/models:MlrRegressionResp200
+	OnlyMlrRegression(ctx context.Context, observer string, vars []string, dataPoints []models.DataPoint) (formula map[string]interface{}, err error)
+	// MlrRegressionCSV ...
+	// @tg http-method=POST
+	// @tg http-path=/onlymlrCSV
+	// @tg summary=`Ручка по рассчету MLR регрессии из scv`
+	// @tg http-response=github.com/mbatimel/RegressionAnalysis/internal/transport/jsonRPC/custom-handlers:OnlyMlrRegressionCSV
+	// @tg desc=`Ручка возвращает формулу и параметры`
+	// @tg 400=github.com/mbatimel/RegressionAnalysis/swaggers/externalApi/models:Err400
+	// @tg 200=github.com/mbatimel/RegressionAnalysis/pkg/models:MlrRegressionRespCSV200
+	OnlyMlrRegressionCSV(ctx context.Context, file []byte) (formula map[string]interface{}, err error)
+	// MlrRegressionExcel ...
+	// @tg http-method=POST
+	// @tg http-path=/onlymlrExcel
+	// @tg summary=`Ручка по рассчету MLR регрессии из Execel`
+	// @tg http-response=github.com/mbatimel/RegressionAnalysis/internal/transport/jsonRPC/custom-handlers:OnlyMlrRegressionExcel
+	// @tg desc=`Ручка возвращает формулу и параметры`
+	// @tg 400=github.com/mbatimel/RegressionAnalysis/swaggers/externalApi/models:Err400
+	// @tg 200=github.com/mbatimel/RegressionAnalysis/pkg/models:MlrRegressionRespExcel200
+	OnlyMlrRegressionExcel(ctx context.Context, file []byte) (formula map[string]interface{}, err error)
 }

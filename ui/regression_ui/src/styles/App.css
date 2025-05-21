@@ -94,3 +94,20 @@ label {
 .highlight-best-button:hover {
   background-color: #0056b3;
 }
+
+.continue-analysis {
+  margin: 20px 0;
+  text-align: center;
+}
+.continue-button {
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #6c63ff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.continue-button:hover {
+  background-color: #574fd3;
+}

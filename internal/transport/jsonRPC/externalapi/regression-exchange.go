@@ -28,3 +28,29 @@ type requestRegressionMlrRegressionExcel struct {
 type responseRegressionMlrRegressionExcel struct {
 	Formula map[string]interface{} `json:"formula,omitempty"`
 }
+
+type requestRegressionOnlyMlrRegression struct {
+	Observer   string             `json:"observer,omitempty"`
+	Vars       []string           `json:"vars,omitempty"`
+	DataPoints []models.DataPoint `json:"dataPoints,omitempty"`
+}
+
+type responseRegressionOnlyMlrRegression struct {
+	Formula map[string]interface{} `json:"formula,omitempty"`
+}
+
+type requestRegressionOnlyMlrRegressionCSV struct {
+	File []byte `json:"file,omitempty"`
+}
+
+type responseRegressionOnlyMlrRegressionCSV struct {
+	Formula map[string]interface{} `json:"formula,omitempty"`
+}
+
+type requestRegressionOnlyMlrRegressionExcel struct {
+	File []byte `json:"file,omitempty"`
+}
+
+type responseRegressionOnlyMlrRegressionExcel struct {
+	Formula map[string]interface{} `json:"formula,omitempty"`
+}

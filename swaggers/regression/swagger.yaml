@@ -71,6 +71,72 @@ paths:
                     description: Method Not Allowed
                 "500":
                     description: Internal Server Error
+    /api/v1/onlymlr:
+        post:
+            tags:
+                - Regression
+            summary: Ручка по рассчету MLR регрессии
+            description: Ручка возвращает формулу и параметры
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/requestRegressionOnlyMlrRegression'
+            responses:
+                "200":
+                    description: Successful operation
+                "400":
+                    description: Bad Request
+                "403":
+                    description: Forbidden
+                "405":
+                    description: Method Not Allowed
+                "500":
+                    description: Internal Server Error
+    /api/v1/onlymlrCSV:
+        post:
+            tags:
+                - Regression
+            summary: Ручка по рассчету MLR регрессии из scv
+            description: Ручка возвращает формулу и параметры
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/requestRegressionOnlyMlrRegressionCSV'
+            responses:
+                "200":
+                    description: Successful operation
+                "400":
+                    description: Bad Request
+                "403":
+                    description: Forbidden
+                "405":
+                    description: Method Not Allowed
+                "500":
+                    description: Internal Server Error
+    /api/v1/onlymlrExcel:
+        post:
+            tags:
+                - Regression
+            summary: Ручка по рассчету MLR регрессии из Execel
+            description: Ручка возвращает формулу и параметры
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/requestRegressionOnlyMlrRegressionExcel'
+            responses:
+                "200":
+                    description: Successful operation
+                "400":
+                    description: Bad Request
+                "403":
+                    description: Forbidden
+                "405":
+                    description: Method Not Allowed
+                "500":
+                    description: Internal Server Error
 components:
     schemas:
         models.DataPoint:
@@ -129,6 +195,44 @@ components:
                     type: string
                     format: byte
             description: Ручка возвращает формулу и параметры
+        requestRegressionOnlyMlrRegression:
+            type: object
+            required:
+                - observer
+                - vars
+                - dataPoints
+            properties:
+                dataPoints:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/models.DataPoint'
+                    nullable: true
+                observer:
+                    type: string
+                vars:
+                    type: array
+                    items:
+                        type: string
+                    nullable: true
+            description: Ручка возвращает формулу и параметры
+        requestRegressionOnlyMlrRegressionCSV:
+            type: object
+            required:
+                - file
+            properties:
+                file:
+                    type: string
+                    format: byte
+            description: Ручка возвращает формулу и параметры
+        requestRegressionOnlyMlrRegressionExcel:
+            type: object
+            required:
+                - file
+            properties:
+                file:
+                    type: string
+                    format: byte
+            description: Ручка возвращает формулу и параметры
         responseRegressionMlrRegression:
             type: object
             required:
@@ -152,6 +256,39 @@ components:
                         nullable: true
             description: Ручка возвращает формулу и параметры
         responseRegressionMlrRegressionExcel:
+            type: object
+            required:
+                - formula
+            properties:
+                formula:
+                    type: object
+                    additionalProperties:
+                        type: object
+                        nullable: true
+            description: Ручка возвращает формулу и параметры
+        responseRegressionOnlyMlrRegression:
+            type: object
+            required:
+                - formula
+            properties:
+                formula:
+                    type: object
+                    additionalProperties:
+                        type: object
+                        nullable: true
+            description: Ручка возвращает формулу и параметры
+        responseRegressionOnlyMlrRegressionCSV:
+            type: object
+            required:
+                - formula
+            properties:
+                formula:
+                    type: object
+                    additionalProperties:
+                        type: object
+                        nullable: true
+            description: Ручка возвращает формулу и параметры
+        responseRegressionOnlyMlrRegressionExcel:
             type: object
             required:
                 - formula

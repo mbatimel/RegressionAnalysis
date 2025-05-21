@@ -86,3 +86,72 @@ func (m metricsRegression) MlrRegressionExcel(ctx context.Context, file []byte) 
 
 	return m.next.MlrRegressionExcel(ctx, file)
 }
+
+func (m metricsRegression) OnlyMlrRegression(ctx context.Context, observer string, vars []string, dataPoints []models.DataPoint) (formula map[string]interface{}, err error) {
+
+	defer func(_begin time.Time) {
+		var (
+			success = true
+			errCode int
+		)
+		if err != nil {
+			success = false
+			errCode = v2.StatusInternalServerError
+			ec, ok := err.(withErrorCode)
+			if ok {
+				errCode = ec.Code()
+			}
+		}
+		RequestCount.WithLabelValues("regression", "onlyMlrRegression", strconv.FormatBool(success), strconv.Itoa(errCode)).Add(1)
+		RequestCountAll.WithLabelValues("regression", "onlyMlrRegression", strconv.FormatBool(success), strconv.Itoa(errCode)).Add(1)
+		RequestLatency.WithLabelValues("regression", "onlyMlrRegression", strconv.FormatBool(success), strconv.Itoa(errCode)).Observe(time.Since(_begin).Seconds())
+	}(time.Now())
+
+	return m.next.OnlyMlrRegression(ctx, observer, vars, dataPoints)
+}
+
+func (m metricsRegression) OnlyMlrRegressionCSV(ctx context.Context, file []byte) (formula map[string]interface{}, err error) {
+
+	defer func(_begin time.Time) {
+		var (
+			success = true
+			errCode int
+		)
+		if err != nil {
+			success = false
+			errCode = v2.StatusInternalServerError
+			ec, ok := err.(withErrorCode)
+			if ok {
+				errCode = ec.Code()
+			}
+		}
+		RequestCount.WithLabelValues("regression", "onlyMlrRegressionCSV", strconv.FormatBool(success), strconv.Itoa(errCode)).Add(1)
+		RequestCountAll.WithLabelValues("regression", "onlyMlrRegressionCSV", strconv.FormatBool(success), strconv.Itoa(errCode)).Add(1)
+		RequestLatency.WithLabelValues("regression", "onlyMlrRegressionCSV", strconv.FormatBool(success), strconv.Itoa(errCode)).Observe(time.Since(_begin).Seconds())
+	}(time.Now())
+
+	return m.next.OnlyMlrRegressionCSV(ctx, file)
+}
+
+func (m metricsRegression) OnlyMlrRegressionExcel(ctx context.Context, file []byte) (formula map[string]interface{}, err error) {
+
+	defer func(_begin time.Time) {
+		var (
+			success = true
+			errCode int
+		)
+		if err != nil {
+			success = false
+			errCode = v2.StatusInternalServerError
+			ec, ok := err.(withErrorCode)
+			if ok {
+				errCode = ec.Code()
+			}
+		}
+		RequestCount.WithLabelValues("regression", "onlyMlrRegressionExcel", strconv.FormatBool(success), strconv.Itoa(errCode)).Add(1)
+		RequestCountAll.WithLabelValues("regression", "onlyMlrRegressionExcel", strconv.FormatBool(success), strconv.Itoa(errCode)).Add(1)
+		RequestLatency.WithLabelValues("regression", "onlyMlrRegressionExcel", strconv.FormatBool(success), strconv.Itoa(errCode)).Observe(time.Since(_begin).Seconds())
+	}(time.Now())
+
+	return m.next.OnlyMlrRegressionExcel(ctx, file)
+}

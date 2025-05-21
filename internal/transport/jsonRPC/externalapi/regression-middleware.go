@@ -10,9 +10,15 @@ import (
 type RegressionMlrRegression func(ctx context.Context, observer string, vars []string, dataPoints []models.DataPoint) (formula map[string]interface{}, err error)
 type RegressionMlrRegressionCSV func(ctx context.Context, file []byte) (formula map[string]interface{}, err error)
 type RegressionMlrRegressionExcel func(ctx context.Context, file []byte) (formula map[string]interface{}, err error)
+type RegressionOnlyMlrRegression func(ctx context.Context, observer string, vars []string, dataPoints []models.DataPoint) (formula map[string]interface{}, err error)
+type RegressionOnlyMlrRegressionCSV func(ctx context.Context, file []byte) (formula map[string]interface{}, err error)
+type RegressionOnlyMlrRegressionExcel func(ctx context.Context, file []byte) (formula map[string]interface{}, err error)
 
 type MiddlewareRegression func(next interfaces.Regression) interfaces.Regression
 
 type MiddlewareRegressionMlrRegression func(next RegressionMlrRegression) RegressionMlrRegression
 type MiddlewareRegressionMlrRegressionCSV func(next RegressionMlrRegressionCSV) RegressionMlrRegressionCSV
 type MiddlewareRegressionMlrRegressionExcel func(next RegressionMlrRegressionExcel) RegressionMlrRegressionExcel
+type MiddlewareRegressionOnlyMlrRegression func(next RegressionOnlyMlrRegression) RegressionOnlyMlrRegression
+type MiddlewareRegressionOnlyMlrRegressionCSV func(next RegressionOnlyMlrRegressionCSV) RegressionOnlyMlrRegressionCSV
+type MiddlewareRegressionOnlyMlrRegressionExcel func(next RegressionOnlyMlrRegressionExcel) RegressionOnlyMlrRegressionExcel
